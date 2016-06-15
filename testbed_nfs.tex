@@ -1,0 +1,21 @@
+\label{sec:testbed_nfs}
+
+
+\subsection{NFS}
+
+% Define variable]
+\begin{lstlisting}[]
+$ export IMAGE="2016-05-27-raspbian-jessie-lite"
+$ export WORKDIR="${HOME}/Raspbian"
+$ export DEV="/dev/mmcblk0"
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+% Check out the image   % The dollar hack was to fix vim syntax
+\begin{lstlisting}[literate={DOLLAR}{\$}1]
+DOLLAR fdisk -u sectors -l ${DEV}
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
