@@ -1,0 +1,80 @@
+# Fetch, cache, and mount root image using HTTP
+
+#. /scripts/functions # Already loaded in the init script
+
+# Create mount point directory
+[ -d /imagedir ] || mkdir /imagedir
+
+# Parse additional command line options
+for x in ${cat /proc/cmdline}; do
+    case $x in
+    image=*)
+        IMAGE=${x#image=}
+        # Extract device and path
+        # E.g. /dev/mmcblkp2:/root.img --> /dev/mmcblkp2 and /imagedir/root.img
+        IMAGEDEV=${IMAGE%:*}
+        IMAGEPATH="/imagedir/${${IMAGE#*:}#/}"
+        ;;
+    url=*)
+        URL=${${x#url=}%/}  # If url has trailing slash, then remove it
+        ;;
+done
+
+# Check if variables are declared
+[ -z "${IMAGE}" ] && echo "Error: Please add 'image' in cmdline.txt" && exit 1
+[ -z "${URL}" ] && echo "Error: Please add 'url' in cmdline.txt" && exit 1
+
+# Fetch and cache root image
+http_fetch_image()
+{
+    configure_networking
+
+    # Fetch list of root image names
+    if ! wget -O /tmp/image.csv "${URL}/image.csv"; then
+        echo "WARNING failed to fetch image list"
+        return
+    fi
+
+    # Extract name of image to download based on eth0 MAC
+    mac=$(cat /sys/class/net/eth0/address)
+    img=$(grep $mac /tmp/image.csv | cut -f2 -d' ')
+
+    # If the image is not cached, then get it
+    if [ ! -f ${img} ] && wget --spider -q "${URL}/${img}"; then
+        # Delete old image
+        rm -f $(readlink -f ${IMAGEPATH})
+
+        # Fetch new image
+        if wget -O "${IMAGEPATH%/*}/${img}" "${URL}/${img}"; then
+            # If success, create symbolic link to new image
+            ln -f -s "${IMAGEPATH%/*}/${img}" ${IMAGEPATH}
+        fi
+    fi
+
+    # Cleanup
+    #rm /tmp/image.csv
+}
+
+http_mount_root()
+{
+    modprobe ext4
+
+    # Mount imagedir
+    #mount -n -t ext4 ${IMAGEDEV} /${${IMAGEPATH#/}%%/*}
+    mount -n -t ext4 ${IMAGEDEV} /imagedir
+
+    # Fetch and cache root image
+    http_fetch_image
+
+    # Mount root as readonly
+    losetup /dev/loop0 $(readlink -f ${IMAGEPATH})
+    mount -r -n -t ext4 -o nodiratime,noatime /dev/loop0 /root
+
+    # Bind /root/home to /home
+    #mount -n -o rbind /home /root/home
+}
+
+mountroot()
+{
+    http_mount_root
+}

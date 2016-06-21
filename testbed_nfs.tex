@@ -3,18 +3,194 @@
 
 \subsection{NFS}
 
-% Define variable]
+
 \begin{lstlisting}[]
-$ export IMAGE="2016-05-27-raspbian-jessie-lite"
-$ export WORKDIR="${HOME}/Raspbian"
-$ export DEV="/dev/mmcblk0"
+# export NFSBOOTIMAGE="${WORKDIR}/nfsboot"
+# export NFSROOTIMAGE="${WORKDIR}/nfsroot"
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-% Check out the image   % The dollar hack was to fix vim syntax
-\begin{lstlisting}[literate={DOLLAR}{\$}1]
-DOLLAR fdisk -u sectors -l ${DEV}
+Extract root partition from image
+\begin{lstlisting}[]
+# export DEV=$(sudo losetup --show -f -P ${IMAGE}.img); echo $DEV
+# dd if=${DEV}p1 of=${NFSBOOTIMAGE}.img bs=4M
+# dd if=${DEV}p2 of=${NFSROOTIMAGE}.img bs=4M
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+Mount nfs root, boot, and home directories
+\begin{lstlisting}[]
+$ export NFSROOTDIR="${WORKDIR}/nfsroot"
+$ mkdir -p ${NFSROOTDIR}
+# mount ${NFSROOTIMAGE}.img ${NFSROOTDIR}
+# mount ${NFSBOOTIMAGE}.img ${NFSROOTDIR}/boot
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+Add the below to NFSROOTDIR/boot/cmdline.txt
+\begin{lstlisting}[]
+ip=dhcp root=/dev/nfs nfs-options=hard,intr,ro
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+\Suppressnumber\begin{lstlisting}[]
+<@\textcolor{gray}{\$\{NFSROOTDIR\}/etc/initramfs-tools/hooks/hooks-rootimg}@>
+<@\textcolor{gray}{
+---------------------------------------------------------------}
+\Reactivatenumber @>
+#!/bin/sh
+
+. /usr/share/initramfs-tools/scripts/functions
+. /usr/share/initramfs-tools/hook-functions
+
+copy_exec /sbin/losetup
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+\Suppressnumber\begin{lstlisting}[]
+<@\textcolor{gray}{\$\{NFSROOTDIR\}/etc/initramfs-tools/hooks/init-premount-rootimg}@>
+<@\textcolor{gray}{
+---------------------------------------------------------------}
+\Reactivatenumber @>
+#!/bin/sh
+
+PREREQ=""
+prereqs()
+{
+   echo "$PREREQ"
+}
+
+case $1 in
+prereqs)
+   prereqs
+   exit 0
+   ;;
+esac
+
+. /scripts/functions
+log_begin_msg "Starting rootimg"
+log_end_msg
+
+# Setup loop device
+losetup /dev/loop0 /imgdir/root.img
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+IS SETTING UP THE SD-CARD REALLY THE SAME PROCEDURE AS FOR A LOCAL FILESYSTEM?
+
+% Define variable
+% export IMAGE="2016-05-27-raspbian-jessie-lite"
+% export WORKDIR="${HOME}/Raspbian"
+\begin{lstlisting}[]
+$ export NFSDEV="/dev/mmcblk0"
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\begin{lstlisting}[]
+<@\Suppressnumber @># (echo o;                                      # Create DOS partition table
+    echo n; echo p; echo 1; echo ; echo +64M;   # Create boot partition
+    echo t; echo b;                             # Set boot partition type to FAT
+    echo n; echo p; echo 2; echo ; echo ;       # Create home partition
+    echo w                                      # Write table to disk
+    ) | sudo fdisk ${NFSDEV} <@\Reactivatenumber @>
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Print partition table (SHOULD THE BOOT FLAG HAVE BEEN SET TO PARTITION P1?)
+\begin{lstlisting}[]
+# fdisk -u sectors -l ${NFSDEV}
+Disk /dev/mmcblk0: 3.7 GiB, 3965190144 bytes, 7744512 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0x00e61b04
+
+Device         Boot  Start     End Sectors  Size Id Type
+/dev/mmcblk0p1        2048  133119  131072   64M  b W95 FAT32
+/dev/mmcblk0p2      133120 7744511 7611392  3.6G 83 Linux
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Format partitions
+\begin{lstlisting}[]
+# mkfs.vfat -n BOOT ${NFSDEV}p1
+# mkfs.ext4 -L HOME ${NFSDEV}p2
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+
+%Mount image:
+%\begin{lstlisting}[]
+%# export DEV=$(sudo losetup --show -f -P ${IMAGE}.img); echo $DEV
+%# mount ${DEV}p2 ${ROOTDIR}
+%# mount ${DEV}p1 ${ROOTDIR}/boot
+%\end{lstlisting}
+%\FloatBarrier
+%\vspace{-5mm}
+
+
+
+
+
+Copy boot directory:
+\begin{lstlisting}[]
+# cp -r ${ROOTDIR}/boot/* ${NFSBOOTDIR}/ 
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+
+Prepare home directory (Maybe it is better just to copy the content in home from the
+image's root partition):
+\begin{lstlisting}[]
+# install -d -o 1000 -g 1000 -m 700 ${HOMEDIR}/pi && sync
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+
+\begin{lstlisting}[]
+# mount ${NFSDEV}p1 ${NFSROOTDIR}/boot
+# mount ${NFSDEV}p2 ${NFSROOTDIR}/home
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+Unmount directories:
+\begin{lstlisting}[]
+# umount ${NFSBOOTDIR} ${NFSHOMEDIR}
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}

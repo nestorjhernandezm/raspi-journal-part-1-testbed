@@ -1,0 +1,279 @@
+\label{sec:testbed_http}
+
+
+\subsection{HTTP}
+
+
+\begin{lstlisting}[]
+$ export HTTPBOOTIMAGE="${WORKDIR}/httpboot"
+$ export HTTPROOTIMAGE="${WORKDIR}/httproot"
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Extract root partition from image
+\begin{lstlisting}[]
+# export DEV=$(sudo losetup --show -f -P ${IMAGE}.img); echo $DEV
+# dd if=${DEV}p1 of=${HTTPBOOTIMAGE}.img bs=4M
+# dd if=${DEV}p2 of=${HTTPROOTIMAGE}.img bs=4M
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+Mount http root and home directories
+\begin{lstlisting}[]
+$ export HTTPROOTDIR="${WORKDIR}/httproot"
+$ mkdir -p ${HTTPROOTDIR}
+# mount ${HTTPROOTIMAGE}.img ${HTTPROOTDIR}
+# mount ${HTTPBOOTIMAGE}.img ${HTTPROOTDIR}/boot
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+Create the following file (THE READ-ONLY OPTION IS STILL NOT CONFIGURABLE IN THIS SCRIPT)
+\Suppressnumber\begin{lstlisting}[]
+<@\textcolor{gray}{\$\{HTTPROOTDIR\}/etc/initramfs-tools/scripts/http}@>
+<@\textcolor{gray}{
+---------------------------------------------------------------}
+\Reactivatenumber @>
+# Fetch, cache, and mount root image using HTTP
+
+# Create mount point directory
+[ -d /imagedir ] || mkdir /imagedir
+
+# Parse additional command line options
+for x in ${cat /proc/cmdline}; do
+    case $x in
+    image=*)
+        IMAGE=${x#image=}
+        # Extract device and path
+        # E.g. /dev/mmcblkp2:/root.img --> /dev/mmcblkp2 and /imagedir/root.img
+        IMAGEDEV=${IMAGE%:*}
+        IMAGEPATH="/imagedir/${${IMAGE#*:}#/}"
+        ;;
+    url=*)
+        URL=${${x#url=}%/}  # If url has trailing slash, then remove it
+        ;;
+done
+
+# Check if variables are declared
+[ -z "${IMAGE}" ] && echo "Error: Please add 'image' in cmdline.txt" && exit 1
+[ -z "${URL}" ] && echo "Error: Please add 'url' in cmdline.txt" && exit 1
+
+# Fetch and cache root image
+http_fetch_image()
+{
+    configure_networking
+
+    # Fetch list of root image names
+    if ! wget -O /tmp/image.csv "${URL}/image.csv"; then
+        echo "WARNING failed to fetch image list"
+        return
+    fi
+
+    # Extract name of image to download based on eth0 MAC
+    mac=$(cat /sys/class/net/eth0/address)
+    img=$(grep $mac /tmp/image.csv | cut -f2 -d' ')
+
+    # If the image is not cached, then get it
+    if [ ! -f ${img} ] && wget --spider -q "${URL}/${img}"; then
+        # Delete old image
+        rm -f $(readlink -f ${IMAGEPATH})
+
+        # Fetch new image
+        if wget -O "${IMAGEPATH%/*}/${img}" "${URL}/${img}"; then
+            # If success, create symbolic link to new image
+            ln -f -s "${IMAGEPATH%/*}/${img}" ${IMAGEPATH}
+        fi
+    fi
+
+    # Cleanup
+    #rm /tmp/image.csv
+}
+
+http_mount_root()
+{
+    modprobe ext4
+
+    # Mount imagedir
+    #mount -n -t ext4 ${IMAGEDEV} /${${IMAGEPATH#/}%%/*}
+    mount -n -t ext4 ${IMAGEDEV} /imagedir
+
+    # Fetch and cache root image
+    http_fetch_image
+
+    # Mount root as readonly
+    losetup /dev/loop0 $(readlink -f ${IMAGEPATH})
+    mount -r -n -t ext4 -o nodiratime,noatime /dev/loop0 /root
+}
+
+mountroot()
+{
+    http_mount_root
+}
+
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Make the script executable
+\begin{lstlisting}[]
+# chmod +x ${HTTPROOTDIR}/etc/initramfs-tools/scripts/http
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Add the below to \$\{HTTPROOTDIR\}/boot/cmdline.txt (CHANGE URL HERE) (remove init=/usr/lib/raspi-config/init\_resize.sh earlier in guide)
+\begin{lstlisting}[]
+init=http ro ip=dhcp image=/dev/mmcblk0p2:/root.img root=/dev/loop0 url=http://192.168.87.106/raspi/
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+% ip=dhcp root=/dev/http http-options=hard,intr,ro
+
+
+Edit fstab to look like this (exclude the last line if persistent
+home storage directory is not desired):
+\Suppressnumber\begin{lstlisting}[]
+<@\textcolor{gray}{\$\{HTTPROOTDIR\}/etc/fstab}@>
+<@\textcolor{gray}{
+---------------------------------------------------------------}
+\Reactivatenumber @>
+proc            /proc           proc    defaults          0       0
+/dev/mmcblk0p1  /boot           vfat    defaults          0       2
+/dev/loop0      /               ext4    defaults,noatime  0       1
+/dev/mmcblk0p2  /home           ext4    defaults,noatime  0       1
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+Chroot into the image
+% CHROOT to OS image
+\begin{lstlisting}[]
+$ cd $HTTPROOTDIR
+# mount -t proc proc proc/
+# mount --bind /sys sys/
+# mount --bind /dev dev/
+# mount --bind /dev/pts dev/pts
+# proot -q qemu-arm-static -S ${HTTPROOTDIR}
+# export PS1="(chroot) $PS1"
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+Create new initramfs (remember that your kernel might be different)
+\begin{lstlisting}[]
+(chroot) # mkinitramfs -o /boot/init.gz -k 4.4.11+
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Exit chroot
+\begin{lstlisting}[]
+(chroot) # exit
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+
+IS SETTING UP THE SD-CARD REALLY THE SAME PROCEDURE AS FOR A LOCAL FILESYSTEM?
+
+% Define variable
+% export IMAGE="2016-05-27-raspbian-jessie-lite"
+% export WORKDIR="${HOME}/Raspbian"
+\begin{lstlisting}[]
+$ export HTTPDEV="/dev/mmcblk0"
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\begin{lstlisting}[]
+<@\Suppressnumber @># (echo o;                                      # Create DOS partition table
+    echo n; echo p; echo 1; echo ; echo +64M;   # Create boot partition
+    echo t; echo b;                             # Set boot partition type to FAT
+    echo n; echo p; echo 2; echo ; echo ;       # Create home partition
+    echo w                                      # Write table to disk
+    ) | sudo fdisk ${HTTPDEV} <@\Reactivatenumber @>
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Print partition table (SHOULD THE BOOT FLAG HAVE BEEN SET TO PARTITION P1?)
+\begin{lstlisting}[]
+# fdisk -u sectors -l ${HTTPDEV}
+Disk /dev/mmcblk0: 3.7 GiB, 3965190144 bytes, 7744512 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0x00e61b04
+
+Device         Boot  Start     End Sectors  Size Id Type
+/dev/mmcblk0p1        2048  133119  131072   64M  b W95 FAT32
+/dev/mmcblk0p2      133120 7744511 7611392  3.6G 83 Linux
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Format partitions
+\begin{lstlisting}[]
+# mkfs.vfat -n BOOT ${HTTPDEV}p1
+# mkfs.ext4 -L HOME ${HTTPDEV}p2
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+
+%Mount image:
+%\begin{lstlisting}[]
+%# export DEV=$(sudo losetup --show -f -P ${IMAGE}.img); echo $DEV
+%# mount ${DEV}p2 ${ROOTDIR}
+%# mount ${DEV}p1 ${ROOTDIR}/boot
+%\end{lstlisting}
+%\FloatBarrier
+%\vspace{-5mm}
+
+
+
+
+
+Copy boot directory:
+\begin{lstlisting}[]
+# cp -r ${ROOTDIR}/boot/* ${HTTPBOOTDIR}/ 
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+
+Prepare home directory (Maybe it is better just to copy the content in home from the
+image's root partition):
+\begin{lstlisting}[]
+# install -d -o 1000 -g 1000 -m 700 ${HOMEDIR}/pi && sync
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+
+\begin{lstlisting}[]
+# mount ${HTTPDEV}p1 ${HTTPROOTDIR}/boot
+# mount ${HTTPDEV}p2 ${HTTPROOTDIR}/home
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+Unmount directories:
+\begin{lstlisting}[]
+# umount ${HTTPBOOTDIR} ${HTTPHOMEDIR}
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
