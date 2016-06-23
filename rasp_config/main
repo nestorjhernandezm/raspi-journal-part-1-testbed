@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+
+bash /home/pi/rasp_config/set_hostname

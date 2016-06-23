@@ -6,18 +6,21 @@
 [ -d /imagedir ] || mkdir /imagedir
 
 # Parse additional command line options
-for x in ${cat /proc/cmdline}; do
+for x in $(cat /proc/cmdline); do
     case $x in
     image=*)
         IMAGE=${x#image=}
         # Extract device and path
         # E.g. /dev/mmcblkp2:/root.img --> /dev/mmcblkp2 and /imagedir/root.img
         IMAGEDEV=${IMAGE%:*}
-        IMAGEPATH="/imagedir/${${IMAGE#*:}#/}"
+        IMAGEPATH="${IMAGE#*:}"
+        IMAGEPATH="/imagedir/${IMAGEPATH#/}"
         ;;
     url=*)
-        URL=${${x#url=}%/}  # If url has trailing slash, then remove it
+        URL=${x#url=}
+        URL=${URL%/}  # If url has trailing slash, then remove it
         ;;
+    esac
 done
 
 # Check if variables are declared

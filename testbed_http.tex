@@ -21,7 +21,7 @@ Extract root partition from image
 \vspace{-5mm}
 
 
-Mount http root and home directories
+Mount http root and home directories (ADD LOOP OPTION HERE WHEN MOUNTING)
 \begin{lstlisting}[]
 $ export HTTPROOTDIR="${WORKDIR}/httproot"
 $ mkdir -p ${HTTPROOTDIR}
@@ -40,22 +40,27 @@ Create the following file (THE READ-ONLY OPTION IS STILL NOT CONFIGURABLE IN THI
 \Reactivatenumber @>
 # Fetch, cache, and mount root image using HTTP
 
+#. /scripts/functions # Already loaded in the init script
+
 # Create mount point directory
 [ -d /imagedir ] || mkdir /imagedir
 
 # Parse additional command line options
-for x in ${cat /proc/cmdline}; do
+for x in $(cat /proc/cmdline); do
     case $x in
     image=*)
         IMAGE=${x#image=}
         # Extract device and path
         # E.g. /dev/mmcblkp2:/root.img --> /dev/mmcblkp2 and /imagedir/root.img
         IMAGEDEV=${IMAGE%:*}
-        IMAGEPATH="/imagedir/${${IMAGE#*:}#/}"
+        IMAGEPATH="${IMAGE#*:}"
+        IMAGEPATH="/imagedir/${IMAGEPATH#/}"
         ;;
     url=*)
-        URL=${${x#url=}%/}  # If url has trailing slash, then remove it
+        URL=${x#url=}
+        URL=${URL%/}  # If url has trailing slash, then remove it
         ;;
+    esac
 done
 
 # Check if variables are declared
@@ -107,13 +112,15 @@ http_mount_root()
     # Mount root as readonly
     losetup /dev/loop0 $(readlink -f ${IMAGEPATH})
     mount -r -n -t ext4 -o nodiratime,noatime /dev/loop0 /root
+
+    # Bind /root/home to /home
+    #mount -n -o rbind /home /root/home
 }
 
 mountroot()
 {
     http_mount_root
 }
-
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
@@ -127,7 +134,7 @@ Make the script executable
 
 Add the below to \$\{HTTPROOTDIR\}/boot/cmdline.txt (CHANGE URL HERE) (remove init=/usr/lib/raspi-config/init\_resize.sh earlier in guide)
 \begin{lstlisting}[]
-init=http ro ip=dhcp image=/dev/mmcblk0p2:/root.img root=/dev/loop0 url=http://192.168.87.106/raspi/
+boot=http ro ip=dhcp image=/dev/mmcblk0p2:/root.img root=/dev/loop0 url=http://192.168.87.106/raspi/
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
@@ -144,7 +151,7 @@ home storage directory is not desired):
 proc            /proc           proc    defaults          0       0
 /dev/mmcblk0p1  /boot           vfat    defaults          0       2
 /dev/loop0      /               ext4    defaults,noatime  0       1
-/dev/mmcblk0p2  /home           ext4    defaults,noatime  0       1
+/dev/mmcblk0p2  /home           ext4    defaults,noatime  0       0
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
@@ -179,7 +186,15 @@ Exit chroot
 \FloatBarrier
 \vspace{-5mm}
 
+Unmount:
+\begin{lstlisting}[]
+# umount ${HTTPROOTIMAGE}/{dev/pts,proc,sys,dev}  
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
 
+
+\subsubsection{Prepare sd-card}
 
 IS SETTING UP THE SD-CARD REALLY THE SAME PROCEDURE AS FOR A LOCAL FILESYSTEM?
 
@@ -192,10 +207,13 @@ $ export HTTPDEV="/dev/mmcblk0"
 \FloatBarrier
 \vspace{-5mm}
 
+MAYBE ALSO SET THE BOOT FLAG FOR FIRST PARTITION. ALSO UPDATE SCRIPT IF THIS
+WORKS. THERE MAY HAVE TO BE ECHOED A 1 AFTER echo a FOR SETTING BOOT FLAG
 \begin{lstlisting}[]
 <@\Suppressnumber @># (echo o;                                      # Create DOS partition table
     echo n; echo p; echo 1; echo ; echo +64M;   # Create boot partition
     echo t; echo b;                             # Set boot partition type to FAT
+    echo a;                                     # Set boot flag
     echo n; echo p; echo 2; echo ; echo ;       # Create home partition
     echo w                                      # Write table to disk
     ) | sudo fdisk ${HTTPDEV} <@\Reactivatenumber @>
@@ -230,50 +248,60 @@ Format partitions
 
 
 
-%Mount image:
-%\begin{lstlisting}[]
-%# export DEV=$(sudo losetup --show -f -P ${IMAGE}.img); echo $DEV
-%# mount ${DEV}p2 ${ROOTDIR}
-%# mount ${DEV}p1 ${ROOTDIR}/boot
-%\end{lstlisting}
-%\FloatBarrier
-%\vspace{-5mm}
 
 
 
-
-
-Copy boot directory:
+Mount the boot partition from the memory card. Copy the content from the
+boot image and unmount it again:
 \begin{lstlisting}[]
-# cp -r ${ROOTDIR}/boot/* ${HTTPBOOTDIR}/ 
+# mount ${HTTPDEV}p1 ${HTTPROOTDIR}/mnt
+# cp -r ${HTTPROOTDIR}/boot/* ${HTTPROOTDIR}/mnt/ && sync
+# umount ${HTTPROOTDIR}/mnt
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Mount the home partition from the memory card. Copy the content from the
+root image and unmount it again:
+\begin{lstlisting}[]
+# mount ${HTTPDEV}p2 ${HTTPROOTDIR}/mnt
+# cp -r ${HTTPROOTDIR}/home/* ${HTTPROOTDIR}/mnt/ && sync
+# umount ${HTTPROOTDIR}/mnt
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
 
-
-Prepare home directory (Maybe it is better just to copy the content in home from the
-image's root partition):
 \begin{lstlisting}[]
-# install -d -o 1000 -g 1000 -m 700 ${HOMEDIR}/pi && sync
+# umount --recursive ${HTTPROOTDIR}
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
 
+\subsubsection{(Optional) Compressing root image}
+
+PROBABLY A BETTER IDEA TO USE BTRFS TRANSPARENT COMPRESSION
 
 \begin{lstlisting}[]
-# mount ${HTTPDEV}p1 ${HTTPROOTDIR}/boot
-# mount ${HTTPDEV}p2 ${HTTPROOTDIR}/home
+# apt-get install squashfs-tools
+# mount -o loop ${HTTPROOTIMAGE}.img ${HTTPROOTDIR} 
+# mksquashfs ${HTTPROOTDIR} compressed_${HTTPROOTIMAGE}.img       
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
+\subsubsection{Try it out}
 
-Unmount directories:
-\begin{lstlisting}[]
-# umount ${HTTPBOOTDIR} ${HTTPHOMEDIR}
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
+Upload the root image (\$\{HTTPROOTIMAGE\}.img) to the HTTP server used in the
+configurations above. Then, unplug the memory card from the computer.
+Insert it into a \ac{Raspi} and
+turn it on. It is recommended that the \ac{Raspi} is turned on with a monitor
+connected the first time the newly created Linux installation is tested to
+assure that Raspbian starts up correctly.
+
+
+PRESENT FILES ON HTTP. E.G. HTTPROOT.IMG AND IMAGES.CSV
+
+
 

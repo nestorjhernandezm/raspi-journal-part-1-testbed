@@ -3,7 +3,7 @@
 set -e -u
 
 # Target device
-dev=/dev/mmcblk0
+dev="$1"   # E.g. /dev/mmcblk0
 
 # Print error
 echoerr() { cat <<< "$@" 1>&2; }
@@ -41,13 +41,17 @@ fdisk -lu ${dev}
 mkfs.vfat -n BOOT ${dev}p1
 mkfs.ext4 -L HOME ${dev}p2
 
-# SHOULD THE BELOW BE COPIED FROM THE ROOT IMAGE?
+# LETS COPY THE CONTENT IN HOME FROM THE ROOT IMAGE INSTEAD TO MAKE SURE
+# THE CORRECT USER DIRECTORIES ARE CREATED (OTHER USERS MIGHT HAVE BEEN
+# CREATED IN THE ROOT IMAGE)
+
+exit 0 # Skip the rest of the script
 
 # Create temp directory that is erased when script exits
 mnt=$(mktemp -d)
 
-# Create home directory for user: pi (uid=1000) in group pi (gid=1000). (gid=100 if group users are preferred)
-# mode=700 means: drwx------ (i.e. only the user and root has access to his directory)
+# Create home directory for user: pi (uid=1000) in group pi (gid=1000) or group users (gid=100)
+# mode=700 means: drwx------ (i.e. only the user (pi) and root has access to the directory)
 mount ${dev}p2 ${mnt}
 install -d -o 1000 -g 1000 -m 700 ${mnt}/pi && sync
 

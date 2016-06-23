@@ -138,7 +138,8 @@ Device         Boot  Start     End Sectors  Size Id Type
 \FloatBarrier
 \vspace{-5mm}
 
-Format partitions
+Format partitions (CONSIDER BTRFS WITH COMPRESSION TO REDUCE ROOT IMAGE SIZE
+FOR FASTER BOOT AND LESS BANDWIDTH REQUIREMENTS)
 \begin{lstlisting}[]
 # mkfs.vfat -n BOOT ${NFSDEV}p1
 # mkfs.ext4 -L HOME ${NFSDEV}p2
