@@ -3,7 +3,36 @@
 
 \subsection{HTTP}
 
+%This part will explain how to prepare the existing image to be downloaded from
+%a \ac{HTTP} server.
+The Linux image that has been made so far has two partitions. One 
+partition with the boot files and one containing the root file system.
 
+This section will present how the partitions can be extracted from the image,
+and how the boot partition can be configured to download the root filesystem
+from a \ac{HTTP} server during startup.
+
+The advantage of this setup is that multiple \ac{Raspi}s can share the same
+root image. This significantly eases the maintainance task.
+
+%An alternative to the setup explained in this procedure is to use \ac{NFS}
+%instead of \ac{HTTP}. 
+
+%The first program called when a \ac{Raspi} starts is the Boot Loader,
+%\texttt{U-Boot}. \texttt{U-Boot} 
+%
+%When Raspbian starts up, the first program called
+%
+%The procedure explained below will customize the initial \ac{RAM} filesystem
+%
+%
+%there exists only one root file
+%
+%The advantage of this is that the root filesystem only one all \ac{Raspi}s can automatically download the 
+%
+%The boot partition will be required in the \ac{Raspi}s, but the root image can
+
+Start by declaring the path and names of the boot- and root-image:. 
 \begin{lstlisting}[]
 $ export HTTPBOOTIMAGE="${WORKDIR}/httpboot"
 $ export HTTPROOTIMAGE="${WORKDIR}/httproot"
@@ -11,26 +40,40 @@ $ export HTTPROOTIMAGE="${WORKDIR}/httproot"
 \FloatBarrier
 \vspace{-5mm}
 
-Extract root partition from image
+The, setup a loopback device of the existing image and use \texttt{dd} to
+extract the boot and root partitions from the image:
 \begin{lstlisting}[]
 # export DEV=$(sudo losetup --show -f -P ${IMAGE}.img); echo $DEV
 # dd if=${DEV}p1 of=${HTTPBOOTIMAGE}.img bs=4M
 # dd if=${DEV}p2 of=${HTTPROOTIMAGE}.img bs=4M
+# losetup -d ${DEV}
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
+Now it is time to configure the boot- and root-image just extracted before
+the content of the boot image is copied to the a memory card and the root
+image is uploaded to a \ac{HTTP} server.
 
-Mount http root and home directories (ADD LOOP OPTION HERE WHEN MOUNTING)
+Create a mountpoint and mount the http root and boot images:
+%Mount the http root image and home directories
 \begin{lstlisting}[]
 $ export HTTPROOTDIR="${WORKDIR}/httproot"
 $ mkdir -p ${HTTPROOTDIR}
-# mount ${HTTPROOTIMAGE}.img ${HTTPROOTDIR}
-# mount ${HTTPBOOTIMAGE}.img ${HTTPROOTDIR}/boot
+# mount -o loop ${HTTPROOTIMAGE}.img ${HTTPROOTDIR}
+# mount -o loop ${HTTPBOOTIMAGE}.img ${HTTPROOTDIR}/boot
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
+In a previous steps, the boot loader was configured to call an initial \ac{RAM}
+filesystem. The coming steps will present how to the initial \ac{RAM}
+filesystem can be extended further to download and cache the root filesystem
+from a \ac{HTTP} server before mounting it.
+
+The initial \ac{RAM} filesystem contains an \texttt{init} script that
+sets up the prepares the yis first
+called. This script initializes the  may be rewritten, but 
 
 Create the following file (THE READ-ONLY OPTION IS STILL NOT CONFIGURABLE IN THIS SCRIPT)
 \Suppressnumber\begin{lstlisting}[]
@@ -39,8 +82,6 @@ Create the following file (THE READ-ONLY OPTION IS STILL NOT CONFIGURABLE IN THI
 ---------------------------------------------------------------}
 \Reactivatenumber @>
 # Fetch, cache, and mount root image using HTTP
-
-#. /scripts/functions # Already loaded in the init script
 
 # Create mount point directory
 [ -d /imagedir ] || mkdir /imagedir
@@ -83,7 +124,7 @@ http_fetch_image()
     img=$(grep $mac /tmp/image.csv | cut -f2 -d' ')
 
     # If the image is not cached, then get it
-    if [ ! -f ${img} ] && wget --spider -q "${URL}/${img}"; then
+    if [ ! -f "${IMAGEPATH%/*}/${img}" ] && wget --spider -q "${URL}/${img}"; then
         # Delete old image
         rm -f $(readlink -f ${IMAGEPATH})
 
@@ -132,16 +173,44 @@ Make the script executable
 \FloatBarrier
 \vspace{-5mm}
 
-Add the below to \$\{HTTPROOTDIR\}/boot/cmdline.txt (CHANGE URL HERE) (remove init=/usr/lib/raspi-config/init\_resize.sh earlier in guide)
-\begin{lstlisting}[]
-boot=http ro ip=dhcp image=/dev/mmcblk0p2:/root.img root=/dev/loop0 url=http://192.168.87.106/raspi/
+Keep the content in \texttt{cmdline.txt}, but add/modify the variables
+\texttt{boot}, \texttt{ip}, \texttt{image}, \texttt{root}, and \texttt{url}.
+
+%Keep also all other variables as they are in
+%\texttt{cmdline.txt}.
+
+%Add the below configurations to \$\{HTTPROOTDIR\}/boot/cmdline.txt
+(remove init=/usr/lib/raspi-config/init\_resize.sh earlier in guide)
+\Suppressnumber\begin{lstlisting}[]
+<@\textcolor{gray}{\$\{HTTPROOTDIR\}/boot/cmdline.txt}@>
+<@\textcolor{gray}{
+---------------------------------------------------------------}
+\Reactivatenumber @>
+<@\Suppressnumber @>boot=http ip=dhcp image=/dev/mmcblk0p2:/httproot.img root=/dev/loop0
+    url=http://kom.aau.dk/project/TuneSCode/raspi/<@\Reactivatenumber @>
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 % ip=dhcp root=/dev/http http-options=hard,intr,ro
 
+Here is how the variables are used in the initramfs:
+\begin{itemize}
+    \item boot=http: tells the init script in initramfs to call the \texttt{http} script presented above
+    \item ip=dhcp: use \ac{DHCP} to obtain an \ac{IP} address in the initial ram filesystem
+    \item image=<device>:<root image path>: is where the \ac{Raspi} will store the downloaded root image.
+    \item root=/dev/loop0: The \texttt{http} initramfs script will make the root filesystem available on /dev/loop0
+    \item url=<URL to root image>: Is the directory on a \ac{HTTP} server where the root image will be iavailable.
+\end{itemize}
 
-Edit fstab to look like this (exclude the last line if persistent
+
+%The \ac{URL} should be modified to reflect where
+%the \ac{Raspi}s should download the http root image. The \texttt{image} variable informs the
+%\texttt{http} initramfs script to download and cache the http root image in the second partition
+%on its memory card at path \texttt{/httproot.img}.
+
+
+
+Edit fstab to look like this (exclude the last line if a persistent
 home storage directory is not desired):
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$\{HTTPROOTDIR\}/etc/fstab}@>
@@ -174,7 +243,8 @@ $ cd $HTTPROOTDIR
 
 Create new initramfs (remember that your kernel might be different)
 \begin{lstlisting}[]
-(chroot) # mkinitramfs -o /boot/init.gz -k 4.4.11+
+(chroot) # mkinitramfs -o /boot/init.gz -k 4.4.13+
+(chroot) # mkinitramfs -o /boot/init-v7.gz -k 4.4.13-v7+
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
@@ -188,6 +258,7 @@ Exit chroot
 
 Unmount:
 \begin{lstlisting}[]
+$ cd ..
 # umount ${HTTPROOTIMAGE}/{dev/pts,proc,sys,dev}  
 \end{lstlisting}
 \FloatBarrier
@@ -255,7 +326,7 @@ Mount the boot partition from the memory card. Copy the content from the
 boot image and unmount it again:
 \begin{lstlisting}[]
 # mount ${HTTPDEV}p1 ${HTTPROOTDIR}/mnt
-# cp -r ${HTTPROOTDIR}/boot/* ${HTTPROOTDIR}/mnt/ && sync
+# cp -rp ${HTTPROOTDIR}/boot/* ${HTTPROOTDIR}/mnt/ && sync
 # umount ${HTTPROOTDIR}/mnt
 \end{lstlisting}
 \FloatBarrier
@@ -265,7 +336,7 @@ Mount the home partition from the memory card. Copy the content from the
 root image and unmount it again:
 \begin{lstlisting}[]
 # mount ${HTTPDEV}p2 ${HTTPROOTDIR}/mnt
-# cp -r ${HTTPROOTDIR}/home/* ${HTTPROOTDIR}/mnt/ && sync
+# cp -rp ${HTTPROOTDIR}/home/* ${HTTPROOTDIR}/mnt/ && sync
 # umount ${HTTPROOTDIR}/mnt
 \end{lstlisting}
 \FloatBarrier
@@ -304,4 +375,44 @@ assure that Raspbian starts up correctly.
 PRESENT FILES ON HTTP. E.G. HTTPROOT.IMG AND IMAGES.CSV
 
 
+\begin{itemize}
+    \item Copy http root image (\$\{HTTPROOTIMAGE\}.img) a HTTP server
+    \item Create images.csv
+\end{itemize}
 
+
+\Suppressnumber\begin{lstlisting}[]
+<@\textcolor{gray}{http://<SERVERIP>/.../images.csv}@>
+<@\textcolor{gray}{
+---------------------------------------------------------------}
+\Reactivatenumber @>
+# Ethernet MAC    Root image
+b8:27:eb:5b:da:20 httproot_1.img
+b8:27:eb:7b:c3:91 httproot_1.img
+b8:27:eb:7b:c3:91 httproot_2.img
+...
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Notice that the \ac{Raspi}s can be configured to download different root images.
+This is useful both for having various root images for subsets of the \ac{Raspi}s,
+but also as a basic way inform the \ac{Raspi}s that the root image changed such
+that they can download the new root image at next boot.
+
+As of this writing, there is unfortunately a bug in wget that makes wget not showing
+its progress bar while downloading the root image at startup. Instead, it may appear
+to be unable to connect although it is downloading, so keep patient.
+
+\begin{lstlisting}[]
+Connecting to <HTTP SERVER IP> (<HTTP SERVER IP>:<PORT>)
+image.csv       100% |*******************************************************| 1287   0:00:00 ETA
+Connecting to <HTTP SERVER IP> (<HTTP SERVER IP>:<PORT>)
+_
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+REMEMBER TO COPY-PASTE ALL CONTENT FROM SCRIPT INTO LATEX AGAIN IN CASE SOME
+SCRIPT CHANGED, BUT WAS NOT UPDATED IN LATEX

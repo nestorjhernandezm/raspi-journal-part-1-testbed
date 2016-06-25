@@ -4,10 +4,10 @@ url="http://kom.aau.dk/project/TuneSCode/raspi/"
 config_file="rasp_config.zip"
 
 # Attempt to fetch new configuration files
-if ! wget -O /tmp/${config_file} ${url%/}/${config_file}; then
+if ! wget -q --show-progress -O /tmp/${config_file} ${url%/}/${config_file}; then
     echo "Warning: Unable to update rasp_config files"
     exit 1
 fi
 
 # Unzip and overwrite configurationn files to root's home directory
-unzip -q -o ${config_file} -d /home/pi/
+unzip -q -o /tmp/${config_file} -d /home/pi/

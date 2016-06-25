@@ -574,13 +574,13 @@ url="http://kom.aau.dk/project/TuneSCode/raspi/"
 config_file="rasp_config.zip"
 
 # Attempt to fetch new configuration files
-if ! wget -O /tmp/${config_file} ${url%/}/${config_file}; then
+if ! wget -O -q --show-progress /tmp/${config_file} ${url%/}/${config_file}; then
     echo "Warning: Unable to update rasp_config files"
     exit 1
 fi
 
 # Unzip and overwrite configurationn files to root's home directory
-unzip -q -o ${config_file} -d /home/pi/
+unzip -q -o /tmp/${config_file} -d /home/pi/
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
@@ -696,7 +696,7 @@ FOR THE READER TO BE ABLE TO UPLOAD A CONSTRUCT HIS/HER OWN BUNDLE.
 
 All other files could be updated as well.
 
-\subsection{Installation and Updating the image}
+\subsection{Installing and updating the image}
 
 It may be desired to pre-install some programs in the image before it is
 written to all the memory cards that goes into the \ac{Raspi}s.
@@ -752,7 +752,7 @@ root filesystem. Then line 2 copies resolv.conf.
 % CHROOT to OS image
 \begin{lstlisting}[]
 $ cd $ROOTDIR
-# cp /etc/resolv.conf etc/resolv.conf
+# cp /etc/resolv.conf ${ROOTDIR}/etc/resolv.conf
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
@@ -762,7 +762,7 @@ Now, because of the ARM architecture, it is also required to copy
 
 % CHROOT to OS image
 \begin{lstlisting}[]
-# cp /usr/bin/qemu-arm-static usr/bin
+# cp /usr/bin/qemu-arm-static ${ROOTDIR}/usr/bin
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
@@ -772,7 +772,7 @@ sys, and dev:
 
 % CHROOT to OS image
 \begin{lstlisting}[]
-# mount -t proc proc proc/
+# mount  -t proc proc proc/
 # mount --bind /sys sys/
 # mount --bind /dev dev/
 # mount --bind /dev/pts dev/pts
@@ -923,48 +923,71 @@ to load the overlaying filesytem:
 \FloatBarrier
 \vspace{-5mm}
 
-The bootloader should be made aware of the initramfs that we will generate:
-%Raspbian lite uses "u-boot" to boot, so it should be made aware of the
-%initramfs that we will generate.
+%Finally, lets generate the initial \ac{RAM} filesystem. This is done using the command
+%\texttt{mkinitramfs}, that will by default look for the kernel modules of the current system. Remember we are
+%chrooted, so we need to specify the correct kernel modules to look for. These
+%can be found in "/lib/modules".
+Now, the initial \ac{RAM} filesystem can be generated. \ac{Raspi} version 1
+needs a different kernel than \ac{Raspi} version 2 and version 3. Thus, start
+by finding the available kernel modules:
+%Because \texttt{initramfs} is executed within a
+%\texttt{chrooted} environment, it will not be able to detect the
+%kernel modules in the \texttt{chrooted} environment. The kernel modules will 
 
-% Tell uboot to load initramfs
-\begin{lstlisting}[]
-(chroot) # echo "initramfs init.gz" > /boot/config.txt
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-Finally, lets generate the image. This is done using "mkinitramfs", that will
-by default look for the kernel modules of the current system. Remember we are
-chrooted, so we need to specify the correct kernel modules to look for. These
-can be found in "/lib/modules".
 
 % Create an initramfs
 \begin{lstlisting}[]
 (chroot) # ls /lib/modules/
+4.4.13+  4.4.13-v7+
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-For \ac{Raspi} 1, our kernel modules was "4.4.11+". The other modules in /lib/modules
-is for \ac{Raspi} 2.
+Kernel "4.4.13+" is for \ac{Raspi} version 1 and kernel "4.4.13-v7+" works
+for \ac{Raspi} version 2 and version 3.
 
-Thus, to run mkinitramfs, type in the correct kernel version:
+Lets proceed by generating an initial \ac{RAM} filesystem for both kernels:
+
+%Lets proceed with kernel modules "4.4.13+".
+%Lets create an initial ram filesystem for both kernels.
+
+%Thus, to run mkinitramfs, type in the correct kernel version:
 
 % Create an initramfs
 \begin{lstlisting}[]
-(chroot) # mkinitramfs -o /boot/init.gz -k 4.4.11+
+(chroot) # mkinitramfs -o /boot/init.gz -k 4.4.13+
+(chroot) # mkinitramfs -o /boot/init-v7.gz -k 4.4.13-v7+
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-Although there might be printet a few warnings, this should generate
-a new working \texttt{initramfs} that will put a \ac{RAM} filesystem
-on top of the root filesystem.
+%IT SEEM THAT THE RASPIS DEMANDS DIFFERENT KERNEL MODULES AFTER ALL.
+%RASP-VERSION1=4.4.13+, RASP-VERSION2=4.4.13-V7+, RASP-VERSION3=4.4.13-V7+
+
+Although there might be printet a few warnings, the above commands should successfully
+generate working initial \ac{RAM} filesystems. 
+
+An initial \ac{RAM} filesystem needs to be called by the bootloader. In Raspbian
+this is done by adding a command to \texttt{config.txt} in the boot partition.
+
+If the system should be run in a \ac{Raspi} version 1, then use \texttt{init.gz}:
+%The bootloader should be made aware of the initramfs that we will generate:
+\begin{lstlisting}[]
+(chroot) # echo "initramfs init.gz" >> /boot/config.txt     # Only for Raspberry Pi version 1
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+If the system should be run in a \ac{Raspi} version 2 or 3, then use \texttt{init-v7.gz}:
+\begin{lstlisting}[]
+(chroot) # echo "initramfs init-v7.gz" >> /boot/config.txt  # Only for Raspberry Pi version 2 and 3
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
 
 At this point, it is no longer required to be \texttt{chrooted} and the image
 can be written to a memory card. The following commands exits the \texttt{chrooted}
-environment, unmount all partitions, and detaches the loop device:
+environment, unmount all partitions, and detaches the loopback device:
 
 % Exit chroot, umount, and write to memory card
 \begin{lstlisting}[]
@@ -976,7 +999,10 @@ environment, unmount all partitions, and detaches the loop device:
 \FloatBarrier
 \vspace{-5mm}
 
-\subsection{(Optional) Persistent subdirectories}
+\subsection{(Optional) Persistent subdirectories for distributed Linux image}
+
+EMPHASIZE THAT THIS SETUP IS ONLY FOR THE SETUP WHERE THE ROOT IMAGE ARE
+WRITTEN TO THE MEMORY CARDS
 
 Provided the stacked filesystem was configured, it may be desired to have
 some directories where files are not flushed upon rebooting the \ac{Raspi}s.
@@ -1063,6 +1089,10 @@ That is it. unmount partitions and detach loop device:
 \vspace{-5mm}
 
 \subsection{Write image to memory card}
+
+
+EMPHASIZE THAT THIS SETUP IS ONLY FOR THE SETUP WHERE THE ROOT IMAGE ARE
+WRITTEN TO THE MEMORY CARDS
 
 The final step is to write the image to all the memory cards before they can
 be used in the \ac{Raspi}s.

@@ -1,0 +1,47 @@
+# Ethernet MAC    Root image
+b8:27:eb:5b:da:20 root_1.img
+b8:27:eb:7b:c3:91 root_1.img
+b8:27:eb:54:9c:64 root_1.img
+b8:27:eb:95:bd:11 root_1.img
+b8:27:eb:c8:7b:8f root_1.img
+b8:27:eb:0a:5c:16 root_1.img
+b8:27:eb:31:9d:cc root_1.img
+b8:27:eb:11:86:76 root_1.img
+b8:27:eb:fc:9e:14 root_1.img
+b8:27:eb:72:77:54 root_1.img
+b8:27:eb:51:e3:17 root_1.img
+b8:27:eb:14:16:4f root_1.img
+b8:27:eb:ba:72:50 root_1.img
+b8:27:eb:06:87:ae root_1.img
+b8:27:eb:fb:a9:4f root_1.img
+b8:27:eb:34:3a:27 root_1.img
+b8:27:eb:84:39:af root_1.img
+b8:27:eb:05:f9:a5 root_1.img
+b8:27:eb:c8:fa:e2 root_1.img
+b8:27:eb:fd:22:70 root_1.img
+b8:27:eb:40:8c:11 root_1.img
+b8:27:eb:29:cf:cf root_1.img
+b8:27:eb:49:15:0a root_1.img
+b8:27:eb:33:51:b5 root_1.img
+b8:27:eb:d2:62:cf root_1.img
+b8:27:eb:08:6a:c3 root_1.img
+b8:27:eb:00:59:24 root_1.img
+b8:27:eb:f0:9a:da root_1.img
+b8:27:eb:1b:e5:7e root_1.img
+b8:27:eb:f9:29:cc root_1.img
+b8:27:eb:2a:b9:49 root_1.img
+b8:27:eb:c3:98:e6 root_1.img
+b8:27:eb:88:b4:83 root_1.img
+b8:27:eb:b1:50:a2 root_1.img
+b8:27:eb:97:69:8b root_1.img
+b8:27:eb:4b:f5:e3 root_1.img
+b8:27:eb:4d:34:7d root_1.img
+b8:27:eb:fd:48:c7 root_1.img
+b8:27:eb:5b:c9:29 root_1.img
+b8:27:eb:8c:02:0b root_1.img
+
+# Raspberry Pi 2
+b8:27:eb:93:ed:94 httproot.img
+
+# Raspberry Pi 3
+b8:27:eb:e8:e5:72 httproot.img

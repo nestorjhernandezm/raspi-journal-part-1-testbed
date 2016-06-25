@@ -43,7 +43,7 @@ http_fetch_image()
     img=$(grep $mac /tmp/image.csv | cut -f2 -d' ')
 
     # If the image is not cached, then get it
-    if [ ! -f ${img} ] && wget --spider -q "${URL}/${img}"; then
+    if [ ! -f "${IMAGEPATH%/*}/${img}" ] && wget --spider -q "${URL}/${img}"; then
         # Delete old image
         rm -f $(readlink -f ${IMAGEPATH})
 
