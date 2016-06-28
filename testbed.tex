@@ -3,9 +3,10 @@
 We proceed to define the testbed environment by each of its conforming
 parts. We later indicate a procedure to set up the testbed. In this procedure,
 we summarize all the details regarding on setting the connectivity and
-system files for a set of \ac{Raspi}s in a decentralized fashion.
-Afterwards, we indicate how to cross-compile C++ code and the Kodo
-network coding library in an easy way.
+system files for a set of \ac{Raspi}s in a decentralized and/or centralized fashion
+depending on the testbed admins preferences..
+%Afterwards, we indicate how to cross-compile C++ code and the Kodo
+%network coding library in an easy way.
 %Finally, we provide further information about Kodo itself in terms
 %of testing, other platforms supported and source code documentation
 %for further references.
@@ -15,129 +16,62 @@ network coding library in an easy way.
 
 \begin{figure}[ht!]
 \centering
-\includegraphics[width=0.85\textwidth]{images/testbed_setup2.eps}
+\includegraphics[width=0.45\textwidth]{images/testbed_setup3.eps}
 \caption{Testbed setup}
 \label{fig:testbed_setup}
 \end{figure}
 
-%This section will present a testbed of thirty \ac{Raspi}s and a \ac{PC}
-The testbed consists of thirty \ac{Raspi}s that will be setup and controlled
-by a testbed administrator from a \ac{PC}.
-%Twenty \ac{Raspi} 1 model B revision 2 and ten \ac{Raspi} 2 model B V1.1.
-The \ac{Raspi}s are each equipped with a memory card and a wired and wireless
-network interface. They are all connected to the
-university network by wire using their ethernet interface (eth0).
+The testbed consists of up to one hundred \ac{Raspi}s of different models.
+More specifically, Raspberry Pi 1 model B rev.~2,
+Raspberry Pi 2 model B V1.1, and Raspberry Pi 3 model B V1.2.
+All \ac{Raspi}s are each equipped with a memory card, a wired, and a wireless
+network interface. They connect to the university network using its wired
+ethernet interface that is named \texttt{eth0} according to the legacy naming
+convention of ethernet interfaces in Linux. \textcolor{red}{MAYBE PUT SOUECE HERE}
 
-To easily discover the \ac{Raspi}s within the university network,
-%by a testbed administrator from a \ac{PC}. The \ac{Raspi}s are each equipped
-%with a memory card and connected to the
-%university network by wire using their ethernet interface (eth0). To easily
-%discover the \ac{Raspi}s within the university network,
-they have all been assigned a unique name under a common domain.
-This eliminates the need to remember their individual \ac{IP} addresses.
+All \ac{Raspi}s will be running an \ac{SSH} daemon for easy remote access
+within the university network. We therefore had the university's \ac{IT}
+department configure the university's \ac{DHCP} server to assign each \ac{Raspi} a
+static \ac{IP}. This eliminates the requirements for monitors and keyboards
+for the \ac{Raspi}s for non-graphical applications.
+%This significantly eases the management of the \ac{Raspi}s
+%as \ac{SSH} eliminates the need for monitors and keyboards for the \ac{Raspi}s.
+
 A sketch of the testbed is depicted in Figure~\ref{fig:testbed_setup}.
-We have two types of \ac{Raspi}s in our setup.
-Table~\ref{tab:rasp_naming} shows the naming convention.
 
-\begin{table}[ht!]
-  \centering
-  \begin{tabular}{|c|c|}
-    \hline
-      \textbf{Hostname} & \textbf{Model} \\ \hline
-    rasp00 - rasp19 & Raspberry Pi 1 model B rev. 2 \\ \hline
-    rasp20 - rasp29 & Rasperry Pi 2 model B V1.1 \\ \hline
-  \end{tabular}
-  \caption{Raspberry Pi naming convention}
-  \label{tab:rasp_naming}
-\end{table}
+The testbed should be available for students to perform simulations and
+measurements as part of their semester projects. We intend to configure
+all \ac{Raspi}s identically, while still allowing students to alter
+how each \ac{Raspi} behaves and is configured.
 
+When working on the testbed with this many devices, it may not always be
+desired to make persistent changes to devices. We present how the concept
+of stacked filesystems may be used to enable the means of both persistent
+and temporary storage.
 
+%The testbed should be available for students to perform simulations and
+%measurements as part of their semester projects. The \ac{Raspi}s should
+%be configured identically, but allows the students to alter the
+%configurations and how each \ac{Raspi} behaves.
+%
+%When working on a testbed with many devices, it may not always desired
+%to make persistent changes to devices. We present how the concept of stacked
+%filesystems may be used to enable the means of both persistent and
+%temporary storage.
 
+%A \ac{HTTP} server will be used to store Linux configuration files as well
+%as the root filesystem in the centralized approach.
 
-%Accessing them is easily done using \ac{SSH}.
-%To address them within the university network,
-%The \ac{Raspi}s
+The following procedure will explain how the testbed may be setup and
+configured both in the traditional distributed fasion where the
+entire Linux filesystem is written to an memory card, but also in a more
+centralized fasion where 
+is written to
+Based on the popular Debian based Raspbian Linux distribution
+We
+first present how a standard Linux distribution for the \ac{Raspi}s
+may be customized 
 
-%The \ac{Raspi}s are all equipped with an ethernet interface (eth0) and
-%connected by wire to the university's \ac{LAN}. The university network
-%administration was provided
-%the \ac{MAC} addresses of the ethernet interfaces to automatically assign
-%the devices the desired \ac{IP} addresses as shown in the figure. In a personal
-%\ac{LAN}, another option could be to manually provide the devices with static
-%\ac{IP}s.
-
-
-%This section will be used to present a \ac{Raspi} testbed and the steps to
-%install and configure its devices.
-
-%The testbed is depicted in figure~\ref{fig:testbed_setup}. It consists of twenty
-%Raspberry Pi 1 model B rev 2 (Rasp01 to Rasp20) and
-%ten Raspberry Pi 2 model b V1.1 (Rasp2\_01 to Rasp2\_10).
-
-The testbed is available for students to perform simulations and
-measurements as part of their semester projects. The \ac{Raspi}s should
-be configured identically, but allow the students to alter the
-configurations and how each \ac{Raspi} behaves.
-%It is therefore desired
-%that the \ac{Raspi}s are configured identically, but still allows the
-%students to alter the configurations.
-
-When working on a testbed with many devices, it is not always desired
-to make persistent
-changes to devices. We present how the concept of stacked
-filesystems is used to enable the means of both persistent and
-%The testbed should be usable by students to perform simulations and
-%measurements as part of their semester projects. It is therefore desired
-%that the \ac{Raspi}s are configured identically, but still allows the
-%students to alter the configurations. When working on a testbed, it is
-%not always desired to make persistent
-%changes to the devices. We also present how the concept of stacked
-%filesystems can be used to enable the means of both persistent and
-temporary storage.
-
-%It is therefore
-%mandatory that the \ac{Raspi}s are easily configurable but also
-%desired to 
-
-%The testbed should be usable by students that should be able to configure
-%the \ac{Raspi}'s as desired. It is therefore 
-
-%The testbed will be used by students that might need to change how the
-%devices are work either temporary or permanently. We will illustrate how this
-%can be accomplished using an overlaying filesystem.
-
-%The goal is to configure all the \ac{Raspi}s identically with the same software
-%and configurations. There are however a few differences between them that we
-%need to take into account. E.g. hostname and network addresses.
-
-%Finally, it should be possible to store data that are generated from
-%simulations on the memory cards that are in the individual \ac{Raspi}.
-%We using a overlaying filesystem that
-%We will illustrate
-%how that can be done. In the case of temporary changes, it is important that
-%all changes can be easily reverted. We put a \ac{RAM} filesystem on top of
-%the the root filesystem to .
-%the configure the
-%devices to behave according to their test specifications. We
-%will also present how that might be done.
-
-%their linkings. That could be to change network config
-
-%The goal is to configure all the devices to be as identical as possible. This
-%means that it is desired to have the same software on every device, but
-
-%The \ac{Raspi}s are all equipped with an ethernet interface (eth0) and
-%connected by wire to the university's \ac{LAN}. The university network
-%administration was provided
-%the \ac{MAC} addresses of the ethernet interfaces to automatically assign
-%the devices the desired \ac{IP} addresses as shown in the figure. In a personal
-%\ac{LAN}, another option could be to manually provide the devices with static
-%\ac{IP}s.
-%that are
-%assigned the \ac{IP} addresses in the figure and connected wired to the
-%university's \ac{LAN}.
-
-%We use standard usb power adapters to power the \ac{Raspi}s.
 
 \subsubsection{Installing Raspbian}
 
@@ -146,45 +80,8 @@ To get started, we first need to install an \ac{OS} on the
 Linux~\cite{raspbian}
 
 We will be using a \ac{PC} running a Debian-based Linux distribution
-%\ac{Raspi}s. We will use Raspbian Linux~\cite{raspbian}. We will be
-%using a \ac{PC} running a Debian-based Linux distribution
 to setup a customized Raspbian Linux image that can be written to
 a memory card and work in any \ac{Raspi} version 1 or 2.
-%We will use a desktop that has linux installed to download,
-%configure, and write the image to the memory cards.
-%We have decided to use a linux desktop machine to create a
-%common image of Raspbian Linux that can be used in any of the Raspberry Pis.
-
-%for all devices. After the image has been configured it can be written to
-%a memory card and used in any of the Raspberry Pis. This means that each
-%device needs a memory card, but it does not matter which card is put into
-%which device.
-
-%We have decided to go with Raspbian linux~\cite{raspbian} and
-%to install it on memory cards.
-
-
-%There exists a number of ways to setup a testbed in a centralized manner.
-%E.g. using e.g. \ac{NFS}.
-
-%There exists a number of ways to setup a testbed
-%
-%with multiple devices. We
-%have decided on a very simple approach of simply instal
-
-%-
-%- Download image (wget)
-%- Update/Modify image (chroot)
-%- Burn image
-%- Bang! linux is running
-%-
-
-%Open a terminal, and then...
-
-
-
-%The first thing we need to do is to download the linux installation file.
-%For Raspbian, this is available at \url{http://downloads.raspberrypi.org}.
 
 Raspbian is made available in two bundles: Raspbian and Raspbian lite.
 The difference between the two is that Raspbian contains a pre-installed desktop
@@ -203,22 +100,9 @@ A desktop environment can be installed using the package manager
 time.
 
 Below is the procedure we followed to setup the \ac{Raspi}s in our testbed. We
-%connect to another machine through a command shell. In fact it is the successor
-%of \ac{Telnet} that has been designed with network security in mind.
-%
-%Our testbed does not have monitors so we will install Raspbian lite.
-%A desktop environment can be installed using Raspbian's package manager
-%(apt-get) in case a desktop environment will be desired sometime in the future.
-%Below is the procedure we did to setup the \ac{Raspi}s in our testbed. We
 have performed a simple setup where each \ac{Raspi} is equipped with a
 memory card that contains a slightly customized Raspbian lite image. The image
 of the \ac{OS} in all \ac{Raspi}s will be identical.
-%with identical settings. 
-
-%The reason this can be done easily is because the official Raspbian lite image
-%that we will download simply conntains a complete linux installation that are
-%packaged in an image rather than written to a harddrive, memory card, or usb
-%pen.
 
 The overall procedure to customize the official Raspbian lite image
 are:
@@ -234,11 +118,6 @@ are:
 Hashmark (\#) and dollar (\$) will be used throughout the code blocks in
 the paper to indicate if an operation needs to be run with root permissions or
 user permissions.
-%In the following, the hashmark (\#) and dollar (\$) signs will be used
-%throughout the procedure to indicate if an operation should be run with
-%root permissions or user permissions.
-%\textbf{hashmark (\#) means to perform operation as root, dollar (\$) means
-%to perform operation as user}
 
 \subsection{Download Raspbian lite}
 
@@ -393,7 +272,7 @@ Use a loopback device to make the Raspbian image available as a block device:
 \FloatBarrier
 \vspace{-5mm}
 
-It is seen that the image is now available as /dev/loop0. Use \texttt{lsblk}
+It is seen that the image is now available as \texttt{/dev/loop0}. Use \texttt{lsblk}
 to view the partitions:
 
 \begin{lstlisting}[]
