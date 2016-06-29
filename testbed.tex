@@ -716,8 +716,9 @@ Linux installation.
 There are a few commands to be performed before actually changing root into the
 root partion of the image.
 First, to get internet access from within the Raspbian lite image it is needed
-to copy our \texttt{resolv.conf} into the filesystem. Line 1 steps into Raspbian lite's
-root filesystem. Then line 2 copies resolv.conf.
+to copy our \texttt{resolv.conf} into the filesystem. Line 1 change directory
+into root filesystem of the image. The second line copies \texttt{resolv.conf}
+from the testbed administrators \ac{PC} to the image.
 
 % CHROOT to OS image
 \begin{lstlisting}[]
@@ -727,8 +728,8 @@ $ cd $ROOTDIR
 \FloatBarrier
 \vspace{-5mm}
 
-Now, because of the ARM architecture, it is also required to copy
-/usr/bin/qemu-arm-static into the image before we can continue:
+Now, because of the \ac{ARM} architecture,
+\texttt{/usr/bin/qemu-arm-static} needs to be copied into the image before continuing:
 
 % CHROOT to OS image
 \begin{lstlisting}[]
@@ -737,8 +738,8 @@ Now, because of the ARM architecture, it is also required to copy
 \FloatBarrier
 \vspace{-5mm}
 
-The final preparation before chaning root is to populate the directories proc,
-sys, and dev:
+The final preparation before changing root is to populate the directories \texttt{proc},
+\texttt{sys}, and \texttt{dev}:
 
 % CHROOT to OS image
 \begin{lstlisting}[]
@@ -750,8 +751,10 @@ sys, and dev:
 \FloatBarrier
 \vspace{-5mm}
 
-Finally, the filesystem is ready for us to change root. This can be done with
-"proot". It may be required to install proot:
+Finally, it is time to change root.
+%Finally, the filesystem is ready for us to change root.
+This can be done with \texttt{proot}. It may be required to install \texttt{proot}
+using "\texttt{apt-get install proot}":
 
 % CHROOT to OS image
 \begin{lstlisting}[]
@@ -760,9 +763,11 @@ Finally, the filesystem is ready for us to change root. This can be done with
 \FloatBarrier
 \vspace{-5mm}
 
-Most available online material uses the more known chroot command as written in
-the code block below. This did not work correctly in our machines, but we show
-it as an alternative in case proot may not work on other systems.
+Most available material online uses the more known \texttt{chroot} command as
+written in the code block below instead of \texttt{proot}. This did not work
+correctly in our machines, but we present the command as an alternative to
+\texttt{proot} in case the testbed administrator should be in the opposite
+situration where \texttt{proot} is not working.
 
 % CHROOT to OS image
 \begin{lstlisting}[]
@@ -771,9 +776,9 @@ it as an alternative in case proot may not work on other systems.
 \FloatBarrier
 \vspace{-5mm}
 
-If everything went well, we should now be standing in the Raspbian lite filesystem
-under its root. Optionally, we can change the prompt title to indicate that we
-are chrooted:
+If everything went well, we should now be \texttt{chrooted} into the Raspbian lite
+filesystem under its root. Optionally, change the prompt title to indicate that it
+is a \texttt{chrooted} environment:
 
 % Optionally, we may create a unique prompt to indicate we have changed root
 \begin{lstlisting}[]
@@ -782,10 +787,16 @@ are chrooted:
 \FloatBarrier
 \vspace{-5mm}
 
-The Raspbian lite system should now be possible to use as if it had been booted
-in a \ac{Raspi}. The only difference is that the laptop that we are using is
-significantly faster than a \ac{Raspi}. Thus enabling us to for example update,
-upgrade, and install software packages:
+The Raspbian lite system image should now be possible to use almost as if it
+had been booted in a \ac{Raspi}.
+A major difference is that the testbed administrator's \ac{PC} is likely
+significantly faster than a \ac{Raspi}.
+%The only difference is that the laptop that we are using is
+%significantly faster than a \ac{Raspi}.
+Thus enabling updates, upgrades, and installing new software packages much
+faster than in the \ac{Raspi}s.
+%Thus enabling us to for example update,
+%upgrade, and install software packages:
 
 % Update system
 \begin{lstlisting}[]
@@ -795,7 +806,8 @@ upgrade, and install software packages:
 \FloatBarrier
 \vspace{-5mm}
 
-Lets install some useful applications:
+We also install a few packages that we find useful:
+%Lets install some useful applications:
 % Install packages
 \begin{lstlisting}[]
 (chroot) # apt-get install vim git screen
@@ -803,8 +815,10 @@ Lets install some useful applications:
 \FloatBarrier
 \vspace{-5mm}
 
-All the changes that are made here will exists in all \ac{Raspi}s when the
-image is written to a memory card.
+When writing the image to a memory card, all these change that has been made
+to the image so far will exists in all \ac{Raspi}s.
+%All the changes that are made here will exists in all \ac{Raspi}s when the
+%image is written to a memory card.
 
 \subsection{Installation an overlaying filesystem}
 
