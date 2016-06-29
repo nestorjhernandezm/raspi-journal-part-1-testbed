@@ -107,47 +107,49 @@
 \Title{Easy as Pi: A Network Coding Raspberry Pi Testbed}
 
 % Authors, for the paper (add full first names)
-\Author{Chres W. S{\o}rensen $^{1,\dagger}$*, N\'estor J. Hern\'andez Marcano $^{1,2,\dagger}$, Juan A. Cabrera G. $^{3,4}$, Daniel E. Lucani $^{1,\dagger}$ and Frank H. P. Fitzek $^{3}$}
+\Author{Chres W. S{\o}rensen $^{1,\dagger}$*, N\'estor J. Hern\'andez Marcano $^{1,2,\dagger}$, \textcolor{red}{Juan A. Cabrera G. $^{3,4}$,} Daniel E. Lucani $^{1,\dagger}$ and Frank H. P. Fitzek $^{3}$}
 % Authors, for metadata in PDF
 \AuthorNames{Chres W. Soerensen, Nestor J. Hernandez M., Juan Cabrera, Daniel E. Lucani and Frank H. P. Fitzek}
 % Affiliations / Addresses (Add [1] after \address if there is only one affiliation.)
 \address{%
 $^{1}$ \quad Aalborg University, Department of Electronic Systems. Aalborg, Denmark; \{nh, cws, del\}@es.aau.dk\\
 $^{2}$ \quad Steinwurf ApS. Aalborg, Denmark; nestor@steinwurf.com\\
-$^{3}$ \quad Technische Universit\"at Dresden, Deutsche Telekom Chair of Communication Networks. Dresden, Germany; \{juan.cabrera, frank.fitzek\}@tu-dresden.de\\
-$^{4}$ \quad SFB 912 -- Collaborative Research Center HAEC. Dresden, Germany}
+$^{3}$ \quad Technische Universit\"at Dresden, Deutsche Telekom Chair of Communication Networks. Dresden, Germany; \{\textcolor{red}{juan.cabrera,} frank.fitzek\}@tu-dresden.de\\
+\textcolor{red}{$^{4}$ \quad SFB 912 -- Collaborative Research Center HAEC. Dresden, Germany}}
 
 % Contact information of the corresponding author
 \corres{Correspondence: cws@es.aau.dk; Tel.: +45 99 40 87 23}
 %\corres{Correspondence: nestor@steinwurf.com, nh@es.aau.dk; Tel.: +45 51 20 03 49}
 
 % Current address and/or shared authorship
-\firstnote{Fredrik Bajers Vej 7, Room A3-111. Aalborg, Denmark}
+\firstnote{Fredrik Bajers Vej 7A, Room A3-110. Aalborg, Denmark}
 
 % Simple summary
 %\simplesumm{}
 
 % Abstract (Do not use inserted blank lines, i.e. \\)
-\abstract{Deploying a large-scale and configurable testbed for
-  networking and storage can be challenging, not only due to the
-  inherent costs of the hardware, but due to maintenance challenges
-  and ability to replicate results consistently. The latter requires
-  not only the devices to run the same \ac{OS}, but also
-  have exactly the same configurations and software packages. This
-  paper presents the design, step-by-step setup, and configuration of
-  an inexpensive testbed using Raspberry Pi devices for networking
-  (wireless or wired) and storage applications, although the
-  architecture can be used for other applications that require
-  replicable results.  Specifically, we provide an in-depth
-  performance evaluation for network coding, a new paradigm in
-  networking and storage, and present the processing
-  capabilities and energy behaviour of various code constructions and
-  algorithms over different Raspberry Pi models. Our results show that
-  processing speeds of more than 80 Mbps and 800 Mbps are attainable
-  for a wide array of configurations for the Raspberry Pi Model 1 and
-  2, respectively, and that processing energy per bit for network
-  coding is below 1 nJ in a large regime and even an order of
-  magnitude lower for some algorithms.}
+\abstract{
+  %Deploying a large-scale and configurable testbed for
+  %networking and storage can be challenging, not only due to the
+  %inherent costs of the hardware, but due to maintenance challenges
+  %and ability to replicate results consistently. The latter requires
+  %not only the devices to run the same \ac{OS}, but also
+  %have exactly the same configurations and software packages. This
+  %paper presents the design, step-by-step setup, and configuration of
+  %an inexpensive testbed using Raspberry Pi devices for networking
+  %(wireless or wired) and storage applications, although the
+  %architecture can be used for other applications that require
+  %replicable results.  Specifically, we provide an in-depth
+  %performance evaluation for network coding, a new paradigm in
+  %networking and storage, and present the processing
+  %capabilities and energy behaviour of various code constructions and
+  %algorithms over different Raspberry Pi models. Our results show that
+  %processing speeds of more than 80 Mbps and 800 Mbps are attainable
+  %for a wide array of configurations for the Raspberry Pi Model 1 and
+  %2, respectively, and that processing energy per bit for network
+  %coding is below 1 nJ in a large regime and even an order of
+  %magnitude lower for some algorithms.
+}
 
 % A single paragraph of about 200 words maximum. For research articles, abstracts should give a pertinent overview of the work. We strongly encourage authors to use the following style of structured abstracts, but without headings: 1) Background: Place the question addressed in a broad context and highlight the purpose of the study; 2) Methods: Describe briefly the main methods or treatments applied; 3) Results: Summarize the article's main findings; and 4) Conclusion: Indicate the main conclusions or interpretations. The abstract should be an objective representation of the article: it must not contain results which are not presented and substantiated in the main text and should not exaggerate the main conclusions.
 
@@ -348,9 +350,9 @@ Marie Curie Initial Training Network (ITN) CROSSFIRE project
 (Grant No. EU - FP7 - CROSSFIRE - 317126) from the European Comission FP7
 framework, the Green Mobile Cloud project (Grant No. DFF - 0602 - 01372B),
 the TuneSCode project (Grant No. DFF - 1335 - 00125) both granted by the
-Danish Council for Independent Research (Det Frie Forskningsr\r{a}d), and
+Danish Council for Independent Research (Det Frie Forskningsr\r{a}d)\textcolor{red}{, and
 by the German Research Foundation (DFG) within the Collaborative Research
-Center SFB 912 – HAEC.}
+Center SFB 912 – HAEC.}}
 
 %All sources of funding of the study should be disclosed. Please clearly indicate grants that you have received in support of your research work. Clearly state if you received funds for covering the costs to publish in open access.
 
@@ -371,6 +373,7 @@ Center SFB 912 – HAEC.}
 %for ac in ${used[@]}; do echo "$(grep -R "acro{${ac}}" acronym.tex)"; done | cut -f2-4 -d'{'
 % Use text editor to replace '}{' --> ': ' and '}' --> '\\'
 
+\textcolor{red}{
 \noindent ACK: Acknowledgment\\
 AMR: Adaptive Multi-Rate\\
 ARM: Advanced RISC Machine\\
@@ -418,7 +421,7 @@ Raspi: Raspberry Pi\\
 SSH: Secure Shell\\
 USB: Universal Serial Bus\\
 SCP: Secure copy\\
-Telnet: Telnet}
+Telnet: Telnet}}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% optional

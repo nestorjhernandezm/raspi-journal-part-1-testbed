@@ -27,7 +27,7 @@ Raspberry Pi 2 model B V1.1, and Raspberry Pi 3 model B V1.2.
 All \ac{Raspi}s are each equipped with a memory card, a wired, and a wireless
 network interface. They connect to the university network using its wired
 ethernet interface that is named \texttt{eth0} according to the legacy naming
-convention of ethernet interfaces in Linux. \textcolor{red}{MAYBE PUT SOUECE HERE}
+convention of ethernet interfaces in Linux~\cite{PredictableNetworkInterfaceNames}.
 
 All \ac{Raspi}s will be running an \ac{SSH} daemon for easy remote access
 within the university network. We therefore had the university's \ac{IT}
@@ -38,6 +38,20 @@ for the \ac{Raspi}s for non-graphical applications.
 %as \ac{SSH} eliminates the need for monitors and keyboards for the \ac{Raspi}s.
 
 A sketch of the testbed is depicted in Figure~\ref{fig:testbed_setup}.
+The testbed is intended for students to perform simulations and measurements
+as part of semester projects. We therefore intend to configure all
+\ac{Raspi}s identically, while still allowing students to alter how each
+\ac{Raspi} behaves and is configured.
+
+The following produre explains a way to setup the testbed to facilitates these
+requirements. The procedure is assumed to be performed by whom we will refer
+to as the testbed administrator in a \ac{PC} running Linux. The exact Linux
+distribution is does not matter, but the procedure will be based on
+Debian Linux.
+
+
+
+
 
 The testbed should be available for students to perform simulations and
 measurements as part of their semester projects. We intend to configure
@@ -62,15 +76,21 @@ and temporary storage.
 %A \ac{HTTP} server will be used to store Linux configuration files as well
 %as the root filesystem in the centralized approach.
 
-The following procedure will explain how the testbed may be setup and
-configured both in the traditional distributed fasion where the
-entire Linux filesystem is written to an memory card, but also in a more
-centralized fasion where 
-is written to
-Based on the popular Debian based Raspbian Linux distribution
-We
-first present how a standard Linux distribution for the \ac{Raspi}s
-may be customized 
+
+
+
+
+The following procedure explains how the testbed may be setup and configured.
+
+%The following procedure will explain how the testbed may be setup and
+%configured both in the traditional distributed fasion where the
+%entire Linux filesystem is written to an memory card, but also in a more
+%centralized fasion where 
+%is written to
+%Based on the popular Debian based Raspbian Linux distribution
+%We
+%first present how a standard Linux distribution for the \ac{Raspi}s
+%may be customized 
 
 
 \subsubsection{Installing Raspbian}

@@ -7,85 +7,85 @@
 % Review of the State of the Art. Specify why our approach has benefits
 % and which are they. Indicate contributions.
 
-The emergence of powerful and inexpensive single-board computers
-running full versions of a standard \ac{OS} from many possible in the last
-years opens exciting possibilities for researchers. This not only
-allows to seamlessly develop implementations that are compatible with
-higher end devices and allows the reuse stable software from the Open
-Source community. It also enables the deployment and testing of large
-scale (hundreds of devices or more) distributed systems at a fraction
-of the cost necessary in previous years. This paper focuses on
-providing the critical steps and mechanisms followed to deploy, setup,
-and maintain a large-scale testbed based on Raspberry Pi devices of
-different models. We also complement this with an in-depth evaluation
-of the Raspberry Pi as a platform to enable a new paradigm in
-networking and storage known as \ac{NC}, which relies on
-processing at intermediate nodes to achieve higher throughput, delay
-and reliability performance than state-of-the-art routing techniques.
-
-
-% INTRODUCTION TO NETWORK CODING
-Introduced by Ahlswede et al.~\cite{ahlswede2000network}, network
-coding constitutes a paradigm shift in the way how researchers and
-industry understand and operate networks, by changing the role of
-intermediate relays in the process of transmission of information.
-Relays are no longer limited to storing and forwarding data, but also
-take part in the coding process, through a process called recoding,
-where the relay generates new linear combinations of incoming coded
-packets without previously decoding the data. Network coding allows
-the increase of throughput, reliability, security and delay
-performance of the networks. 
-
-Compared to other broadly used coding schemes, e.g., Gallager's LDPC
-codes~\cite{gallager1962low} or Reed-Solomon
-codes~\cite{reed1960polynomial}, network coding is a technology that
-has been implemented in real systems since the early years of its
-conception. In 2006, Katabi et al.~\cite{katabi2006practical} published
-the results of the performance of their protocol COPE when implemented
-in a real wireless system, which relied on minimalistic coding to
-provide interesting gains. In 2008, Pedersen et
-al.~\cite{pedersen2008implementation} used commercially available
-Symbian OS enabled mobile phones to implement network coding in a
-\ac{D2D} cooperation-based application. In 2011, researchers at Aalborg
-University developed Kodo~\cite{kodo2011pedersen}, a C++11 network
-coding library with open source code for researchers intended to make
-network coding implementations easily available for both, the research
-community and commercial entities.
-Another case is CATWOMAN~\cite{hundeboll2012catwoman}, a protocol
-implemented on top of the BATMAN protocol~\cite{johnson2008simple} for
-IEEE 802.11 multi-hop meshed networks using some of the intuition from
-COPE, but deploying it in real systems. It is currently available as
-open source code in the Linux kernel. Many other implementations have
-been tested on real world systems~
-\cite{pahlevani2013playncool,katti2008xors,krigslund2013core,paramanathan2013leanandmean}.
-
-Despite this successful deployment in real systems, many of these
-protocols and contributions have been implemented in separate testbeds
-and the experiences are hard to reproduce.  Given the need for
-reproducibility of past and future results among researchers and the
-need of low-cost and easy-to-deploy testbeds, this paper contribution
-is provide detailed instructions on how to set up a low-cost,
-heterogeneous and scalable testbed consisting of Raspberry Pis
-(Raspis), and by providing detailed measurements of goodput and energy
-consumption of such testbed when performing network coding operations
-with different codecs (such as full \ac{RLNC} \cite{ho2006random},
-multicore-enabled \ac{RLNC}, sparse \ac{RLNC} and tunable sparse \ac{RLNC}).
-The heterogeneity of the testbed comes from the fact that old, single core,
-Raspberry Pi 1 model B units are integrated seamlessly in the described
-testbed with newer, multicore versions, like the Raspberry Pi 2 model B.
-Our testbed allows us to obtain a comprehensive set of measurements
-to characterize the goodput and energetic footprint of these devices
-showing that processing speeds of 800 Mbps and energy per bit values
-of 1 nJ or even one order of magnitude less are possible.
-
-Our work is organized as follows. Section~\ref{sec:testbed} introduces the
-testbed system, its setup, files configuration and connectivity.
-Section~\ref{sec:cross_compilation} elaborates on the compilation of
-the Kodo library for the \ac{Raspi}. Section~\ref{sec:schemes} defines the
-coding schemes employed in our study. Later, in Section~\ref{sec:metrics}
-we describe the considered metrics and methodology for performance comparison
-of the codes deployed in the \ac{Raspi}. In Section~\ref{sec:measurements}, we
-show the measurements in the \ac{Raspi} models of the mentioned metrics. Final
-conclusions and future work are reviewed in Section~\ref{sec:conclusions}.
-
-%The introduction should briefly place the study in a broad context and highlight why it is important. It should define the purpose of the work and its significance. The current state of the research field should be reviewed carefully and key publications should be cited. Please highlight controversial and diverging hypotheses when necessary. Finally, briefly mention the main aim of the work and highlight the main conclusions. As far as possible, please keep the introduction comprehensible to scientists outside your particular field of research.
+%The emergence of powerful and inexpensive single-board computers
+%running full versions of a standard \ac{OS} from many possible in the last
+%years opens exciting possibilities for researchers. This not only
+%allows to seamlessly develop implementations that are compatible with
+%higher end devices and allows the reuse stable software from the Open
+%Source community. It also enables the deployment and testing of large
+%scale (hundreds of devices or more) distributed systems at a fraction
+%of the cost necessary in previous years. This paper focuses on
+%providing the critical steps and mechanisms followed to deploy, setup,
+%and maintain a large-scale testbed based on Raspberry Pi devices of
+%different models. We also complement this with an in-depth evaluation
+%of the Raspberry Pi as a platform to enable a new paradigm in
+%networking and storage known as \ac{NC}, which relies on
+%processing at intermediate nodes to achieve higher throughput, delay
+%and reliability performance than state-of-the-art routing techniques.
+%
+%
+%% INTRODUCTION TO NETWORK CODING
+%Introduced by Ahlswede et al.~\cite{ahlswede2000network}, network
+%coding constitutes a paradigm shift in the way how researchers and
+%industry understand and operate networks, by changing the role of
+%intermediate relays in the process of transmission of information.
+%Relays are no longer limited to storing and forwarding data, but also
+%take part in the coding process, through a process called recoding,
+%where the relay generates new linear combinations of incoming coded
+%packets without previously decoding the data. Network coding allows
+%the increase of throughput, reliability, security and delay
+%performance of the networks. 
+%
+%Compared to other broadly used coding schemes, e.g., Gallager's LDPC
+%codes~\cite{gallager1962low} or Reed-Solomon
+%codes~\cite{reed1960polynomial}, network coding is a technology that
+%has been implemented in real systems since the early years of its
+%conception. In 2006, Katabi et al.~\cite{katabi2006practical} published
+%the results of the performance of their protocol COPE when implemented
+%in a real wireless system, which relied on minimalistic coding to
+%provide interesting gains. In 2008, Pedersen et
+%al.~\cite{pedersen2008implementation} used commercially available
+%Symbian OS enabled mobile phones to implement network coding in a
+%\ac{D2D} cooperation-based application. In 2011, researchers at Aalborg
+%University developed Kodo~\cite{kodo2011pedersen}, a C++11 network
+%coding library with open source code for researchers intended to make
+%network coding implementations easily available for both, the research
+%community and commercial entities.
+%Another case is CATWOMAN~\cite{hundeboll2012catwoman}, a protocol
+%implemented on top of the BATMAN protocol~\cite{johnson2008simple} for
+%IEEE 802.11 multi-hop meshed networks using some of the intuition from
+%COPE, but deploying it in real systems. It is currently available as
+%open source code in the Linux kernel. Many other implementations have
+%been tested on real world systems~
+%\cite{pahlevani2013playncool,katti2008xors,krigslund2013core,paramanathan2013leanandmean}.
+%
+%Despite this successful deployment in real systems, many of these
+%protocols and contributions have been implemented in separate testbeds
+%and the experiences are hard to reproduce.  Given the need for
+%reproducibility of past and future results among researchers and the
+%need of low-cost and easy-to-deploy testbeds, this paper contribution
+%is provide detailed instructions on how to set up a low-cost,
+%heterogeneous and scalable testbed consisting of Raspberry Pis
+%(Raspis), and by providing detailed measurements of goodput and energy
+%consumption of such testbed when performing network coding operations
+%with different codecs (such as full \ac{RLNC} \cite{ho2006random},
+%multicore-enabled \ac{RLNC}, sparse \ac{RLNC} and tunable sparse \ac{RLNC}).
+%The heterogeneity of the testbed comes from the fact that old, single core,
+%Raspberry Pi 1 model B units are integrated seamlessly in the described
+%testbed with newer, multicore versions, like the Raspberry Pi 2 model B.
+%Our testbed allows us to obtain a comprehensive set of measurements
+%to characterize the goodput and energetic footprint of these devices
+%showing that processing speeds of 800 Mbps and energy per bit values
+%of 1 nJ or even one order of magnitude less are possible.
+%
+%Our work is organized as follows. Section~\ref{sec:testbed} introduces the
+%testbed system, its setup, files configuration and connectivity.
+%Section~\ref{sec:cross_compilation} elaborates on the compilation of
+%the Kodo library for the \ac{Raspi}. Section~\ref{sec:schemes} defines the
+%coding schemes employed in our study. Later, in Section~\ref{sec:metrics}
+%we describe the considered metrics and methodology for performance comparison
+%of the codes deployed in the \ac{Raspi}. In Section~\ref{sec:measurements}, we
+%show the measurements in the \ac{Raspi} models of the mentioned metrics. Final
+%conclusions and future work are reviewed in Section~\ref{sec:conclusions}.
+%
+%%The introduction should briefly place the study in a broad context and highlight why it is important. It should define the purpose of the work and its significance. The current state of the research field should be reviewed carefully and key publications should be cited. Please highlight controversial and diverging hypotheses when necessary. Finally, briefly mention the main aim of the work and highlight the main conclusions. As far as possible, please keep the introduction comprehensible to scientists outside your particular field of research.
