@@ -411,13 +411,16 @@ and even update and install packages.
 \subsection{Configuring OS files and scripts}
 
 The \ac{Raspi}s should be setup as similar as possible. One of those
-few settings that may be different in the devices is their hostname that
-helps the user to distinguish the devices from each other.
+few settings that may be different in the devices is their hostname.
+%The hostname helps the user to distinguish the devices from each other.
 %The hostname helps distinguish them from each other.
-One approach to create unique hostnames would be to rename the hostname
+One approach to create unique hostnames would be to write the hostname
 in each memory card. Another way is to create a start up script to automatically
 configure the hostname. We decided to define the hostnames based on the \ac{MAC}
-addresses of the \ac{Raspi}s wired ethernet interface.
+addresses of the \ac{Raspi}s wired ethernet interface. We store the \ac{MAC}
+addresses and hostnames of the \ac{Raspi}s in a file as below. The testbed
+administrator will need to insert the \ac{MAC} addresses and hostnames of
+his/her \ac{Raspi}s.
 
 %The \ac{Raspi}s should be setup to be as similar as possible. One of those
 %things that is preferred to be different on the devices is their hostname.
@@ -439,7 +442,7 @@ addresses of the \ac{Raspi}s wired ethernet interface.
 %Instead, we decided to register the ethernet MAC addresses of all the \ac{Raspi}s
 %in our testbed. Those had to be used to put them in a domain name anyway.
 
-Below is a snippet of the file of all the hostnames and \ac{MAC} addresses:
+%Below is a snippet of the file of all the hostnames and \ac{MAC} addresses:
 
 %Below is a part of the file where we keep track of the MAC addresses and assign
 %hostnames.
@@ -467,8 +470,9 @@ b8:27:eb:95:bd:11 rasp03
 %Provided that each \ac{Raspi} will have knowledge of all other \ac{Raspi}s in
 %the testbed, it still needs to know which name to give itself.
 %We do this using a small Bash script:
-We use the \ac{Bash} script below to enable each \ac{Raspi} to find its
-hostname in \texttt{nodes.csv}.
+%We use the \ac{Bash} script below to enable each \ac{Raspi} to find its
+%hostname in \texttt{nodes.csv}.
+A \ac{Bash} script can then be used to have each \ac{Raspi} assign its hostname:
 
 % Set hostname
 \Suppressnumber\begin{lstlisting}[]
@@ -494,20 +498,30 @@ fi
 \FloatBarrier
 \vspace{-5mm}
 
-Line 1 tells the system to interpret the script using Bash. Line 3 gets the
-path of the script itself. Line 4 gets the MAC address. This script will be
-located in all \ac{Raspi}s and thus return the MAC address of the node itself
-when executed.
-Line 4 searches line by line for this mac address.
-Line 8-11 assigns the hostname found in \texttt{"nodes.csv"}. If the MAC did not exists,
-then it will keep the default hostname of the system.
+The code lines above do the following:
+\begin{itemize}
+    \item Line 1: Tells system to interpret the script using \ac{Bash}
+    \item Line 3-4: Gets the path to the script itself and the list of hostnames
+    \item Line 5: Gets the \ac{MAC} address of the node itself
+    \item Line 6: Gets the current hostname
+    \item Line 7: Gets the new hostname from the hostname list
+    \item Line 10-14: Assigns the new hostname
+\end{itemize}
+
+%Line 1 tells the system to interpret the script using Bash. Line 3 gets the
+%path of the script itself. Line 4 gets the MAC address. This script will be
+%located in all \ac{Raspi}s and thus return the MAC address of the node itself
+%when executed.
+%Line 4 searches line by line for this mac address.
+%Line 8-11 assigns the hostname found in \texttt{"nodes.csv"}. If the MAC did not exists,
+%then it will keep the default hostname of the system.
 
 It is likely that the testbed administrator needs to either change or add
 scripts to configure the \ac{Raspi}s. This would be tedious to distribute to
-all \ac{Raspi}s. One way around this is to make the \ac{Raspi}s fetch the
+all \ac{Raspi}s at a later stage. We ease this task by making the \ac{Raspi}s fetch the
 configuration scripts during start up before running the configuration scripts.
 
-The below script attempts to fetch the scripts:
+The below script attempts to download/update the scripts:
 
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$\{ROOTDIR\}/home/pi/rasp\_config/update\_rasp\_config}@>
@@ -520,7 +534,7 @@ url="http://kom.aau.dk/project/TuneSCode/raspi/"
 config_file="rasp_config.zip"
 
 # Attempt to fetch new configuration files
-if ! wget -O -q --show-progress /tmp/${config_file} ${url%/}/${config_file}; then
+if ! wget -q --show-progress -O /tmp/${config_file} ${url%/}/${config_file}; then
     echo "Warning: Unable to update rasp_config files"
     exit 1
 fi
@@ -531,23 +545,30 @@ unzip -q -o /tmp/${config_file} -d /home/pi/
 \FloatBarrier
 \vspace{-5mm}
 
+\begin{itemize}
+    \item Line 3-4: Is the url and zip file that should be downloaded
+    \item Line 7-10: Downloads the new configuration files to \texttt{/tmp}
+        and prints a warning in case of errors
+    \item Line 13: Unzips the files to \texttt{/home/pi/} while ignoring existing files/directories
+\end{itemize}
 
 We have packed the files and uploaded them to a webserver. These can be
-retrieved with \texttt{wget} and unzipped into the Raspbian lite image that
-we are customizing:
+retrieved with \texttt{wget} and unzipped into the Raspbian lite image:
 
 % Get the files
 \begin{lstlisting}[]
-$ wget http://kom.aau.dk/project/TuneSCode/raspi/rasp_config.zip
+$ wget ${URL%/*}/rasp_config.zip
 $ unzip rasp_config.zip -d ${ROOTDIR}/home/pi/
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-For the above to work in the \ac{Raspi}s, it is required that the \ac{Raspi}
+For the above scripts to work in the \ac{Raspi}s, it is required that the \ac{Raspi}
 \ac{MAC} address is found in \texttt{nodes.csv}. Thus,
 \texttt{rasp\_config.csv} needs to be unzipped, altered, and zipped again in
-the http server from which the \ac{Raspi} retrieves the files from.
+the \ac{HTTP} server from which the \ac{Raspi} retrieves the files from.
+The testbed administrator will therefore need to also edit the \ac{URL} in the
+script \texttt{update\_rasp\_config}.
 %"nodes.csv" can be changed using a text editor. For vim, this could be done
 %the following way:
 %\begin{lstlisting}[]
@@ -556,11 +577,10 @@ the http server from which the \ac{Raspi} retrieves the files from.
 %\FloatBarrier
 %\vspace{-5mm}
 
-
 Finally, to actually make the \ac{Raspi}s change hostname, we have to make
 each \ac{Raspi} call the above script when it starts up. Optionally,
 also run the update script before running other scripts.
-Do this with root permissions by inserting the line below before
+Do this with root permissions by inserting the line(s) below before
 \texttt{"exit 0"} using your favorite editor:
 %"\$\{ROOTDIR\}/etc/rc.local" using
 %your favorite text editor..
@@ -582,12 +602,12 @@ exit 0
 \vspace{-5mm}
 
 Configuring \texttt{rc.local} makes it really cumbersome for the testbed
-administrator to add new scripts since a new script first needs to be added
-in \texttt{rasp\_config.zip} and then run by adding an additional line of code
-to \texttt{rc.local} in the root image or in all memory cards depending on
+administrator to add new scripts since it first needs to be included
+in \texttt{rasp\_config.zip} and then each \ac{Raspi} needs to have an additional 
+line added to \texttt{rc.local} in the root image or in all memory cards depending on
 the final testbed setup.
 
-A solution to this is to have yet another script in \texttt{rasp\_config.zip}
+A solution to this is to make yet another script in \texttt{rasp\_config.zip}
 that calls all the other scripts in the desired order. This would look like
 below:
 \Suppressnumber\begin{lstlisting}[]
@@ -602,8 +622,7 @@ bash /home/pi/rasp_config/set_hostname
 \FloatBarrier
 \vspace{-5mm}
 
-Now, to use the above script, it is required to change \texttt{rc.local}
-slightly:
+Now, to use the above script, \texttt{rc.local} needs to look like this:
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$\{ROOTDIR\}/etc/rc.local}@>
 <@\textcolor{gray}{
@@ -617,12 +636,13 @@ exit 0
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
-Notice that \texttt{set\_hostname} is now called through the \texttt{main}
+Notice that \texttt{set\_hostname} is now called by the \texttt{main}
 script instead. The update script is still called directly. This ensures that
 all configuration scripts are updated before executed. Changes to the update
-script itself will first take effect at system startup. Had the update script
-been called in \texttt{main} instead would mean that changes to the 
-\texttt{main} script would also first have been available at next startup.
+script itself will first take effect at next system startup.
+%Had the update script
+%been called in \texttt{main} instead would mean that changes to the 
+%\texttt{main} script would also first have been available at next startup.
 
 %This can be done by inserting a call to the script
 %set\_hostname in rc.local before it exits.
@@ -637,10 +657,13 @@ been called in \texttt{main} instead would mean that changes to the
 %# awk -v text="$line" '!/^#/ && !p {print text; p=1} 1' ${ROOTDIR}/etc/rc.local > <@ \Suppressnumber @>
 %    ${ROOTDIR}/etc/rc.local <@ \Reactivatenumber @>
 
-WE NEED TO ADD A FEW COMMANDS TELLING HOW TO ZIP, MODIFY, AND UNZIP
-FOR THE READER TO BE ABLE TO UPLOAD A CONSTRUCT HIS/HER OWN BUNDLE.
+%WE NEED TO ADD A FEW COMMANDS TELLING HOW TO ZIP, MODIFY, AND UNZIP
+%FOR THE READER TO BE ABLE TO UPLOAD A CONSTRUCT HIS/HER OWN BUNDLE.
 
-All other files could be updated as well.
+%All other files could be updated as well.
+It is not only possible to add and configure files to/within the image. One can
+also install and update the packages within the image which will be illustrated
+in the next section.
 
 \subsection{Installing and updating the image}
 
@@ -686,13 +709,14 @@ is not the case, then try enabling it:
 \vspace{-5mm}
 
 Provided that qemu-arm is enabled, we should now be able to change root (chroot)
-into our Raspbian lite image. Change root is a method i linux that enables
-the root (/) to be changed. Thus, enabling a linux installation within a
-linux installation.
+into our Raspbian lite image. Change root is a method in Linux that enables
+the root (/) to be changed. Thus, enabling a Linux installation within a
+Linux installation.
 
-There are a few commands to be performed before we can change root.
+There are a few commands to be performed before actually changing root into the
+root partion of the image.
 First, to get internet access from within the Raspbian lite image it is needed
-to copy our resolv.conf into the filesystem. Line 1 steps into Raspbian lite's
+to copy our \texttt{resolv.conf} into the filesystem. Line 1 steps into Raspbian lite's
 root filesystem. Then line 2 copies resolv.conf.
 
 % CHROOT to OS image
