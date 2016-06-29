@@ -250,7 +250,7 @@ $ unzip ${IMAGE}.zip
 \subsection{The image}
 
 After Raspbian lite has been unpacked, there should be an \texttt{img} file in the directory.
-\texttt{fdisk} can be used to display the content of the image. Optionally, parse the arguments
+\texttt{fdisk} can be used to display the content of the image. Parse the arguments
 "-u sectors" to display the sizes in sectors and "-l" to display the partitions within the
 image and and automatically exit \texttt{fdisk} again:
 
@@ -270,19 +270,19 @@ Device                               Boot  Start     End Sectors  Size Id Type
 \end{lstlisting}
 \FloatBarrier
 
-The output provides some useful knowledge about the image. First, the image is in total
+The output provides knowledge about the image. The image is in total
 2709504 sectors (1.3GiB) in size and contains two
 partitions. The first partition starts at sector 8192 and
 the other partition starts at sector 137216. The partitions is of type FAT32
-and Linux and have sizes 63M and 1.2G. This indicates that the first partition
+and Linux and are 63M and 1.2G big. This indicates that the first partition
 is most likely a boot partition and the second partition is a traditional Linux file
 system. Actually, it is the Linux root filesystem (i.e. /).
 
 \subsection{Resize image}
-1.2G is not very much to hold the root filesystem given that it is desired to
-in later steps alter the files and install more packages. It may therefore be
-necessary to increase the partition size slightly.
-The following steps illustrates how the image and its root filesystem
+1.2G is not very much to store the root filesystem given that it is desired to
+alter the files and install additional packages. It may therefore be
+necessary to increase the partition size.
+The following illustrates how the image and its root filesystem
 can be expanded by one \ac{GB}.
 
 First, expand the image one \ac{GB} and wait for the data to be completely written
@@ -293,7 +293,7 @@ $ dd if=/dev/zero bs=1M count=1024 >> ${IMAGE}.img && sync
 \FloatBarrier
 \vspace{-5mm}
 
-Use \texttt{fdisk} to check that the image is one \ac{GB} bigger:
+Use \texttt{fdisk} to see that the image is now one \ac{GB} larger:
 \begin{lstlisting}[literate={DOLLAR}{\$}1]
 DOLLAR fdisk -u sectors -l ${IMAGE}.img
 Disk 2016-05-27-raspbian-jessie-lite.img: 2.3 GiB, 2461007872 bytes, 4806656 sectors
@@ -312,9 +312,9 @@ Device                               Boot  Start     End Sectors  Size Id Type
 
 Now, to expand the root filesystem it is required to first remove the Linux partition
 and then add it again one \ac{GB} bigger.
-We use \texttt{fdisk} to alter the partition table. The echo's within the parenthesis
-will function as
-key-presses in \texttt{fdisk} and hence delete last partition, create a new
+Use \texttt{fdisk} to alter the partition table. The \texttt{echo}'s within the parenthesis
+will be interpreted as
+key-presses in \texttt{fdisk} and hence delete the last partition, create a new
 primary partition, print new partition table, and write new partition table
 to the image:
 
@@ -332,8 +332,10 @@ Use a loopback device to make the Raspbian image available as a block device:
 \FloatBarrier
 \vspace{-5mm}
 
-It is seen that the image is now available as \texttt{/dev/loop0}. Use \texttt{lsblk}
-to view the partitions:
+\texttt{lsblk} may be used to list block devices. It appears that the image is
+available as \texttt{/dev/loop0} which has two partitions \texttt{loop0p1} and
+\texttt{loop0p2}:
+%Use \texttt{lsblk} to view the partitions:
 
 \begin{lstlisting}[]
 # lsblk
@@ -367,8 +369,8 @@ Browsing and altering the files in the image is easy. Simply mount the partition
 
 Lets first mount the root partition. This is done by creating an empty directory
 that we will be used as a mountpoint. We name it \texttt{root} and create it in the
-working directory.
-After this, simply mount the partitions:
+working directory before mounting the root filesystem onto the mountpoint.
+%After this, mount the partitions:
 %After this,
 %we mount the partition starting at sector 137216. To provide this offset information
 %to mount, we need to find the offset in bytes. From the fdisk command we could also
@@ -384,12 +386,14 @@ $ mkdir -p ${ROOTDIR}
 \vspace{-5mm}
 %# mount -o loop,offset=$((137216*512)) ${IMAGE}.img ${ROOTDIR}
 
-After this, we can also mount the boot partition inside the newly mounted
-root filesystem. This is convenient because that partition will be mounted
+The root filesystem already has a boot directory that can be used as
+the mountpoint for the boot partition.
+%After this, we can also mount the boot partition inside the newly mounted
+%root filesystem.
+This is convenient because that partition will be mounted
 on this directory when a \ac{Raspi} starts up with a memory card containing
 the image. %It is therefore the natural place to mount it for later purposes.
-
-Mount boot partition:
+Now, mount boot partition:
 \begin{lstlisting}[]
 # mount ${DEV}p1 ${ROOTDIR}/boot
 \end{lstlisting}
@@ -397,7 +401,10 @@ Mount boot partition:
 \vspace{-5mm}
 %# mount -o loop,offset=$((8192*512)) ${IMAGE}.img ${ROOTDIR}/boot
 
-We can now change all the files in the disk image as desired.
+%We can now change all the files in the disk image as desired.
+It is now possible to change all files within the Raspbian image as desired.
+We will take advantage of this to edit configuration files, append new files,
+and even update and install packages.
 
 
 
