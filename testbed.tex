@@ -29,7 +29,7 @@ network interface. They connect to the university network using its wired
 ethernet interface that is named \texttt{eth0} according to the legacy naming
 convention of ethernet interfaces in Linux~\cite{PredictableNetworkInterfaceNames}.
 
-All \ac{Raspi}s will be running an \ac{SSH} daemon for easy remote access
+All \ac{Raspi}s will be configured to run a \ac{SSH} daemon for easy remote access
 within the university network. We therefore had the university's \ac{IT}
 department configure the university's \ac{DHCP} server to assign each \ac{Raspi} a
 static \ac{IP}. This eliminates the requirements for monitors and keyboards
@@ -39,29 +39,49 @@ for the \ac{Raspi}s for non-graphical applications.
 
 A sketch of the testbed is depicted in Figure~\ref{fig:testbed_setup}.
 The testbed is intended for students to perform simulations and measurements
-as part of semester projects. We therefore intend to configure all
+as part of semester projects. We intend to configure all
 \ac{Raspi}s identically, while still allowing students to alter how each
 \ac{Raspi} behaves and is configured.
 
-The following produre explains a way to setup the testbed to facilitates these
-requirements. The procedure is assumed to be performed by whom we will refer
-to as the testbed administrator in a \ac{PC} running Linux. The exact Linux
-distribution is does not matter, but the procedure will be based on
-Debian Linux.
+The following section propose a procedure to setup the testbed to facilitates these
+requirements. The procedure is performed, by whom we will refer
+to as the testbed administrator, in a regular \ac{PC} running Linux. The exact Linux
+distribution does not matter although the procedure will be based on
+Debian Linux. All the commands in this paper will be performed on
+the testbed administrators \ac{PC}.
+
+The procedure goes as follows. Based on a regular Raspbian Linux image, it will
+be explained how it can be customized to include desired packages and
+configured as desired.
+When working on a testbed with many devices, it may not always be desired to make
+persistent changes to devices. We therefore present how the concept of stacked
+filesystems may be used to enable the meands of both persistent and temporary
+storage. This step of the procedure will be optional if the testbed
+administrator decides to write the whole image to a memory card.
+Writing the whole Linux filesystem to memory cards may complicate the
+maintenance as e.g. updates need to be performed in each \ac{Raspi}.
+\texttt{Python Fabric} may ease this task, but we also propose alternative
+approach where the initial \ac{RAM} filesystem is customized in a way that
+enables \ac{Raspi}s to fetch the its root filesystem from a \ac{HTTP}
+server. This enables the testbed administrator to only update the filesystem
+in one location. The \ac{Raspi}s will then get the changes after a reboot.
 
 
 
 
 
-The testbed should be available for students to perform simulations and
-measurements as part of their semester projects. We intend to configure
-all \ac{Raspi}s identically, while still allowing students to alter
-how each \ac{Raspi} behaves and is configured.
 
-When working on the testbed with this many devices, it may not always be
-desired to make persistent changes to devices. We present how the concept
-of stacked filesystems may be used to enable the means of both persistent
-and temporary storage.
+
+
+%\textcolor{red}{The testbed should be available for students to perform simulations and
+%measurements as part of their semester projects. We intend to configure
+%all \ac{Raspi}s identically, while still allowing students to alter
+%how each \ac{Raspi} behaves and is configured.
+%\\\\
+%When working on the testbed with this many devices, it may not always be
+%desired to make persistent changes to devices. We present how the concept
+%of stacked filesystems may be used to enable the means of both persistent
+%and temporary storage.}
 
 %The testbed should be available for students to perform simulations and
 %measurements as part of their semester projects. The \ac{Raspi}s should
