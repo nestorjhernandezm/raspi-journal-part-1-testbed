@@ -7,6 +7,14 @@
 % Review of the State of the Art. Specify why our approach has benefits
 % and which are they. Indicate contributions.
 
+The upcoming 5G technology is targeting the controlling and steering of the Internet of Things (IoT) in real-time on global scale. This will break new ground for new markets such as driverless cars, manufacturing, humanoid robots, smart grids, and many more. With 5G the number of wireless devices will increase by two fold up to 500 billion devices. It is generally accepted, that those devices will not be connected in the same cellular manner as the current 10 billion mobile devices are connect due to the expected energy consumption. Therefore the communication architecture in future communication scenario dominated by mesh technologies.
+
+Mesh technology is known for ages for sensor networks, ad hoc networks, or mobile cloud scenarios, but the technical requirements on 5G mesh communication systems are dramatically increasing. Future mesh networks need to support high data rate, low latency, security, network availability, and heterogeneity of devices. In state of the art systems those requirements are traded off with each other, but in 5G context we cannot do this anymore.
+
+In our previous works we have shown that random linear network coding [MURIEL] is able to satisfy the aforementioned technical requirements. We have actually shown how to increase the throughput [PEYMAN], reduce the delay [WEB1], or support heterogeneity for coding enabled communication nodes [FULCRUM]. But most of the work was focusing on small mesh networks with a handful of communication nodes. Introduced by Ahlswede et al. [1], network coding constitutes a paradigm shift in the way how researchers and industry understand and operate networks, by changing the role of intermediate relays in the process of transmission of information. Relays are no longer limited to storing and forwarding data, but also take part in the coding process, through a process called recoding, where the relay generates new linear combinations of incoming coded packets without previously decoding the data. Network coding allows the increase of throughput, reliability, security and delay performance of the networks.
+
+Based on the need for large scale mesh communication testbeds, in the paper we show a step by step tutorial how to build up a low cost testbed with several communication nodes. The emergence of powerful and inexpensive single-board computers running full versions of a standard Operating System (OS) from many possible in the last years opens exciting possibilities for researchers. This not only allows to seamlessly develop implementations that are compatible with higher end devices and allows the reuse stable software from the Open Source community. It also enables the deployment and testing of large scale (hundreds of devices or more) distributed systems at a fraction of the cost necessary in previous years. This paper focuses on providing the critical steps and mechanisms followed to deploy, setup, and maintain a large-scale testbed based on Raspberry Pi devices of different models as well as including random linear network coding into the testbed.
+
 %The emergence of powerful and inexpensive single-board computers
 %running full versions of a standard \ac{OS} from many possible in the last
 %years opens exciting possibilities for researchers. This not only
@@ -17,12 +25,7 @@
 %of the cost necessary in previous years. This paper focuses on
 %providing the critical steps and mechanisms followed to deploy, setup,
 %and maintain a large-scale testbed based on Raspberry Pi devices of
-%different models. We also complement this with an in-depth evaluation
-%of the Raspberry Pi as a platform to enable a new paradigm in
-%networking and storage known as \ac{NC}, which relies on
-%processing at intermediate nodes to achieve higher throughput, delay
-%and reliability performance than state-of-the-art routing techniques.
-%
+%different models. 
 %
 %% INTRODUCTION TO NETWORK CODING
 %Introduced by Ahlswede et al.~\cite{ahlswede2000network}, network
@@ -35,7 +38,7 @@
 %packets without previously decoding the data. Network coding allows
 %the increase of throughput, reliability, security and delay
 %performance of the networks. 
-%
+
 %Compared to other broadly used coding schemes, e.g., Gallager's LDPC
 %codes~\cite{gallager1962low} or Reed-Solomon
 %codes~\cite{reed1960polynomial}, network coding is a technology that

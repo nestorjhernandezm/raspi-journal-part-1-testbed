@@ -132,7 +132,7 @@ connect to another machine through a command shell.
 %In fact it is the successor
 %of \ac{Telnet} that has been designed with network security in mind.
 
-The \ac{Raspi}s in our testbed is not connected to monitors, so we
+The \ac{Raspi}s in our testbed are not connected to monitors, so we
 have decided to go with Raspbian lite.
 %Our testbed does not have monitors so we will install Raspbian lite.
 A desktop environment can be installed using the package manager
@@ -161,23 +161,41 @@ user permissions.
 
 \subsection{Download Raspbian lite}
 
-The latest Raspbian lite image can be downloaded at~\cite{raspbian}.
+The latest Raspbian lite bundle can be downloaded from Raspbian's official
+webpage~\cite{raspbian}.
 %To download the latest Raspbian lite, we go to the url
 %\url{http://downloads.raspberrypi.org/raspbian_lite/images/}.
-At the time of this writing, the latest bundle was
-2016-05-27-raspbian-jessie-lite.zip.
+At the time of this writing, the latest available bundle was
+\texttt{2016-05-27-raspbian-jessie-lite.zip}.
 
-we want to proceed downloading the image in a shell instead of the browser.
-to do this, first open a command shell on a linux machine. this guide is
-assuming a debian-based distribution, but there should only be minor differences
-if you have another package manager. i.e. the package managers and name of software packages.
+To ensure that the content of the bundle does not change, this procedure
+will be based on that particular version of Raspbian lite which we have
+made available at~\cite{tunescode_webpage}. All other files used in this paper
+will also be available there unless specified otherwise.
 
-After the terminal has been opened, we start by declaring a few variables to reduce
-repeated typing. The first variables we declare is the Raspbian image name.
-Notice that the extension has been omitted. This is because the image has been
-packed into a zip file. The other variable we declare is a working directory.
-This is where we will download the image to and work on it. In other words, it
-will be stored in \texttt{/home/<username>/Raspbian}
+%We want to proceed downloading the bundle in a shell instead of the browser.
+%To do this, first open a command shell on a linux machine. This guide is
+%assuming a Debian-based distribution, but there should only be minor differences
+%if you have another package manager. i.e. the package managers and name of software packages.
+
+To get started, open a Linux shell (terminal) and declare the variables below.
+The \texttt{URL} and \texttt{IMAGE} specifies where the Linux bundle will be
+located and \texttt{WORKDIR} specifies a working directory where we will 
+store Raspbian and customize it.
+Do not type in \$ and \# in the shell. Those indicates if a command can be
+executed as a regular user or if root permissions are required.
+Running a command as root can on most systems be done by putting
+\texttt{sudo} in front of the command. This is illustrated in the
+following code block 
+with the command \texttt{whoami} that prints the username. Lines within a code
+block without leading \$ or \# is terminal output or content of a file.
+
+%After the terminal has been opened, we start by declaring a few variables to reduce
+%repeated typing. The first variables we declare is the Raspbian image name.
+%Notice that the extension has been omitted. This is because the image has been
+%packed into a zip file. The other variable we declare is a working directory.
+%This is where we will download the image to and work on it. In other words, it
+%will be stored in \texttt{/home/<username>/Raspbian}
 
 %To download Raspbian lite, we go to the \url{http://downloads.raspberrypi.org}.
 %There should be a folder called raspbian\lite and
@@ -187,19 +205,20 @@ will be stored in \texttt{/home/<username>/Raspbian}
 
 % Define variable]
 \begin{lstlisting}[]
+$ export URL="http://kom.aau.dk/project/TuneSCode/raspi/"
 $ export IMAGE="2016-05-27-raspbian-jessie-lite"
 $ export WORKDIR="${HOME}/Raspbian"
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-A final thing to notice is the way \$ and \# are used in the code blocks. \$
-means that the command can be run with normal user permissions where \# indicates that the
-command needs root permissions.
-Running a command with root permissions can on most systems be done by putting
-the command "sudo" in front of each line. This is illustrated in the code below
-with the command "whoami" that prints the username of the caller. Lines without
-leading \$ or \# is the terminal output.
+%A final thing to notice is the way \$ and \# are used in the code blocks. \$
+%means that the command can be run with normal user permissions where \# indicates that the
+%command needs root permissions.
+%Running a command with root permissions can on most systems be done by putting
+%the command "sudo" in front of each line. This is illustrated in the code below
+%with the command "whoami" that prints the username of the caller. Lines without
+%leading \$ or \# is the terminal output.
 
 % Root example
 \begin{lstlisting}[]
@@ -211,29 +230,29 @@ root
 \FloatBarrier
 \vspace{-5mm}
 
-Next, we make the working directory and change directory (cd) into the working
-directory. We can then use wget to download Raspbian lite. Unpack the image
-when the download is complete.
+Next, make the working directory and used \texttt{cd} to change into the working
+directory. Then \texttt{wget} can be used to download Raspbian lite before
+unpacking the \texttt{zip} file:
 
 % Download and unpack image
 \begin{lstlisting}[]
 $ mkdir -p ${WORKDIR}
 $ cd ${WORKDIR}
-$ wget http://kom.aau.dk/project/TuneSCode/raspi/${IMAGE}.zip
+$ wget ${URL%/*}/${IMAGE}.zip
 $ unzip ${IMAGE}.zip
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-A more recent version of Raspbian lite may be available at~\cite{raspbian}.
+%A more recent version of Raspbian lite may be available at~\cite{raspbian}.
 %\url{http://downloads.raspberrypi.org/raspbian_lite/images}.
 
 \subsection{The image}
 
-After Raspbian lite has been unpacked, there should be an .img file in the directory.
-"fdisk" can be used to display the content of the image. Pass the arguments "-u sectors" to
-display the sizes in sectors and "-l" to display partitions and automatically
-exit fdisk again.
+After Raspbian lite has been unpacked, there should be an \texttt{img} file in the directory.
+\texttt{fdisk} can be used to display the content of the image. Optionally, parse the arguments
+"-u sectors" to display the sizes in sectors and "-l" to display the partitions within the
+image and and automatically exit \texttt{fdisk} again:
 
 % Check out the image   % The dollar hack was to fix vim syntax
 \begin{lstlisting}[literate={DOLLAR}{\$}1]
@@ -251,7 +270,8 @@ Device                               Boot  Start     End Sectors  Size Id Type
 \end{lstlisting}
 \FloatBarrier
 
-The image is in total 2709504 sectors (1.3GiB) in size and contains two
+The output provides some useful knowledge about the image. First, the image is in total
+2709504 sectors (1.3GiB) in size and contains two
 partitions. The first partition starts at sector 8192 and
 the other partition starts at sector 137216. The partitions is of type FAT32
 and Linux and have sizes 63M and 1.2G. This indicates that the first partition
