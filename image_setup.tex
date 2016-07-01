@@ -1,81 +1,57 @@
 \label{sec:image_setup}
+In this Section, we review the steps to create a common \ac{OS} image for all the
+\ac{Raspi}s. The image setup is composed of three major steps: Select and download the
+\ac{OS} image file, alter the image structure and configure the \ac{OS} files.
+We proceed to detail all these steps providing brief discussions to our setup
+choices when required. To perform these steps, we indicate with command-line
+blocks the required sequential commands to be typed by the testbed
+administrator in its \ac{PC} to obtain the desired setting. In all the
+following sections, the number sign (\#) and dollar sign (\$) will be used in
+the command blocks in the paper to indicate if an operation needs
+to be run with root permissions or common user permissions, respectively. The
+signs will be posted as the terminal prompt in the command blocks.
 
-\subsection{Installing Raspbian}
+\subsection{OS Selection and Download}
 
-To get started, we first need to install an \ac{OS} on the
-\ac{Raspi}s. We will use the popular Debian-based Raspbian
-Linux~\cite{raspbian}
-
-We will be using a \ac{PC} running a Debian-based Linux distribution
-to setup a customized Raspbian Linux image that can be written to
-a memory card and work in any \ac{Raspi} version 1 or 2.
-
+To get started, we first need to install an \ac{OS} that works properly
+on all the \ac{Raspi} models. We will download and setup the image in the testbed
+administrator \ac{PC} using a Debian-based distribution. We use the popular
+Debian-based Raspbian Linux~\cite{raspbian} given that is the recommended
+and default \ac{OS} for the \ac{Raspi}.
 Raspbian is made available in two bundles: Raspbian and Raspbian lite.
-The difference between the two is that Raspbian contains a pre-installed desktop
-environment, and Raspbian lite is by default only accessible through a 
-command shell. Both Raspbian and Raspbian lite will both by default be remotely
-accessible using \ac{SSH}. \ac{SSH} provides the means to remotely
-connect to another machine through a command shell.
-%In fact it is the successor
-%of \ac{Telnet} that has been designed with network security in mind.
+The difference between the two, is that Raspbian contains a pre-installed desktop
+environment for user interaction and Raspbian lite by default only permits to
+interact through a command shell. Given that the \ac{Raspi}s in our testbed are
+not connected to monitors, we decide to work with Raspbian lite. Still,
+if later desired, a desktop environment can be installed using the package manager
+as it will be shown in the configuration section.
 
-The \ac{Raspi}s in our testbed are not connected to monitors, so we
-have decided to go with Raspbian lite.
-%Our testbed does not have monitors so we will install Raspbian lite.
-A desktop environment can be installed using the package manager
-(apt-get) in case a desktop environment will be desired at a later
-time.
+% The overall procedure to customize the official Raspbian lite image
+% are:
+% \begin{enumerate}
+%     \item Download Raspbian lite
+%     \item Alter Raspbian lite. e.g. browse, modify, add, and delete files
+%         in the official Raspbian lite image
+%     \item Change root, i.e. change root filesystem into the Raspbian lite
+%         image to update and install software packages
+%     \item Write image to memory cards
+% \end{enumerate}
 
-Below is the procedure we followed to setup the \ac{Raspi}s in our testbed. We
-have performed a simple setup where each \ac{Raspi} is equipped with a
-memory card that contains a slightly customized Raspbian lite image. The image
-of the \ac{OS} in all \ac{Raspi}s will be identical.
-
-The overall procedure to customize the official Raspbian lite image
-are:
-\begin{enumerate}
-    \item Download Raspbian lite
-    \item Alter Raspbian lite. e.g. browse, modify, add, and delete files
-        in the official Raspbian lite image
-    \item Change root, i.e. change root filesystem into the Raspbian lite
-        image to update and install software packages
-    \item Write image to memory cards
-\end{enumerate}
-
-Hashmark (\#) and dollar (\$) will be used throughout the code blocks in
-the paper to indicate if an operation needs to be run with root permissions or
-user permissions.
-
-\subsection{Download Raspbian lite}
-
-The latest Raspbian lite bundle can be downloaded from Raspbian's official
-webpage~\cite{raspbian}.
+%\subsection{Download Raspbian lite}
 %To download the latest Raspbian lite, we go to the url
 %\url{http://downloads.raspberrypi.org/raspbian_lite/images/}.
-At the time of this writing, the latest available bundle was
-\texttt{2016-05-27-raspbian-jessie-lite.zip}.
 
+The latest Raspbian lite bundle can be downloaded from the Raspbian
+official webpage~\cite{raspbian}. At the time of this writing, the latest
+available bundle was \texttt{2016-05-27-raspbian-jessie-lite.zip}.
 To ensure that the content of the bundle does not change, this procedure
-will be based on that particular version of Raspbian lite which we have
+is based on that particular version of Raspbian lite which we have
 made available at~\cite{tunescode_webpage}. All other files used in this paper
-will also be available there unless specified otherwise.
-
-%We want to proceed downloading the bundle in a shell instead of the browser.
-%To do this, first open a command shell on a linux machine. This guide is
-%assuming a Debian-based distribution, but there should only be minor differences
-%if you have another package manager. i.e. the package managers and name of software packages.
-
-To get started, open a Linux shell (terminal) and declare the variables below.
-The \texttt{URL} and \texttt{IMAGE} specifies where the Linux bundle will be
-located and \texttt{WORKDIR} specifies a working directory where we will 
-store Raspbian and customize it.
-Do not type in \$ and \# in the shell. Those indicates if a command can be
-executed as a regular user or if root permissions are required.
-Running a command as root can on most systems be done by putting
-\texttt{sudo} in front of the command. This is illustrated in the
-following code block 
-with the command \texttt{whoami} that prints the username. Lines within a code
-block without leading \$ or \# is terminal output or content of a file.
+are available there unless specified otherwise. To get started, open a
+Linux shell (terminal) and declare the environment variables.
+To copy the commands from this procedure to the testbed administrator terminal,
+we strongly recommend to read this document with Adobe Acrobat Reader in Linux.
+Otherwise, copied characters might not render properly.
 
 %After the terminal has been opened, we start by declaring a few variables to reduce
 %repeated typing. The first variables we declare is the Raspbian image name.
@@ -99,27 +75,30 @@ $ export WORKDIR="${HOME}/Raspbian"
 \FloatBarrier
 \vspace{-5mm}
 
-%A final thing to notice is the way \$ and \# are used in the code blocks. \$
-%means that the command can be run with normal user permissions where \# indicates that the
-%command needs root permissions.
-%Running a command with root permissions can on most systems be done by putting
-%the command "sudo" in front of each line. This is illustrated in the code below
-%with the command "whoami" that prints the username of the caller. Lines without
-%leading \$ or \# is the terminal output.
+In the code block, the \texttt{URL} and \texttt{IMAGE} specify where
+the Linux bundle is located and \texttt{WORKDIR} specifies a working
+directory where the Raspbian bundle will be downloaded and customized.
+Notice that even though we use the \$ and \# signs in the shell, in general
+these signs will be particular to the testbed administrator \ac{OS} shell.
+Next, create the working directory and go to it with the \texttt{cd} command.
+To download the image, utilize \texttt{wget} before
+unpacking the \texttt{zip} file as follows:
+
+% Running a command as root can on most systems be done by putting
+% \texttt{sudo} in front of the command. This is illustrated in the
+% following code block 
+% with the command \texttt{whoami} that prints the username. Lines within a code
+% block without leading \$ or \# is terminal output or content of a file.
 
 % Root example
-\begin{lstlisting}[]
-$ whoami
-<USERNAME>
-$ sudo whoami
-root
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-Next, make the working directory and used \texttt{cd} to change into the working
-directory. Then \texttt{wget} can be used to download Raspbian lite before
-unpacking the \texttt{zip} file:
+% \begin{lstlisting}[]
+% $ whoami
+% <USERNAME>
+% $ sudo whoami
+% root
+% \end{lstlisting}
+% \FloatBarrier
+% \vspace{-5mm}
 
 % Download and unpack image
 \begin{lstlisting}[]
@@ -134,7 +113,7 @@ $ unzip ${IMAGE}.zip
 %A more recent version of Raspbian lite may be available at~\cite{raspbian}.
 %\url{http://downloads.raspberrypi.org/raspbian_lite/images}.
 
-\subsection{The image}
+\subsection{Image Customization}
 
 After Raspbian lite has been unpacked, there should be an \texttt{img} file in the directory.
 \texttt{fdisk} can be used to display the content of the image. Parse the arguments
