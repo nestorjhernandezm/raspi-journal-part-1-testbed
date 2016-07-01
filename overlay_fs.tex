@@ -1,0 +1,309 @@
+\label{sec:ovelay_fs}
+
+
+
+
+\subsection{Installation an overlaying filesystem}
+
+Our goal was to enable the users of the testbed to change however the
+\ac{Raspi} are configured while still being able to revert those changes easily.
+
+We do this by storing a users work in the \ac{Raspi}s in \ac{RAM}. Thus a
+\ac{Raspi}, when a \ac{Raspi} is rebooted, it will forget all changes.
+
+A way to do this is using stacked filesystem. Stacking filesystem enables
+a filesystem to overlay another filesystem. Whenever a file is accessed,
+the upper filesystem will forward the request to the lower filesystem in
+case it does not have it itself. If it has it, it will simpy return the file.
+
+This idea can be used in our setup to mount the root filesystem (i.e. Raspbian
+lite) in the \ac{Raspi}s duing startup as read-only. Thus, the files will not
+be changable. Some programs needs to change files and the testbed admin might
+want to change configurations. To enable this, it is possible to
+overlay a filesystem that is mounted in \ac{RAM} as read/writable on top of
+the regular root. Thus, reading a file may return a file from the lower filesytem,
+but if it is stored, it will be saved in the upper filesystem. Accessing this file
+again will return the stored file from the upper layer.
+
+
+
+%We do this using an overlay filesystem. The idea is to let the \ac{Raspi}s
+%mount their root filesystem as 
+%
+%We do this using an overlay filesystem (overlayfs).
+%Overlayfs enables a filesystem to be stacked on top of another filesystem. Thus,
+%if the \ac{Raspi}s mount their root filesystem (/) as read-onlyif we mount our root (/) filesystem as 
+%
+%
+%Overlayfs enables filesystems
+%to be stacked on top of each other. We will be using this to make a lower
+%filesystem and an upper filesystem. The lower filesystem will be our
+%traditional filesystem and the upper filesystem will be mounted in tmpfs
+%(i.e. mounted in \ac{RAM}).
+%
+%Thus, when a file is requsted from stacked filesystem, it will first attempt
+%to fetch the file in the upper filesystem if it does not exists there, it will
+%request it from the lower filessytem.  
+
+Assuming that you are still \texttt{chrooted} into the Raspbian lite filesystem, we
+can setup the overlay filesystem (overlayfs).
+
+There already exists implementations overlaying the root filesystem. We will
+use an existing implementation
+available at github: \cite{overlayroot}.
+
+We installed git in a previous step, so lets clone the repository. The below
+code stores it in /tmp which is really mounted in \ac{RAM}. Thus, the files
+will disappear when the machine is rebooted.
+
+% Get files
+\begin{lstlisting}[]
+(chroot) # OVERLAYROOTDIR="/tmp/overlayroot"
+(chroot) # git clone https://github.com/chesty/overlayroot.git $OVERLAYROOTDIR
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+To enable the overlaying filesystem it is required to generate an initial \ac{RAM}
+file system (initramfs). Initramfs is an initial filesystem that gets loaded into
+\ac{RAM} during the startup process of a linux machine to prepare the real
+filesystem.
+
+For this purpose, we need BuxyBox:
+
+% Install required packages
+\begin{lstlisting}[]
+(chroot) # apt-get install busybox
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Add and activate the overlaying filesystem, we need to add the scripts and tell initramfs
+to load the overlaying filesytem:
+
+% Setup initramfs
+\begin{lstlisting}[]
+(chroot) # cp ${OVERLAYROOTDIR}/hooks-overlay /etc/initramfs-tools/hooks/
+(chroot) # cp ${OVERLAYROOTDIR}/init-bottom-overlay /etc/initramfs-tools/scripts/init-bottom/
+(chroot) # echo "overlay" > /etc/initramfs-tools/modules
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+%Finally, lets generate the initial \ac{RAM} filesystem. This is done using the command
+%\texttt{mkinitramfs}, that will by default look for the kernel modules of the current system. Remember we are
+%chrooted, so we need to specify the correct kernel modules to look for. These
+%can be found in "/lib/modules".
+Now, the initial \ac{RAM} filesystem can be generated. \ac{Raspi} version 1
+needs a different kernel than \ac{Raspi} version 2 and version 3. Thus, start
+by finding the available kernel modules:
+%Because \texttt{initramfs} is executed within a
+%\texttt{chrooted} environment, it will not be able to detect the
+%kernel modules in the \texttt{chrooted} environment. The kernel modules will 
+
+
+% Create an initramfs
+\begin{lstlisting}[]
+(chroot) # ls /lib/modules/
+4.4.13+  4.4.13-v7+
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Kernel "4.4.13+" is for \ac{Raspi} version 1 and kernel "4.4.13-v7+" works
+for \ac{Raspi} version 2 and version 3.
+
+Lets proceed by generating an initial \ac{RAM} filesystem for both kernels:
+
+%Lets proceed with kernel modules "4.4.13+".
+%Lets create an initial ram filesystem for both kernels.
+
+%Thus, to run mkinitramfs, type in the correct kernel version:
+
+% Create an initramfs
+\begin{lstlisting}[]
+(chroot) # mkinitramfs -o /boot/init.gz -k 4.4.13+
+(chroot) # mkinitramfs -o /boot/init-v7.gz -k 4.4.13-v7+
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+%IT SEEM THAT THE RASPIS DEMANDS DIFFERENT KERNEL MODULES AFTER ALL.
+%RASP-VERSION1=4.4.13+, RASP-VERSION2=4.4.13-V7+, RASP-VERSION3=4.4.13-V7+
+
+Although there might be printet a few warnings, the above commands should successfully
+generate working initial \ac{RAM} filesystems. 
+
+An initial \ac{RAM} filesystem needs to be called by the bootloader. In Raspbian
+this is done by adding a command to \texttt{config.txt} in the boot partition.
+
+If the system should be run in a \ac{Raspi} version 1, then use \texttt{init.gz}:
+%The bootloader should be made aware of the initramfs that we will generate:
+\begin{lstlisting}[]
+(chroot) # echo "initramfs init.gz" >> /boot/config.txt     # Only for Raspberry Pi version 1
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+If the system should be run in a \ac{Raspi} version 2 or 3, then use \texttt{init-v7.gz}:
+\begin{lstlisting}[]
+(chroot) # echo "initramfs init-v7.gz" >> /boot/config.txt  # Only for Raspberry Pi version 2 and 3
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+At this point, it is no longer required to be \texttt{chrooted} and the image
+can be written to a memory card. The following commands exits the \texttt{chrooted}
+environment, unmount all partitions, and detaches the loopback device:
+
+% Exit chroot, umount, and write to memory card
+\begin{lstlisting}[]
+(chroot) # exit
+# cd ..
+# umount --recursive ${ROOTDIR}
+# losetup -d ${DEV}
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\subsection{(Optional) Persistent subdirectories for distributed Linux image}
+
+EMPHASIZE THAT THIS SETUP IS ONLY FOR THE SETUP WHERE THE ROOT IMAGE ARE
+WRITTEN TO THE MEMORY CARDS
+
+Provided the stacked filesystem was configured, it may be desired to have
+some directories where files are not flushed upon rebooting the \ac{Raspi}s.
+The following procedure will create an extra partition in the image for
+the \ac{Raspi} users home directory that will be made storage persistent.
+%Provided that a stacked filesystem was configured to make the root
+%filesystem forget chances upon reboots is not always desired. 
+
+Expand image according to the desired home directory size. Keep in mind not
+to make the image bigger than the target memory card.
+% Expand image
+\begin{lstlisting}[]
+$ dd if=/dev/zero bs=1M count=1024 >> ${IMAGE}.img && sync
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Create home partition after the root partition. Use \texttt{fdisk} to
+find the next available sector in the image. In our case, the new
+partition should start at sector 4806656:
+\begin{lstlisting}[]
+$ fdisk -lu ${IMAGE}.img
+Disk 2016-05-27-raspbian-jessie-lite.img: 3.3 GiB, 3534749696 bytes, 6903808 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0x6fcf21f3
+
+Device                               Boot  Start     End Sectors  Size Id Type
+2016-05-27-raspbian-jessie-lite.img1        8192  137215  129024   63M  c W95 FAT32 (LBA)
+2016-05-27-raspbian-jessie-lite.img2      137216 4806655 4669440  2.2G 83 Linux
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Create new partition:
+
+\begin{lstlisting}[]
+$ (echo n; echo p; echo ; echo 4806656; echo ; echo p; echo w) | fdisk ${IMAGE}.img
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Create loopback device: 
+\begin{lstlisting}[]
+# export DEV=$(sudo losetup --show -f -P ${IMAGE}.img); echo $DEV
+/dev/loop0
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Format new partition:
+\begin{lstlisting}[]
+# mkfs.ext4 ${DEV}p3
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+The last thing to remember is to inform Raspbian to mount the home partition
+we created during startup. This can be done by adding an entry in \texttt{fstab}:
+\begin{lstlisting}[]
+# mount ${DEV}p2 ${ROOTDIR}
+# sudo sh -c "echo '/dev/mmcblk0p3 /home ext4 defaults,noatime 0 2' >> ${ROOTDIR}/etc/fstab"
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+The home folder was originally located in the root filesystem. We should
+therefore copy the content to the new home partition:
+\begin{lstlisting}[]
+# mount ${DEV}p3 ${ROOTDIR}/mnt
+# mv ${ROOTDIR}/home/* ${ROOTDIR}/mnt/
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+That is it. unmount partitions and detach loop device:
+\begin{lstlisting}[]
+# umount --recursive ${ROOTDIR}
+# losetup -d ${DEV}
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\subsection{Write image to memory card}
+
+
+EMPHASIZE THAT THIS SETUP IS ONLY FOR THE SETUP WHERE THE ROOT IMAGE ARE
+WRITTEN TO THE MEMORY CARDS
+
+The final step is to write the image to all the memory cards before they can
+be used in the \ac{Raspi}s.
+
+%This is done by first leaving the \texttt{chrooted}
+%filesystem and unmounting all the directories we mounted:
+
+% Exit chroot, umount, and write to memory card
+%\begin{lstlisting}[]
+%# exit
+%# cd ..
+%# umount --recursive ${ROOTDIR}
+%# losetup -d ${DEV}.img
+%\end{lstlisting}
+%\FloatBarrier
+%\vspace{-5mm}
+
+%If successfully unmounted, you can 
+Insert a memory card in your machine. It will be available as
+\texttt{/dev/mmcblkX} or \texttt{/dev/sdX}
+
+%In most systems, this memory card was available under \texttt{/dev/mmcblk0}, but this may be
+%different on different machines. For internal memory card readers, it will
+%probably be named /dev/mmcblkX where X is some number and if the memory card
+%reader is connected through \ac{USB}, then it is likely called /dev/sdX.
+Make absolutely sure to write to the correct device as everything will be 
+overwritten!
+Inserting/Ejecting the memory card a couple of times and using the commands
+below may help deducing the correct device:
+%The commands below may help deduce which device is the correct:
+%Below is a few commands that may help you to deduce which device is correct:
+
+\begin{lstlisting}[]
+# lsblk
+# df -h
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+For us, the device was \texttt{/dev/mmcblk0}. Write the image to a memory card:
+\begin{lstlisting}[]
+# dd if=${IMAGE}.img of=/dev/mmcblk0 bs=4M && sync
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+The memory card can now be started in a \ac{Raspi}.

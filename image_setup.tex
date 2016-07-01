@@ -1,0 +1,294 @@
+\label{sec:image_setup}
+
+\subsection{Installing Raspbian}
+
+To get started, we first need to install an \ac{OS} on the
+\ac{Raspi}s. We will use the popular Debian-based Raspbian
+Linux~\cite{raspbian}
+
+We will be using a \ac{PC} running a Debian-based Linux distribution
+to setup a customized Raspbian Linux image that can be written to
+a memory card and work in any \ac{Raspi} version 1 or 2.
+
+Raspbian is made available in two bundles: Raspbian and Raspbian lite.
+The difference between the two is that Raspbian contains a pre-installed desktop
+environment, and Raspbian lite is by default only accessible through a 
+command shell. Both Raspbian and Raspbian lite will both by default be remotely
+accessible using \ac{SSH}. \ac{SSH} provides the means to remotely
+connect to another machine through a command shell.
+%In fact it is the successor
+%of \ac{Telnet} that has been designed with network security in mind.
+
+The \ac{Raspi}s in our testbed are not connected to monitors, so we
+have decided to go with Raspbian lite.
+%Our testbed does not have monitors so we will install Raspbian lite.
+A desktop environment can be installed using the package manager
+(apt-get) in case a desktop environment will be desired at a later
+time.
+
+Below is the procedure we followed to setup the \ac{Raspi}s in our testbed. We
+have performed a simple setup where each \ac{Raspi} is equipped with a
+memory card that contains a slightly customized Raspbian lite image. The image
+of the \ac{OS} in all \ac{Raspi}s will be identical.
+
+The overall procedure to customize the official Raspbian lite image
+are:
+\begin{enumerate}
+    \item Download Raspbian lite
+    \item Alter Raspbian lite. e.g. browse, modify, add, and delete files
+        in the official Raspbian lite image
+    \item Change root, i.e. change root filesystem into the Raspbian lite
+        image to update and install software packages
+    \item Write image to memory cards
+\end{enumerate}
+
+Hashmark (\#) and dollar (\$) will be used throughout the code blocks in
+the paper to indicate if an operation needs to be run with root permissions or
+user permissions.
+
+\subsection{Download Raspbian lite}
+
+The latest Raspbian lite bundle can be downloaded from Raspbian's official
+webpage~\cite{raspbian}.
+%To download the latest Raspbian lite, we go to the url
+%\url{http://downloads.raspberrypi.org/raspbian_lite/images/}.
+At the time of this writing, the latest available bundle was
+\texttt{2016-05-27-raspbian-jessie-lite.zip}.
+
+To ensure that the content of the bundle does not change, this procedure
+will be based on that particular version of Raspbian lite which we have
+made available at~\cite{tunescode_webpage}. All other files used in this paper
+will also be available there unless specified otherwise.
+
+%We want to proceed downloading the bundle in a shell instead of the browser.
+%To do this, first open a command shell on a linux machine. This guide is
+%assuming a Debian-based distribution, but there should only be minor differences
+%if you have another package manager. i.e. the package managers and name of software packages.
+
+To get started, open a Linux shell (terminal) and declare the variables below.
+The \texttt{URL} and \texttt{IMAGE} specifies where the Linux bundle will be
+located and \texttt{WORKDIR} specifies a working directory where we will 
+store Raspbian and customize it.
+Do not type in \$ and \# in the shell. Those indicates if a command can be
+executed as a regular user or if root permissions are required.
+Running a command as root can on most systems be done by putting
+\texttt{sudo} in front of the command. This is illustrated in the
+following code block 
+with the command \texttt{whoami} that prints the username. Lines within a code
+block without leading \$ or \# is terminal output or content of a file.
+
+%After the terminal has been opened, we start by declaring a few variables to reduce
+%repeated typing. The first variables we declare is the Raspbian image name.
+%Notice that the extension has been omitted. This is because the image has been
+%packed into a zip file. The other variable we declare is a working directory.
+%This is where we will download the image to and work on it. In other words, it
+%will be stored in \texttt{/home/<username>/Raspbian}
+
+%To download Raspbian lite, we go to the \url{http://downloads.raspberrypi.org}.
+%There should be a folder called raspbian\lite and
+%to find the download page at which Raspbian lite should be located. Instead of
+%downloading with the browser, we just extract the download url to the latest
+%image. At the time of this writing, that was
+
+% Define variable]
+\begin{lstlisting}[]
+$ export URL="http://kom.aau.dk/project/TuneSCode/raspi/"
+$ export IMAGE="2016-05-27-raspbian-jessie-lite"
+$ export WORKDIR="${HOME}/Raspbian"
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+%A final thing to notice is the way \$ and \# are used in the code blocks. \$
+%means that the command can be run with normal user permissions where \# indicates that the
+%command needs root permissions.
+%Running a command with root permissions can on most systems be done by putting
+%the command "sudo" in front of each line. This is illustrated in the code below
+%with the command "whoami" that prints the username of the caller. Lines without
+%leading \$ or \# is the terminal output.
+
+% Root example
+\begin{lstlisting}[]
+$ whoami
+<USERNAME>
+$ sudo whoami
+root
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Next, make the working directory and used \texttt{cd} to change into the working
+directory. Then \texttt{wget} can be used to download Raspbian lite before
+unpacking the \texttt{zip} file:
+
+% Download and unpack image
+\begin{lstlisting}[]
+$ mkdir -p ${WORKDIR}
+$ cd ${WORKDIR}
+$ wget ${URL%/*}/${IMAGE}.zip
+$ unzip ${IMAGE}.zip
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+%A more recent version of Raspbian lite may be available at~\cite{raspbian}.
+%\url{http://downloads.raspberrypi.org/raspbian_lite/images}.
+
+\subsection{The image}
+
+After Raspbian lite has been unpacked, there should be an \texttt{img} file in the directory.
+\texttt{fdisk} can be used to display the content of the image. Parse the arguments
+"-u sectors" to display the sizes in sectors and "-l" to display the partitions within the
+image and and automatically exit \texttt{fdisk} again:
+
+% Check out the image   % The dollar hack was to fix vim syntax
+\begin{lstlisting}[literate={DOLLAR}{\$}1]
+DOLLAR fdisk -u sectors -l ${IMAGE}.img
+Disk 2016-05-27-raspbian-jessie-lite.img: 1.3 GiB, 1387266048 bytes, 2709504 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0x6fcf21f3
+
+Device                               Boot  Start     End Sectors  Size Id Type
+2016-05-27-raspbian-jessie-lite.img1        8192  137215  129024   63M  c W95 FAT32 (LBA)
+2016-05-27-raspbian-jessie-lite.img2      137216 2709503 2572288  1.2G 83 Linux
+\end{lstlisting}
+\FloatBarrier
+
+The output provides knowledge about the image. The image is in total
+2709504 sectors (1.3GiB) in size and contains two
+partitions. The first partition starts at sector 8192 and
+the other partition starts at sector 137216. The partitions is of type FAT32
+and Linux and are 63M and 1.2G big. This indicates that the first partition
+is most likely a boot partition and the second partition is a traditional Linux file
+system. Actually, it is the Linux root filesystem (i.e. /).
+
+\subsection{Resize image}
+1.2G is not very much to store the root filesystem given that it is desired to
+alter the files and install additional packages. It may therefore be
+necessary to increase the partition size.
+The following illustrates how the image and its root filesystem
+can be expanded by one \ac{GB}.
+
+First, expand the image one \ac{GB} and wait for the data to be completely written
+to the disk:
+\begin{lstlisting}[]
+$ dd if=/dev/zero bs=1M count=1024 >> ${IMAGE}.img && sync
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Use \texttt{fdisk} to see that the image is now one \ac{GB} larger:
+\begin{lstlisting}[literate={DOLLAR}{\$}1]
+DOLLAR fdisk -u sectors -l ${IMAGE}.img
+Disk 2016-05-27-raspbian-jessie-lite.img: 2.3 GiB, 2461007872 bytes, 4806656 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 512 bytes
+Disklabel type: dos
+Disk identifier: 0x6fcf21f3
+
+Device                               Boot  Start     End Sectors  Size Id Type
+2016-05-27-raspbian-jessie-lite.img1        8192  137215  129024   63M  c W95 FAT32 (LBA)
+2016-05-27-raspbian-jessie-lite.img2      137216 2709503 2572288  1.2G 83 Linux
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Now, to expand the root filesystem it is required to first remove the Linux partition
+and then add it again one \ac{GB} bigger.
+Use \texttt{fdisk} to alter the partition table. The \texttt{echo}'s within the parenthesis
+will be interpreted as
+key-presses in \texttt{fdisk} and hence delete the last partition, create a new
+primary partition, print new partition table, and write new partition table
+to the image:
+
+\begin{lstlisting}[]
+$ (echo d; echo ; echo n; echo p; echo ; echo 137216; echo ; echo p; echo w) | fdisk ${IMAGE}.img
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Use a loopback device to make the Raspbian image available as a block device: 
+\begin{lstlisting}[]
+# export DEV=$(sudo losetup --show -f -P ${IMAGE}.img); echo $DEV
+/dev/loop0
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\texttt{lsblk} may be used to list block devices. It appears that the image is
+available as \texttt{/dev/loop0} which has two partitions \texttt{loop0p1} and
+\texttt{loop0p2}:
+%Use \texttt{lsblk} to view the partitions:
+
+\begin{lstlisting}[]
+# lsblk
+NAME      MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+...
+loop0       7:0    0  2.3G  0 loop 
+|-loop0p1 259:2    0   63M  0 loop 
+|-loop0p2 259:3    0  2.2G  0 loop
+...
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Check and resize the root partition:
+\begin{lstlisting}[]
+# e2fsck -f ${DEV}p2
+# resize2fs ${DEV}p2
+\end{lstlisting}
+\FloatBarrier
+
+
+%We see that the boot and root partitions starts at sector 8192 and 137216 respectivly.
+%We also notice that each sector is 512 bytes.
+%On newer systems, we can mount the device easier using "losetup --show -f -P IMAGE"
+%Mount root partition:
+
+\subsection{Mount image}
+
+Browsing and altering the files in the image is easy. Simply mount the partitions.
+%To browser and alter the files in the image, it is possible to mount the partitions.
+
+Lets first mount the root partition. This is done by creating an empty directory
+that we will be used as a mountpoint. We name it \texttt{root} and create it in the
+working directory before mounting the root filesystem onto the mountpoint.
+%After this, mount the partitions:
+%After this,
+%we mount the partition starting at sector 137216. To provide this offset information
+%to mount, we need to find the offset in bytes. From the fdisk command we could also
+%see that each sector is 512 bytes. Thus, we multiply the sector size and the sector
+%start to get the offset in bytes.
+
+\begin{lstlisting}[]
+$ export ROOTDIR="${WORKDIR}/root"
+$ mkdir -p ${ROOTDIR}
+# mount ${DEV}p2 ${ROOTDIR}
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+%# mount -o loop,offset=$((137216*512)) ${IMAGE}.img ${ROOTDIR}
+
+The root filesystem already has a boot directory that can be used as
+the mountpoint for the boot partition.
+%After this, we can also mount the boot partition inside the newly mounted
+%root filesystem.
+This is convenient because that partition will be mounted
+on this directory when a \ac{Raspi} starts up with a memory card containing
+the image. %It is therefore the natural place to mount it for later purposes.
+Now, mount boot partition:
+\begin{lstlisting}[]
+# mount ${DEV}p1 ${ROOTDIR}/boot
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+%# mount -o loop,offset=$((8192*512)) ${IMAGE}.img ${ROOTDIR}/boot
+
+%We can now change all the files in the disk image as desired.
+It is now possible to change all files within the Raspbian image as desired.
+We will take advantage of this to edit configuration files, append new files,
+and even update and install packages.
