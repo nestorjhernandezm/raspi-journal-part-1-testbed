@@ -1,29 +1,30 @@
 \label{sec:image_setup}
-In this Section, we review the steps to create a common \ac{OS} image for all the
-\ac{Raspi}s. The image setup is composed of three major steps: Select and download the
-\ac{OS} image file, alter the image structure and configure the \ac{OS} files.
-We proceed to detail all these steps providing brief discussions to our setup
-choices when required. To perform these steps, we indicate with command-line
-blocks the required sequential commands to be typed by the testbed
-administrator in its \ac{PC} to obtain the desired setting. In all the
-following sections, the number sign (\#) and dollar sign (\$) will be used in
-the command blocks in the paper to indicate if an operation needs
-to be run with root permissions or common user permissions, respectively. The
-signs will be posted as the terminal prompt in the command blocks.
+In this Section, we review the steps to create a common \ac{OS} image for
+all the \ac{Raspi}s. The image setup is composed of three major steps:
+Select and download the \ac{OS} image file, alter the image structure and
+configure the \ac{OS} files. We proceed to detail all these steps providing
+brief discussions to our setup choices when required. To perform these
+steps, we indicate with command-line blocks the required sequential
+commands to be typed by the testbed administrator in its \ac{PC} to obtain
+the desired setting. In all the following sections, the number sign
+(\#) and dollar sign (\$) will be used in the command blocks in the paper
+to indicate if an operation needs to be run with root permissions or
+common user permissions, respectively. The signs will be posted as the
+terminal prompt in the command blocks.
 
 \subsection{OS Selection and Download}
 
 To get started, we first need to install an \ac{OS} that works properly
-on all the \ac{Raspi} models. We will download and setup the image in the testbed
-administrator \ac{PC} using a Debian-based distribution. We use the popular
-Debian-based Raspbian Linux~\cite{raspbian} given that is the recommended
-and default \ac{OS} for the \ac{Raspi}.
-Raspbian is made available in two bundles: Raspbian and Raspbian lite.
-The difference between the two, is that Raspbian contains a pre-installed desktop
-environment for user interaction and Raspbian lite by default only permits to
-interact through a command shell. Given that the \ac{Raspi}s in our testbed are
-not connected to monitors, we decide to work with Raspbian lite. Still,
-if later desired, a desktop environment can be installed using the package manager
+on all the \ac{Raspi} models. We will download and setup the image in
+the testbed administrator \ac{PC} using a Debian-based distribution. We
+use the popular Debian-based Raspbian Linux~\cite{raspbian} given that is
+the recommended and default \ac{OS} for the \ac{Raspi}. Raspbian is made
+available in two bundles: Raspbian and Raspbian lite. The difference
+between the two, is that Raspbian contains a pre-installed desktop environment
+for user interaction and Raspbian lite by default only permits to interact
+through a command shell. Given that the \ac{Raspi}s in our testbed are not
+connected to monitors, we decide to work with Raspbian lite. Still, if later
+desired, a desktop environment can be installed using the package manager
 as it will be shown in the configuration section.
 
 % The overall procedure to customize the official Raspbian lite image
@@ -47,9 +48,11 @@ available bundle was \texttt{2016-05-27-raspbian-jessie-lite.zip}.
 To ensure that the content of the bundle does not change, this procedure
 is based on that particular version of Raspbian lite which we have
 made available at~\cite{tunescode_webpage}. All other files used in this paper
-are available there unless specified otherwise. To get started, open a
-Linux shell (terminal) and declare the environment variables.
-To copy the commands from this procedure to the testbed administrator terminal,
+are available there unless specified otherwise. To get started, the testbed
+administrator must open a Linux shell (terminal) in and declare the environment
+variables shown in the command block below. We show the procedure by
+performing the role of the testbed administrator. To copy the commands from
+this procedure to the testbed administrator terminal,
 we strongly recommend to read this document with Adobe Acrobat Reader in Linux.
 Otherwise, copied characters might not render properly.
 
@@ -75,18 +78,18 @@ $ export WORKDIR="${HOME}/Raspbian"
 \FloatBarrier
 \vspace{-5mm}
 
-In the code block, the \texttt{URL} and \texttt{IMAGE} specify where
+In this code block, the \texttt{URL} and \texttt{IMAGE} variables specify where
 the Linux bundle is located and \texttt{WORKDIR} specifies a working
 directory where the Raspbian bundle will be downloaded and customized.
 Notice that even though we use the \$ and \# signs in the shell, in general
 these signs will be particular to the testbed administrator \ac{OS} shell.
-Next, create the working directory and go to it with the \texttt{cd} command.
-To download the image, utilize \texttt{wget} before
+Next, we create the working directory and go to it with the \texttt{cd}
+command. To download the image, we utilize the \texttt{wget} command before
 unpacking the \texttt{zip} file as follows:
 
 % Running a command as root can on most systems be done by putting
 % \texttt{sudo} in front of the command. This is illustrated in the
-% following code block 
+% following code block
 % with the command \texttt{whoami} that prints the username. Lines within a code
 % block without leading \$ or \# is terminal output or content of a file.
 
@@ -115,12 +118,16 @@ $ unzip ${IMAGE}.zip
 
 \subsection{Image Customization}
 
-After Raspbian lite has been unpacked, there should be an \texttt{img} file in the directory.
-\texttt{fdisk} can be used to display the content of the image. Parse the arguments
-"-u sectors" to display the sizes in sectors and "-l" to display the partitions within the
-image and and automatically exit \texttt{fdisk} again:
+After Raspbian lite has been unpacked, there should be an \texttt{.img}
+file in the \texttt{WORKDIR} directory. Here, \texttt{fdisk} can be used to
+display the content of the image. To do this and obtain administrative
+information, we parse the arguments \texttt{-u sectors} to display the
+sizes in sectors and \texttt{-l} to display the partitions within the
+image. The \texttt{fdisk} command should output to the terminal something
+similar to:
 
-% Check out the image   % The dollar hack was to fix vim syntax
+% Check out the image
+% The dollar hack was to fix vim syntax
 \begin{lstlisting}[literate={DOLLAR}{\$}1]
 DOLLAR fdisk -u sectors -l ${IMAGE}.img
 Disk 2016-05-27-raspbian-jessie-lite.img: 1.3 GiB, 1387266048 bytes, 2709504 sectors
@@ -136,30 +143,30 @@ Device                               Boot  Start     End Sectors  Size Id Type
 \end{lstlisting}
 \FloatBarrier
 
-The output provides knowledge about the image. The image is in total
-2709504 sectors (1.3GiB) in size and contains two
-partitions. The first partition starts at sector 8192 and
-the other partition starts at sector 137216. The partitions is of type FAT32
-and Linux and are 63M and 1.2G big. This indicates that the first partition
-is most likely a boot partition and the second partition is a traditional Linux file
-system. Actually, it is the Linux root filesystem (i.e. /).
+The output provides relevant information about the image. The image is in
+total 2709504 sectors (1.3GiB) in size and contains two partitions. The
+first partition starts at sector 8192 and the other partition starts at
+sector 137216. The first partition type is FAT32 with a size of 63 MB
+and the second partition is a Linux one with a size of 1.2 GB. This
+indicates that the first partition is a boot partition and the second
+one is a traditional Linux root filesystem, i.e. \texttt{/}.
 
-\subsection{Resize image}
-1.2G is not very much to store the root filesystem given that it is desired to
-alter the files and install additional packages. It may therefore be
-necessary to increase the partition size.
-The following illustrates how the image and its root filesystem
-can be expanded by one \ac{GB}.
+\subsection{Image Resizing}
+Given that we want to customize the files stored in the \ac{Raspi}s,
+we need to resize the image file since 1.2GB might not be enough to store
+the root filesystem due to the total size of the additional packages. Thus,
+we need to increase the partition size. The following procedure illustrates
+how the image and its root filesystem can be expanded by one \ac{GB}.
+First, to expand the image one \ac{GB}, we execute:
 
-First, expand the image one \ac{GB} and wait for the data to be completely written
-to the disk:
 \begin{lstlisting}[]
 $ dd if=/dev/zero bs=1M count=1024 >> ${IMAGE}.img && sync
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-Use \texttt{fdisk} to see that the image is now one \ac{GB} larger:
+Later, we use \texttt{fdisk} with the same arguments as before to see that
+the image is now one \ac{GB} larger:
 \begin{lstlisting}[literate={DOLLAR}{\$}1]
 DOLLAR fdisk -u sectors -l ${IMAGE}.img
 Disk 2016-05-27-raspbian-jessie-lite.img: 2.3 GiB, 2461007872 bytes, 4806656 sectors
@@ -176,13 +183,14 @@ Device                               Boot  Start     End Sectors  Size Id Type
 \FloatBarrier
 \vspace{-5mm}
 
-Now, to expand the root filesystem it is required to first remove the Linux partition
-and then add it again one \ac{GB} bigger.
-Use \texttt{fdisk} to alter the partition table. The \texttt{echo}'s within the parenthesis
-will be interpreted as
-key-presses in \texttt{fdisk} and hence delete the last partition, create a new
-primary partition, print new partition table, and write new partition table
-to the image:
+Now, in this command block output, we observe that the change has taken
+effect by noticing the total available image size is 2.3GiB. To expand the
+root filesystem, it is required to first remove the Linux partition
+and then add it again with one \ac{GB} more. To do this, we make use
+again of \texttt{fdisk} in command mode to alter the partition table.
+For this, we pass the arguments of the command mode of \texttt{fdisk}
+through the \texttt{echo} command in Linux and the \texttt{|} operator
+(pipe) as follows:
 
 \begin{lstlisting}[]
 $ (echo d; echo ; echo n; echo p; echo ; echo 137216; echo ; echo p; echo w) | fdisk ${IMAGE}.img
@@ -190,7 +198,12 @@ $ (echo d; echo ; echo n; echo p; echo ; echo 137216; echo ; echo p; echo w) | f
 \FloatBarrier
 \vspace{-5mm}
 
-Use a loopback device to make the Raspbian image available as a block device: 
+The \texttt{echo} commands within the parenthesis are interpreted as
+key-presses in the \texttt{fdisk} commmand mode. They (i) delete the last
+partition, (ii) create a new primary partition, (iii) print new partition
+table and (iv) write new partition table to the image file. Use a loopback
+device to make the Raspbian image available as a block device:
+
 \begin{lstlisting}[]
 # export DEV=$(sudo losetup --show -f -P ${IMAGE}.img); echo $DEV
 /dev/loop0
@@ -207,8 +220,8 @@ available as \texttt{/dev/loop0} which has two partitions \texttt{loop0p1} and
 # lsblk
 NAME      MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
 ...
-loop0       7:0    0  2.3G  0 loop 
-|-loop0p1 259:2    0   63M  0 loop 
+loop0       7:0    0  2.3G  0 loop
+|-loop0p1 259:2    0   63M  0 loop
 |-loop0p2 259:3    0  2.2G  0 loop
 ...
 \end{lstlisting}
