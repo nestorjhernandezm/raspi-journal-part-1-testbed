@@ -300,7 +300,7 @@ $ mkdir -p ${ROOTDIR}
 \vspace{-5mm}
 %# mount -o loop,offset=$((137216*512)) ${IMAGE}.img ${ROOTDIR}
 
-The root filesystem mounted in \texttt{ROOTDIR}, already has a boot
+The root filesystem mounted in \texttt{ROOTDIR}, has already a boot
 directory that can be used as the mount point for the boot partition
 in the block device \texttt{loop0p1}. This is convenient because
 the final edited partition from \texttt{ROOTDIR/boot} will be mounted on
@@ -324,7 +324,9 @@ update and install packages.
 
 \subsection{Configuring OS files and scripts}
 
-The \ac{Raspi}s should be setup as similar as possible. One of those
+In general, the \ac{Raspi}s should be setup as similar as possible. However,
+some particularities exist to differentiate the devices in principle
+One of those
 few settings that may be different in the devices is their hostname.
 %The hostname helps the user to distinguish the devices from each other.
 %The hostname helps distinguish them from each other.
@@ -667,8 +669,8 @@ The final preparation before changing root is to populate the directories \textt
 
 Finally, it is time to change root.
 %Finally, the filesystem is ready for us to change root.
-This can be done with \texttt{proot}. It may be required to install \texttt{proot}
-using "\texttt{apt-get install proot}":
+This can be done with \texttt{proot}. It may be required to install
+\texttt{proot} using \texttt{apt-get install proot}:
 
 % CHROOT to OS image
 \begin{lstlisting}[]
