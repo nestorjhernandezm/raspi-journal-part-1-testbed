@@ -193,16 +193,49 @@ through the \texttt{echo} command in Linux and the \texttt{|} operator
 (pipe) as follows:
 
 \begin{lstlisting}[]
-$ (echo d; echo ; echo n; echo p; echo ; echo 137216; echo ; echo p; echo w) | fdisk ${IMAGE}.img
+$ (echo d; echo 2; echo n; echo ; echo ; echo 137216; echo ; echo w) | fdisk ${IMAGE}.img
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
 The \texttt{echo} commands within the parenthesis are interpreted as
-key-presses in the \texttt{fdisk} commmand mode. They (i) delete the last
-partition, (ii) create a new primary partition, (iii) print new partition
-table and (iv) write new partition table to the image file. Use a loopback
-device to make the Raspbian image available as a block device:
+key-presses in the \texttt{fdisk} commmand mode. They (i) delete partition
+number 2, (ii) create a new primary type partition by default, (iii) set the
+new partition starting point (137216) and (iv) write new partition table to
+the image file. The previously shown command options of \texttt{fdisk}
+should work for both old and new versions of the commands. However, if this
+is not the case, the testbed administrator can do these commands manually.
+In this case, it is only required to delete the old root
+filesystem partition and create the new one starting from the same sector
+number. In our case, if the partitions commands were correct, the output
+should be following:
+
+\begin{lstlisting}[]
+
+Command (m for help): Partition number (1-4):
+Command (m for help): Partition type:
+   p   primary (1 primary, 0 extended, 3 free)
+   e   extended
+Select (default p): Using default response p
+Partition number (1-4, default 2): Using default value 2
+First sector (2048-4806655, default 2048): Last sector, +sectors or
++size{K,M,G} (137216-4806655, default 4806655): Using default value 4806655
+
+Command (m for help): The partition table has been altered!
+
+Syncing disks.
+
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\subsection{Loopback Device Setup}
+After successfully resizing the image file, we use a loopback device to make
+the Raspbian image available as a block device in the filesystem. For this
+command to work, the tested administrator distribution must have the
+\texttt{utils-linux} package with version 2.21 or higher. Otherwise, the
+\texttt{-P} argument of \texttt{losetup} will appear as invalid.
+
 
 \begin{lstlisting}[]
 # export DEV=$(sudo losetup --show -f -P ${IMAGE}.img); echo $DEV
@@ -211,9 +244,8 @@ device to make the Raspbian image available as a block device:
 \FloatBarrier
 \vspace{-5mm}
 
-\texttt{lsblk} may be used to list block devices. It appears that the image is
-available as \texttt{/dev/loop0} which has two partitions \texttt{loop0p1} and
-\texttt{loop0p2}:
+If the previous command was succesful, the \texttt{lsblk} command can be used
+to list the available block devices in the filesystem as follows:
 %Use \texttt{lsblk} to view the partitions:
 
 \begin{lstlisting}[]
@@ -228,33 +260,36 @@ loop0       7:0    0  2.3G  0 loop
 \FloatBarrier
 \vspace{-5mm}
 
-Check and resize the root partition:
+The image block device appears as \texttt{/dev/loop0}. This block device has
+two partitions associated to it, e.g. \texttt{loop0p1} and \texttt{loop0p2}.
+Finally, we check the block device status with \texttt{e2fsck} and
+\texttt{resize2fs}, respectively in the command block:
+
 \begin{lstlisting}[]
 # e2fsck -f ${DEV}p2
+e2fsck 1.42.8 (20-Jun-2013)
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Pass 5: Checking group summary information
+/dev/loop0p2: 35392/80480 files (0.1% non-contiguous), 201968/321536 blocks
 # resize2fs ${DEV}p2
+resize2fs 1.42.8 (20-Jun-2013)
+Resizing the filesystem on /dev/loop0 to 583680 (4k) blocks.
+The filesystem on /dev/loop0 is now 583680 blocks long.
 \end{lstlisting}
 \FloatBarrier
 
-
-%We see that the boot and root partitions starts at sector 8192 and 137216 respectivly.
-%We also notice that each sector is 512 bytes.
-%On newer systems, we can mount the device easier using "losetup --show -f -P IMAGE"
-%Mount root partition:
-
-\subsection{Mount image}
-
-Browsing and altering the files in the image is easy. Simply mount the partitions.
-%To browser and alter the files in the image, it is possible to mount the partitions.
-
-Lets first mount the root partition. This is done by creating an empty directory
-that we will be used as a mountpoint. We name it \texttt{root} and create it in the
-working directory before mounting the root filesystem onto the mountpoint.
-%After this, mount the partitions:
-%After this,
-%we mount the partition starting at sector 137216. To provide this offset information
-%to mount, we need to find the offset in bytes. From the fdisk command we could also
-%see that each sector is 512 bytes. Thus, we multiply the sector size and the sector
-%start to get the offset in bytes.
+\subsection{Block Devices Mounting}
+For browsing and altering the files in the image, we mount the block
+device partitions into a particular path of our \texttt{WORKDIR} in order
+to customize them. We proceed first to mount the block device partition that
+contains the root filesystem and later the boot partition. This is done by
+creating an empty directory that it is used as a mountpoint. We name it
+\texttt{root} and create it in the working directory before mounting the
+root filesystem onto the mountpoint. Thus, we mount the root filesystem
+as follows:
 
 \begin{lstlisting}[]
 $ export ROOTDIR="${WORKDIR}/root"
@@ -265,22 +300,436 @@ $ mkdir -p ${ROOTDIR}
 \vspace{-5mm}
 %# mount -o loop,offset=$((137216*512)) ${IMAGE}.img ${ROOTDIR}
 
-The root filesystem already has a boot directory that can be used as
-the mountpoint for the boot partition.
-%After this, we can also mount the boot partition inside the newly mounted
-%root filesystem.
-This is convenient because that partition will be mounted
-on this directory when a \ac{Raspi} starts up with a memory card containing
-the image. %It is therefore the natural place to mount it for later purposes.
-Now, mount boot partition:
+The root filesystem mounted in \texttt{ROOTDIR}, already has a boot
+directory that can be used as the mount point for the boot partition
+in the block device \texttt{loop0p1}. This is convenient because
+the final edited partition from \texttt{ROOTDIR/boot} will be mounted on
+this same directory when a \ac{Raspi} starts up with a memory card
+containing the raw final image. Hence, to mount boot partition we do:
+%It is therefore the natural place to mount it for later purposes.
+
 \begin{lstlisting}[]
 # mount ${DEV}p1 ${ROOTDIR}/boot
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 %# mount -o loop,offset=$((8192*512)) ${IMAGE}.img ${ROOTDIR}/boot
-
 %We can now change all the files in the disk image as desired.
-It is now possible to change all files within the Raspbian image as desired.
-We will take advantage of this to edit configuration files, append new files,
-and even update and install packages.
+
+In this way, it is now possible to change all files within the Raspbian
+image as desired by editing the files in \texttt{ROOTDIR}. We take
+advantage of this to edit configuration files, append new files and even
+update and install packages.
+
+
+\subsection{Configuring OS files and scripts}
+
+The \ac{Raspi}s should be setup as similar as possible. One of those
+few settings that may be different in the devices is their hostname.
+%The hostname helps the user to distinguish the devices from each other.
+%The hostname helps distinguish them from each other.
+One approach to create unique hostnames would be to write the hostname
+in each memory card. Another way is to create a start up script to automatically
+configure the hostname. We decided to define the hostnames based on the \ac{MAC}
+addresses of the \ac{Raspi}s wired ethernet interface. We store the \ac{MAC}
+addresses and hostnames of the \ac{Raspi}s in a file as below. The testbed
+administrator will need to insert the \ac{MAC} addresses and hostnames of
+his/her \ac{Raspi}s.
+
+%The \ac{Raspi}s should be setup to be as similar as possible. One of those
+%things that is preferred to be different on the devices is their hostname.
+%This helps distinguish them from each other. One solution to this in our
+%approach would be to uniquely change the hostname in each memory card.
+%This is however not desired because that would either require modifying
+%the customized Raspbian lite image before writing the content to the
+%memory card or to manually change it in the \ac{Raspi}s after the image has
+%been written to a memory card.
+%Instead, we decided to register the ethernet MAC addresses of all the \ac{Raspi}s
+%in our testbed. Those had to be used to put them in a domain name anyway.
+%
+%Below is a part of the file where we keep track of the MAC addresses and assign
+%hostnames. This file will be available online and copied to the Raspbian lite
+%image in a later step under the listed filename. For different \ac{Raspi}s
+%the MAC addresses has to be changed. The MAC address of a network card can be found
+%using the command \texttt{"ifconfig"} or \texttt{"ip addr"}.
+
+%Instead, we decided to register the ethernet MAC addresses of all the \ac{Raspi}s
+%in our testbed. Those had to be used to put them in a domain name anyway.
+
+%Below is a snippet of the file of all the hostnames and \ac{MAC} addresses:
+
+%Below is a part of the file where we keep track of the MAC addresses and assign
+%hostnames.
+%This file will be available online and copied to the Raspbian lite
+%image in a later step under the listed filename. For different \ac{Raspi}s
+%the MAC addresses has to be changed. The MAC address of a network card can be found
+%using the command \texttt{"ifconfig"} or \texttt{"ip addr"}.
+
+
+% MAC and Hostname file
+\Suppressnumber\begin{lstlisting}[]
+<@\textcolor{gray}{\$\{ROOTDIR\}/home/pi/rasp\_config/nodes.csv}@>
+<@\textcolor{gray}{
+---------------------------------------------------------------}
+\Reactivatenumber @>
+# Ethernet MAC    Hostname
+b8:27:eb:5b:da:20 rasp00
+b8:27:eb:7b:c3:91 rasp01
+b8:27:eb:54:9c:64 rasp02
+b8:27:eb:95:bd:11 rasp03
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+%Provided that each \ac{Raspi} will have knowledge of all other \ac{Raspi}s in
+%the testbed, it still needs to know which name to give itself.
+%We do this using a small Bash script:
+%We use the \ac{Bash} script below to enable each \ac{Raspi} to find its
+%hostname in \texttt{nodes.csv}.
+A \ac{Bash} script can then be used to have each \ac{Raspi} assign its hostname:
+
+% Set hostname
+\Suppressnumber\begin{lstlisting}[]
+<@\textcolor{gray}{\$\{ROOTDIR\}/home/pi/rasp\_config/set\_hostname}@>
+<@\textcolor{gray}{
+---------------------------------------------------------------}
+\Reactivatenumber @>
+#!/usr/bin/env bash
+
+script_path="$(dirname $(realpath $0))"
+config_file=${script_path}/nodes.csv
+mac=$(cat /sys/class/net/eth0/address)
+old_hostname=$(hostname)
+new_hostname=$(grep $mac $config_file | cut -f2 -d' ')
+
+# Assign hostname found in nodes.csv
+if [ ! -z ${new_hostname} ]; then
+    echo ${new_hostname} > /etc/hostname
+    hostname ${new_hostname}
+    sed -i.old -e "s:${old_hostname}:${new_hostname}:g" /etc/hosts
+fi
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+The code lines above do the following:
+\begin{itemize}
+    \item Line 1: Tells system to interpret the script using \ac{Bash}
+    \item Line 3-4: Gets the path to the script itself and the list of hostnames
+    \item Line 5: Gets the \ac{MAC} address of the node itself
+    \item Line 6: Gets the current hostname
+    \item Line 7: Gets the new hostname from the hostname list
+    \item Line 10-14: Assigns the new hostname
+\end{itemize}
+
+%Line 1 tells the system to interpret the script using Bash. Line 3 gets the
+%path of the script itself. Line 4 gets the MAC address. This script will be
+%located in all \ac{Raspi}s and thus return the MAC address of the node itself
+%when executed.
+%Line 4 searches line by line for this mac address.
+%Line 8-11 assigns the hostname found in \texttt{"nodes.csv"}. If the MAC did not exists,
+%then it will keep the default hostname of the system.
+
+It is likely that the testbed administrator needs to either change or add
+scripts to configure the \ac{Raspi}s. This would be tedious to distribute to
+all \ac{Raspi}s at a later stage. We ease this task by making the \ac{Raspi}s fetch the
+configuration scripts during start up before running the configuration scripts.
+
+The below script attempts to download/update the scripts:
+
+\Suppressnumber\begin{lstlisting}[]
+<@\textcolor{gray}{\$\{ROOTDIR\}/home/pi/rasp\_config/update\_rasp\_config}@>
+<@\textcolor{gray}{
+---------------------------------------------------------------}
+\Reactivatenumber @>
+#!/usr/bin/env bash
+
+url="http://kom.aau.dk/project/TuneSCode/raspi/"
+config_file="rasp_config.zip"
+
+# Attempt to fetch new configuration files
+if ! wget -q --show-progress -O /tmp/${config_file} ${url%/}/${config_file}; then
+    echo "Warning: Unable to update rasp_config files"
+    exit 1
+fi
+
+# Unzip and overwrite configurationn files to root's home directory
+unzip -q -o /tmp/${config_file} -d /home/pi/
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\begin{itemize}
+    \item Line 3-4: Is the url and zip file that should be downloaded
+    \item Line 7-10: Downloads the new configuration files to \texttt{/tmp}
+        and prints a warning in case of errors
+    \item Line 13: Unzips the files to \texttt{/home/pi/} while ignoring existing files/directories
+\end{itemize}
+
+We have packed the files and uploaded them to a webserver. These can be
+retrieved with \texttt{wget} and unzipped into the Raspbian lite image:
+
+% Get the files
+\begin{lstlisting}[]
+$ wget ${URL%/*}/rasp_config.zip
+$ unzip rasp_config.zip -d ${ROOTDIR}/home/pi/
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+For the above scripts to work in the \ac{Raspi}s, it is required that the \ac{Raspi}
+\ac{MAC} address is found in \texttt{nodes.csv}. Thus,
+\texttt{rasp\_config.csv} needs to be unzipped, altered, and zipped again in
+the \ac{HTTP} server from which the \ac{Raspi} retrieves the files from.
+The testbed administrator will therefore need to also edit the \ac{URL} in the
+script \texttt{update\_rasp\_config}.
+%"nodes.csv" can be changed using a text editor. For vim, this could be done
+%the following way:
+%\begin{lstlisting}[]
+%$ vim ${ROOTDIR}/home/pi/rasp_config/nodes.csv
+%\end{lstlisting}
+%\FloatBarrier
+%\vspace{-5mm}
+
+Finally, to actually make the \ac{Raspi}s change hostname, we have to make
+each \ac{Raspi} call the above script when it starts up. Optionally,
+also run the update script before running other scripts.
+Do this with root permissions by inserting the line(s) below before
+\texttt{"exit 0"} using your favorite editor:
+%"\$\{ROOTDIR\}/etc/rc.local" using
+%your favorite text editor..
+%The file
+%can be opened with your favorite text editor.
+
+\Suppressnumber\begin{lstlisting}[]
+<@\textcolor{gray}{\$\{ROOTDIR\}/etc/rc.local}@>
+<@\textcolor{gray}{
+-----------------------------------------------------}
+\Reactivatenumber @>
+...
+bash /home/pi/rasp_config/update_rasp_config
+bash /home/pi/rasp_config/set_hostname
+...
+exit 0
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Configuring \texttt{rc.local} makes it really cumbersome for the testbed
+administrator to add new scripts since it first needs to be included
+in \texttt{rasp\_config.zip} and then each \ac{Raspi} needs to have an additional
+line added to \texttt{rc.local} in the root image or in all memory cards depending on
+the final testbed setup.
+
+A solution to this is to make yet another script in \texttt{rasp\_config.zip}
+that calls all the other scripts in the desired order. This would look like
+below:
+\Suppressnumber\begin{lstlisting}[]
+<@\textcolor{gray}{\$\{ROOTDIR\}/home/pi/rasp\_config/main}@>
+<@\textcolor{gray}{
+-----------------------------------------------------}
+\Reactivatenumber @>
+#!/usr/bin/env bash
+
+bash /home/pi/rasp_config/set_hostname
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Now, to use the above script, \texttt{rc.local} needs to look like this:
+\Suppressnumber\begin{lstlisting}[]
+<@\textcolor{gray}{\$\{ROOTDIR\}/etc/rc.local}@>
+<@\textcolor{gray}{
+-----------------------------------------------------}
+\Reactivatenumber @>
+...
+bash /home/pi/rasp_config/update_rasp_config
+bash /home/pi/rasp_config/main
+...
+exit 0
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+Notice that \texttt{set\_hostname} is now called by the \texttt{main}
+script instead. The update script is still called directly. This ensures that
+all configuration scripts are updated before executed. Changes to the update
+script itself will first take effect at next system startup.
+%Had the update script
+%been called in \texttt{main} instead would mean that changes to the
+%\texttt{main} script would also first have been available at next startup.
+
+%This can be done by inserting a call to the script
+%set\_hostname in rc.local before it exits.
+%
+%Call set\_hostname script at startup. We insert a line of code to call script in rc.local just after the initial comments (i.e. lines starting with \#).
+%\begin{lstlisting}[]
+%# line_number=$(egrep -n -m1 "(^[^#])|(^$)" ${ROOTDIR}/etc/rc.local | cut -d: -f1)
+%# sed -i "${line_number}c bash /home/pi/rasp_config/set_hostname" ${ROOTDIR}/etc/rc.local
+%\end{lstlisting}
+%\FloatBarrier
+%$ line="bash /home/pi/.rasp_config/set_hostname"
+%# awk -v text="$line" '!/^#/ && !p {print text; p=1} 1' ${ROOTDIR}/etc/rc.local > <@ \Suppressnumber @>
+%    ${ROOTDIR}/etc/rc.local <@ \Reactivatenumber @>
+
+%WE NEED TO ADD A FEW COMMANDS TELLING HOW TO ZIP, MODIFY, AND UNZIP
+%FOR THE READER TO BE ABLE TO UPLOAD A CONSTRUCT HIS/HER OWN BUNDLE.
+
+%All other files could be updated as well.
+It is not only possible to add and configure files to/within the image. One can
+also install and update the packages within the image which will be illustrated
+in the next section.
+
+\subsection{Installing and updating the image}
+
+It may be desired to pre-install some programs in the image before it is
+written to all the memory cards that goes into the \ac{Raspi}s.
+This can be done from any linux x86 machine using QEMU Chroot~\cite{QemuUserEmulation}
+(change root).
+%\url{https://wiki.debian.org/QemuUserEmulation}
+%\url{https://wiki.archlinux.org/index.php/Raspberry_Pi}
+
+Due to the \ac{ARM} processor that \ac{Raspi}s are using, it is required to
+install some additional software:
+%Because \ac{Raspi}s are equipped with an \ac{ARM} processor
+%%it is not as
+%straightforward as performing the task for two Linux systems of the same
+%architecture.
+
+% CHROOT to OS image
+\begin{lstlisting}[]
+# apt-get install binfmt-support qemu qemu-user-static
+# update-binfmts --display qemu-arm
+qemu-arm (enabled):
+     package = qemu-user-static
+        type = magic
+      offset = 0
+       magic = \x7fELF\x01\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x28\x00
+        mask = \xff\xff\xff\xff\xff\xff\xff\x00\xff\xff\xff\xff\xff\xff\xff\xff\xfe\xff\xff\xff
+ interpreter = /usr/bin/qemu-arm-static
+    detector =
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+% This was neccessary on arch
+%# update-binfmts --importdir /var/lib/binfmts/ --import
+
+Make sure the second command writes "enabled" as the output above. If that
+is not the case, then try enabling it:
+
+\begin{lstlisting}[]
+# update-binfmts --enable qemu-arm
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Provided that qemu-arm is enabled, we should now be able to change root (chroot)
+into our Raspbian lite image. Change root is a method in Linux that enables
+the root (/) to be changed. Thus, enabling a Linux installation within a
+Linux installation.
+
+There are a few commands to be performed before actually changing root into the
+root partion of the image.
+First, to get internet access from within the Raspbian lite image it is needed
+to copy our \texttt{resolv.conf} into the filesystem. Line 1 change directory
+into root filesystem of the image. The second line copies \texttt{resolv.conf}
+from the testbed administrators \ac{PC} to the image.
+
+% CHROOT to OS image
+\begin{lstlisting}[]
+$ cd $ROOTDIR
+# cp /etc/resolv.conf ${ROOTDIR}/etc/resolv.conf
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Now, because of the \ac{ARM} architecture,
+\texttt{/usr/bin/qemu-arm-static} needs to be copied into the image before continuing:
+
+% CHROOT to OS image
+\begin{lstlisting}[]
+# cp /usr/bin/qemu-arm-static ${ROOTDIR}/usr/bin
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+The final preparation before changing root is to populate the directories \texttt{proc},
+\texttt{sys}, and \texttt{dev}:
+
+% CHROOT to OS image
+\begin{lstlisting}[]
+# mount  -t proc proc proc/
+# mount --bind /sys sys/
+# mount --bind /dev dev/
+# mount --bind /dev/pts dev/pts
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Finally, it is time to change root.
+%Finally, the filesystem is ready for us to change root.
+This can be done with \texttt{proot}. It may be required to install \texttt{proot}
+using "\texttt{apt-get install proot}":
+
+% CHROOT to OS image
+\begin{lstlisting}[]
+# proot -q qemu-arm-static -S ${ROOTDIR}
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Most available material online uses the more known \texttt{chroot} command as
+written in the code block below instead of \texttt{proot}. This did not work
+correctly in our machines, but we present the command as an alternative to
+\texttt{proot} in case the testbed administrator should be in the opposite
+situration where \texttt{proot} is not working.
+
+% CHROOT to OS image
+\begin{lstlisting}[]
+# chroot ${ROOTDIR} /usr/bin/qemu-arm-static /bin/bash    (ALTERNATIVE TO proot)
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+If everything went well, we should now be \texttt{chrooted} into the Raspbian lite
+filesystem under its root. Optionally, change the prompt title to indicate that it
+is a \texttt{chrooted} environment:
+
+% Optionally, we may create a unique prompt to indicate we have changed root
+\begin{lstlisting}[]
+# export PS1="(chroot) $PS1"
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+The Raspbian lite system image should now be possible to use almost as if it
+had been booted in a \ac{Raspi}.
+A major difference is that the testbed administrator's \ac{PC} is likely
+significantly faster than a \ac{Raspi}.
+%The only difference is that the laptop that we are using is
+%significantly faster than a \ac{Raspi}.
+Thus enabling updates, upgrades, and installing new software packages much
+faster than in the \ac{Raspi}s.
+%Thus enabling us to for example update,
+%upgrade, and install software packages:
+
+% Update system
+\begin{lstlisting}[]
+(chroot) # apt-get update
+(chroot) # apt-get upgrade
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+We also install a few packages that we find useful:
+%Lets install some useful applications:
+% Install packages
+\begin{lstlisting}[]
+(chroot) # apt-get install vim git screen
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+When writing the image to a memory card, all these change that has been made
+to the image so far will exists in all \ac{Raspi}s.
+%All the changes that are made here will exists in all \ac{Raspi}s when the
+%image is written to a memory card.
