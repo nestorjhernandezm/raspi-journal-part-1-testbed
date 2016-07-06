@@ -328,12 +328,44 @@ some particularities exist to differentiate the devices in principle. Also,
 scripts containing further configurations for the \ac{Raspi}s are desirable
 to be distributed as part of the common image. Therefore, here we present
 the steps to setup basic properties of the \ac{Raspi}s and distributing
-configuration scripts to each of them through the image.
+configuration scripts to each of them through the image. First, we indicate
+how to obtain and put our configuration scripts in the image. Later, we
+describe the tasks performed by these configuration scripts. Nevertheless,
+any testbed administrator might modify or include other tasks besides the
+presented in this procedure according to his / her needs.
 
-Among the settings that may be different in the devices is their hostname.
-The hostname helps the user to physically distinguish the devices from
-each other. Thus, we require the devices in our testbed to have different
-hostnames. Hence, we define the hostnames based on the \ac{MAC} addresses
+In our case, we have our configuration scripts are stored in a \texttt{.zip}
+file located in a web server. We first retrieve this compressed file with
+\texttt{wget} and unzip it locally into our Raspbian lite image. These
+commands and the output of the last one are shown as follows:
+
+% Get the configuration files that are compressed in a remote server
+\begin{lstlisting}[]
+$ wget ${URL%/*}/rasp_config.zip
+$ unzip rasp_config.zip -d ${ROOTDIR}/home/pi/
+Archive:  rasp_config.zip
+   creating: ${ROOTDIR}/home/pi/rasp_config/
+  inflating: ${ROOTDIR}/home/pi/rasp_config/nodes.csv
+  inflating: ${ROOTDIR}/home/pi/rasp_config/set_hostname
+  inflating: ${ROOTDIR}/home/pi/rasp_config/main
+  inflating: ${ROOTDIR}/home/pi/rasp_config/update_rasp_config
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Now,
+
+Among the settings that we want to be different in the devices is
+their hostname. The hostname helps the user to physically distinguish the
+devices from each other. Thus, in our case we require the devices in our
+testbed to have different hostnames. Moreover, besides this standard task,
+other testbed administrators may need to also include other scripts to
+configure their \ac{Raspi}s. Hence, we want to ensure that all the \ac{Raspi}
+configuration scripts of any testbed administrators are obtained in a simple
+way. Therefore, we ease this task by making the \ac{Raspi}s fetch the
+configuration scripts during start up before running them.
+
+Hence, we define the hostnames based on the \ac{MAC} addresses
 of the \ac{Raspi}s wired Ethernet interface. Prior to this stage, the
 \ac{MAC} address of a network card can be found using the command
 \texttt{ifconfig} or \texttt{ip addr} on a given \ac{Raspi}.
@@ -429,16 +461,7 @@ unzip -q -o /tmp/${config_file} -d /home/pi/
     \item Line 13: Unzips the files to \texttt{/home/pi/} while ignoring existing files/directories
 \end{itemize}
 
-We have packed the files and uploaded them to a webserver. These can be
-retrieved with \texttt{wget} and unzipped into the Raspbian lite image:
 
-% Get the files
-\begin{lstlisting}[]
-$ wget ${URL%/*}/rasp_config.zip
-$ unzip rasp_config.zip -d ${ROOTDIR}/home/pi/
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
 
 For the above scripts to work in the \ac{Raspi}s, it is required that the \ac{Raspi}
 \ac{MAC} address is found in \texttt{nodes.csv}. Thus,
