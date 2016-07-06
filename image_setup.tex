@@ -233,7 +233,7 @@ Syncing disks.
 After successfully resizing the image file, we use a loopback device to make
 the Raspbian image available as a block device in the filesystem. For this
 command to work, the tested administrator distribution must have the
-\texttt{utils-linux} package with version 2.21 or higher. Otherwise, the
+\texttt{util-linux} package with version 2.21 or higher. Otherwise, the
 \texttt{-P} argument of \texttt{losetup} will appear as invalid.
 
 
@@ -320,7 +320,6 @@ In this way, it is now possible to change all files within the Raspbian
 image as desired by editing the files in \texttt{ROOTDIR}. We take
 advantage of this to edit configuration files, append new files and even
 update and install packages.
-
 
 \subsection{Default OS Files and Configuration Scripts Setup}
 
