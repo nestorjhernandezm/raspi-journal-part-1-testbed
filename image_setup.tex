@@ -322,57 +322,31 @@ advantage of this to edit configuration files, append new files and even
 update and install packages.
 
 
-\subsection{Configuring OS files and scripts}
+\subsection{Default OS Files and Configuration Scripts Setup}
 
 In general, the \ac{Raspi}s should be setup as similar as possible. However,
-some particularities exist to differentiate the devices in principle
-One of those
-few settings that may be different in the devices is their hostname.
-%The hostname helps the user to distinguish the devices from each other.
-%The hostname helps distinguish them from each other.
-One approach to create unique hostnames would be to write the hostname
-in each memory card. Another way is to create a start up script to automatically
-configure the hostname. We decided to define the hostnames based on the \ac{MAC}
-addresses of the \ac{Raspi}s wired ethernet interface. We store the \ac{MAC}
-addresses and hostnames of the \ac{Raspi}s in a file as below. The testbed
-administrator will need to insert the \ac{MAC} addresses and hostnames of
-his/her \ac{Raspi}s.
+some particularities exist to differentiate the devices in principle. Also,
+scripts containing further configurations for the \ac{Raspi}s are desirable
+to be distributed as part of the common image. Therefore, here we present
+the steps to setup basic properties of the \ac{Raspi}s and distributing
+configuration scripts to each of them through the image.
 
-%The \ac{Raspi}s should be setup to be as similar as possible. One of those
-%things that is preferred to be different on the devices is their hostname.
-%This helps distinguish them from each other. One solution to this in our
-%approach would be to uniquely change the hostname in each memory card.
-%This is however not desired because that would either require modifying
-%the customized Raspbian lite image before writing the content to the
-%memory card or to manually change it in the \ac{Raspi}s after the image has
-%been written to a memory card.
-%Instead, we decided to register the ethernet MAC addresses of all the \ac{Raspi}s
-%in our testbed. Those had to be used to put them in a domain name anyway.
-%
-%Below is a part of the file where we keep track of the MAC addresses and assign
-%hostnames. This file will be available online and copied to the Raspbian lite
-%image in a later step under the listed filename. For different \ac{Raspi}s
-%the MAC addresses has to be changed. The MAC address of a network card can be found
-%using the command \texttt{"ifconfig"} or \texttt{"ip addr"}.
-
-%Instead, we decided to register the ethernet MAC addresses of all the \ac{Raspi}s
-%in our testbed. Those had to be used to put them in a domain name anyway.
-
-%Below is a snippet of the file of all the hostnames and \ac{MAC} addresses:
-
-%Below is a part of the file where we keep track of the MAC addresses and assign
-%hostnames.
-%This file will be available online and copied to the Raspbian lite
-%image in a later step under the listed filename. For different \ac{Raspi}s
-%the MAC addresses has to be changed. The MAC address of a network card can be found
-%using the command \texttt{"ifconfig"} or \texttt{"ip addr"}.
-
+Among the settings that may be different in the devices is their hostname.
+The hostname helps the user to physically distinguish the devices from
+each other. Thus, we require the devices in our testbed to have different
+hostnames. Hence, we define the hostnames based on the \ac{MAC} addresses
+of the \ac{Raspi}s wired Ethernet interface. Prior to this stage, the
+\ac{MAC} address of a network card can be found using the command
+\texttt{ifconfig} or \texttt{ip addr} on a given \ac{Raspi}.
+We store the \ac{MAC} addresses and hostnames of the \ac{Raspi}s in the
+configuration file \texttt{\${ROOTDIR}/home/pi/rasp\_config/nodes.csv} as
+shown:
 
 % MAC and Hostname file
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$\{ROOTDIR\}/home/pi/rasp\_config/nodes.csv}@>
 <@\textcolor{gray}{
----------------------------------------------------------------}
+--------------------------------------------------------------------------------}
 \Reactivatenumber @>
 # Ethernet MAC    Hostname
 b8:27:eb:5b:da:20 rasp00
@@ -383,18 +357,17 @@ b8:27:eb:95:bd:11 rasp03
 \FloatBarrier
 \vspace{-5mm}
 
-%Provided that each \ac{Raspi} will have knowledge of all other \ac{Raspi}s in
-%the testbed, it still needs to know which name to give itself.
-%We do this using a small Bash script:
-%We use the \ac{Bash} script below to enable each \ac{Raspi} to find its
-%hostname in \texttt{nodes.csv}.
-A \ac{Bash} script can then be used to have each \ac{Raspi} assign its hostname:
+The testbed administrator has to insert the \ac{MAC} addresses and hostnames
+of his/her \ac{Raspi}s obtained previously in the format shown in the
+configuration file. Once we have defined the hostnames in
+\texttt{\${ROOTDIR}/home/pi/rasp\_config/nodes.csv}, we use the following
+\ac{Bash} script to have each \ac{Raspi} assign its hostname:
 
 % Set hostname
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$\{ROOTDIR\}/home/pi/rasp\_config/set\_hostname}@>
 <@\textcolor{gray}{
----------------------------------------------------------------}
+-------------------------------------------------------------------------------------}
 \Reactivatenumber @>
 #!/usr/bin/env bash
 
@@ -414,23 +387,12 @@ fi
 \FloatBarrier
 \vspace{-5mm}
 
-The code lines above do the following:
-\begin{itemize}
-    \item Line 1: Tells system to interpret the script using \ac{Bash}
-    \item Line 3-4: Gets the path to the script itself and the list of hostnames
-    \item Line 5: Gets the \ac{MAC} address of the node itself
-    \item Line 6: Gets the current hostname
-    \item Line 7: Gets the new hostname from the hostname list
-    \item Line 10-14: Assigns the new hostname
-\end{itemize}
-
-%Line 1 tells the system to interpret the script using Bash. Line 3 gets the
-%path of the script itself. Line 4 gets the MAC address. This script will be
-%located in all \ac{Raspi}s and thus return the MAC address of the node itself
-%when executed.
-%Line 4 searches line by line for this mac address.
-%Line 8-11 assigns the hostname found in \texttt{"nodes.csv"}. If the MAC did not exists,
-%then it will keep the default hostname of the system.
+The \texttt{\$\{ROOTDIR\}/home/pi/rasp\_config/set\_hostname} script (in
+script lines): (1) tells the system to interpret the script using \ac{Bash},
+(3-4) gets the path to the script itself and the list of hostnames, (5) gets
+the \ac{MAC} address of the node itself, (6) gets the current hostname, (7)
+gets the new hostname from the hostname list and (10-14) assigns the new
+hostname to the \ac{Raspi} where the script will be executed.
 
 It is likely that the testbed administrator needs to either change or add
 scripts to configure the \ac{Raspi}s. This would be tedious to distribute to
