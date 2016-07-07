@@ -430,12 +430,12 @@ the \ac{MAC} address of the node itself, (6) gets the current hostname, (7)
 gets the new hostname from the hostname list and (10-14) assigns the new
 hostname to the \ac{Raspi} where the script will be executed.
 
-It is possible that the testbed administrator requires to add other
-scripts to configure the \ac{Raspi}s besides the ones introduced here.
-This would be tedious to distribute to all \ac{Raspi}s at a later stage.
-We ease this task by making the \ac{Raspi}s fetch all the configuration
-scripts during start up from a \texttt{.zip} file before running the
-configuration scripts. The below script attempts to download/update the
+Besides the scripts introduced up to this point of our procedure, it is
+possible that the testbed administrator requires to add other scripts to
+configure its \ac{Raspi}s. We ease this task by making the \ac{Raspi}s
+fetch all the configuration scripts during start up from a \texttt{.zip}
+file before running the configuration scripts. The role of this script
+is the same as theThe below script attempts to download/update the
 scripts:
 
 \Suppressnumber\begin{lstlisting}[]
