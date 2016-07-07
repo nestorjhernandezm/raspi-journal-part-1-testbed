@@ -39,7 +39,7 @@ Assuming that we are still using the \texttt{chroot} commands into the
 Raspbian lite root filesystem for installing packages, we can setup the
 overlay filesystem at this point of the procedure. There already exists
 implementations overlaying the root filesystem. We use an implementation
-available at the Git repository in\cite{overlayroot}. Since we have
+available at the Git repository in \cite{overlayroot}. Since we have
 installed git in a previous step, we clone the repository. The
 command block below stores it in \texttt{/tmp} which is really mounted in
 \ac{RAM}. Then, all the files stored here will disappear a \ac{Raspi} is
@@ -53,12 +53,11 @@ rebooted.
 \FloatBarrier
 \vspace{-5mm}
 
-To enable the overlaying filesystem it is required to generate an initial \ac{RAM}
-file system (initramfs). Initramfs is an initial filesystem that gets loaded into
-\ac{RAM} during the startup process of a linux machine to prepare the real
-filesystem.
-
-For this purpose, we need BuxyBox:
+Before enabling the overlaying filesystem, it is required to generate
+an initial \ac{RAM} file system or \texttt{initramfs}. This is an
+initial filesystem that gets loaded into \ac{RAM} during the startup
+process of a Linux machine to prepare the real filesystem. For this purpose,
+we need the BusyBox package by running:
 
 % Install required packages
 \begin{lstlisting}[]
@@ -67,8 +66,8 @@ For this purpose, we need BuxyBox:
 \FloatBarrier
 \vspace{-5mm}
 
-Add and activate the overlaying filesystem, we need to add the scripts and tell initramfs
-to load the overlaying filesytem:
+To create and activate the overlaying filesystem, we need to first
+add the required system scripts to do so. This is done as follows:
 
 % Setup initramfs
 \begin{lstlisting}[]
@@ -79,35 +78,27 @@ to load the overlaying filesytem:
 \FloatBarrier
 \vspace{-5mm}
 
-%Finally, lets generate the initial \ac{RAM} filesystem. This is done using the command
-%\texttt{mkinitramfs}, that will by default look for the kernel modules of the current system. Remember we are
-%chrooted, so we need to specify the correct kernel modules to look for. These
-%can be found in "/lib/modules".
-Now, the initial \ac{RAM} filesystem can be generated. \ac{Raspi} version 1
-needs a different kernel than \ac{Raspi} version 2 and version 3. Thus, start
-by finding the available kernel modules:
-%Because \texttt{initramfs} is executed within a
-%\texttt{chrooted} environment, it will not be able to detect the
-%kernel modules in the \texttt{chrooted} environment. The kernel modules will
+To generate the initial \ac{RAM} filesystem, we have to utilize the
+\texttt{mkinitramfs} command. This searches by default for the available
+kernel modules in the system. Since we are in \texttt{chroot} mode, we need
+to specify the correct kernel modules to search for. The available
+kernel modules are \texttt{/lib/modules}. To see them, we just run:
 
-
-% Create an initramfs
+% See available kernel modules
 \begin{lstlisting}[]
 (chroot) # ls /lib/modules/
 4.4.13+  4.4.13-v7+
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
+%IT SEEM THAT THE RASPIS DEMANDS DIFFERENT KERNEL MODULES AFTER ALL.
+%RASP-VERSION1=4.4.13+, RASP-VERSION2=4.4.13-V7+, RASP-VERSION3=4.4.13-V7+
 
-Kernel "4.4.13+" is for \ac{Raspi} version 1 and kernel "4.4.13-v7+" works
-for \ac{Raspi} version 2 and version 3.
-
-Lets proceed by generating an initial \ac{RAM} filesystem for both kernels:
-
-%Lets proceed with kernel modules "4.4.13+".
-%Lets create an initial ram filesystem for both kernels.
-
-%Thus, to run mkinitramfs, type in the correct kernel version:
+Now, the initial \ac{RAM} filesystem can be generated. \ac{Raspi} version 1
+needs a different kernel than \ac{Raspi} version 2 and version 3. Kernel
+version 4.4.13+ is for \ac{Raspi} version 1 and kernel 4.4.13-v7+ for
+\ac{Raspi} version 2 and version 3. We proceed to generate an initial
+\ac{RAM} filesystem for these kernels by running:
 
 % Create an initramfs
 \begin{lstlisting}[]
@@ -117,35 +108,28 @@ Lets proceed by generating an initial \ac{RAM} filesystem for both kernels:
 \FloatBarrier
 \vspace{-5mm}
 
-%IT SEEM THAT THE RASPIS DEMANDS DIFFERENT KERNEL MODULES AFTER ALL.
-%RASP-VERSION1=4.4.13+, RASP-VERSION2=4.4.13-V7+, RASP-VERSION3=4.4.13-V7+
+Although these commands might be output some warnings, they should
+successfully generate working initial \ac{RAM} filesystems. Later, an
+initial \ac{RAM} filesystem will need to be called by the bootloader.
+In Raspbian this is done by adding a command to \texttt{config.txt} file
+in the boot partition. If the system should be run in a \ac{Raspi} version 1,
+then use \texttt{init.gz}, otherwise use \texttt{init-v7.gz} as follows
+\todot{What happens if I have both a Raspi 1, 2 or 3 in my testbed? Do I have
+to have different images after this point?}:
 
-Although there might be printet a few warnings, the above commands should successfully
-generate working initial \ac{RAM} filesystems.
-
-An initial \ac{RAM} filesystem needs to be called by the bootloader. In Raspbian
-this is done by adding a command to \texttt{config.txt} in the boot partition.
-
-If the system should be run in a \ac{Raspi} version 1, then use \texttt{init.gz}:
 %The bootloader should be made aware of the initramfs that we will generate:
 \begin{lstlisting}[]
 (chroot) # echo "initramfs init.gz" >> /boot/config.txt     # Only for Raspberry Pi version 1
+(chroot) # echo "initramfs init-v7.gz" >> /boot/config.txt  # For Raspberry Pi version 2 or 3
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-If the system should be run in a \ac{Raspi} version 2 or 3, then use \texttt{init-v7.gz}:
-\begin{lstlisting}[]
-(chroot) # echo "initramfs init-v7.gz" >> /boot/config.txt  # Only for Raspberry Pi version 2 and 3
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
+After this point, it is no longer required to be in \texttt{chroot} mode.
+The following commands exits the \texttt{chroot} environment, unmount all
+partitions and detaches the loopback devices:
 
-At this point, it is no longer required to be \texttt{chrooted} and the image
-can be written to a memory card. The following commands exits the \texttt{chrooted}
-environment, unmount all partitions, and detaches the loopback device:
-
-% Exit chroot, umount, and write to memory card
+% Exit chroot, unmount and detach loopback devices
 \begin{lstlisting}[]
 (chroot) # exit
 # cd ..
@@ -155,20 +139,20 @@ environment, unmount all partitions, and detaches the loopback device:
 \FloatBarrier
 \vspace{-5mm}
 
-\subsection{(Optional) Persistent subdirectories for distributed Linux image}
+For the \texttt{--recursive} to work properly, it is necessary that
+the package \texttt{util-linux} version is greater than or equal to 2.22.
+Otherwise, an alternative is to either update the package or follow the
+procedure in Section~\ref{sec:umount} of the Appendix.
 
-EMPHASIZE THAT THIS SETUP IS ONLY FOR THE SETUP WHERE THE ROOT IMAGE ARE
-WRITTEN TO THE MEMORY CARDS
+\subsection{Persistent Image Directories}
+Provided the stacked filesystem is configured, now it is possible to have
+directories where files are not removed upon rebooting the \ac{Raspi}s.
+The following procedure creates an extra partition in the image for
+the \ac{Raspi} user home directory that will be made storage persistent
+using the upper filesystem. We first expand image according to the desired
+home directory size, but avoiding to make the image bigger than the target
+memory card size.
 
-Provided the stacked filesystem was configured, it may be desired to have
-some directories where files are not flushed upon rebooting the \ac{Raspi}s.
-The following procedure will create an extra partition in the image for
-the \ac{Raspi} users home directory that will be made storage persistent.
-%Provided that a stacked filesystem was configured to make the root
-%filesystem forget chances upon reboots is not always desired.
-
-Expand image according to the desired home directory size. Keep in mind not
-to make the image bigger than the target memory card.
 % Expand image
 \begin{lstlisting}[]
 $ dd if=/dev/zero bs=1M count=1024 >> ${IMAGE}.img && sync

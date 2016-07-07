@@ -22,7 +22,7 @@ WHAT WILL BE THE OUTPUT?
 \FloatBarrier
 \vspace{-5mm}
 
-I THINK SIZELMIT IS NOT REQUIRED
+I THINK SIZELIMIT IS NOT REQUIRED
 \begin{lstlisting}[]
 # losetup -o $((8192*512)) --sizelimit $((137215*512)) ${DEV}p1 ${IMAGE}.img
 # losetup -o $((137216*512)) --sizelimit $((4806655*512)) ${DEV}p2 ${IMAGE}.img
@@ -32,6 +32,23 @@ I THINK SIZELMIT IS NOT REQUIRED
 
 The output from \texttt{lsblk} will look a bit different
 
+\section{Alternative for Recursive Unmount after Image Chroot}
+\label{sec:umount}
+
+In case the \texttt{umount --recursive} is not available given that a version
+higher or equal than 2.22 for \texttt{util-linux} is neither not available,
+a possible option is to manually umount all the partitions used during the
+\texttt{chroot} environment.
+
+\begin{lstlisting}[]
+# losetup -o $((8192*512)) --sizelimit $((137215*512)) ${DEV}p1 ${IMAGE}.img
+# losetup -o $((137216*512)) --sizelimit $((4806655*512)) ${DEV}p2 ${IMAGE}.img
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
 
 \section{http}
 \label{sec:http}
+
+The HTTP description
+
