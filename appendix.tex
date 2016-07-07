@@ -1,0 +1,36 @@
+\label{sec:testbed_http}
+
+
+\section{Old version of losetup}
+
+\begin{lstlisting}[]
+# export DEV="${losetup -f}"
+/dev/loop0
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\begin{lstlisting}[]
+# mknod -m 660 ${DEV}p1 b 7 1
+# mknod -m 660 ${DEV}p2 b 7 2
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\begin{lstlisting}[]
+# fdisk -lu ${IMAGE}.img
+WHAT WILL BE THE OUTPUT?
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+I THINK SIZELMIT IS NOT REQUIRED
+\begin{lstlisting}[]
+# losetup -o $((8192*512)) --sizelimit $((137215*512)) ${DEV}p1 ${IMAGE}.img
+# losetup -o $((137216*512)) --sizelimit $((4806655*512)) ${DEV}p2 ${IMAGE}.img
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+The output from \texttt{lsblk} will look a bit different
+
