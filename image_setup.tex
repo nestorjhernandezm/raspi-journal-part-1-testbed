@@ -334,7 +334,7 @@ describe the tasks performed by these configuration scripts. Nevertheless,
 any testbed administrator might modify or include other tasks besides the
 presented in this procedure according to his / her needs.
 
-In our case, we have our configuration scripts are stored in a \texttt{.zip}
+In our case, we have our configuration scripts stored in a \texttt{.zip}
 file located in a web server. We first retrieve this compressed file with
 \texttt{wget} and unzip it locally into our Raspbian lite image. These
 commands and the output of the last one are shown as follows:
@@ -353,7 +353,11 @@ Archive:  rasp_config.zip
 \FloatBarrier
 \vspace{-5mm}
 
-Now,
+The unzippped files are one configuration file and three configuration
+scripts put in the newly created \texttt{\${ROOTDIR}/home/pi/rasp\_config/}
+folder in the image. In what follows, we describe which features do we
+require all the \ac{Raspi}s to have and how are they achieved with
+these configuration scripts.
 
 Among the settings that we want to be different in the devices is
 their hostname. The hostname helps the user to physically distinguish the
@@ -370,8 +374,8 @@ of the \ac{Raspi}s wired Ethernet interface. Prior to this stage, the
 \ac{MAC} address of a network card can be found using the command
 \texttt{ifconfig} or \texttt{ip addr} on a given \ac{Raspi}.
 We store the \ac{MAC} addresses and hostnames of the \ac{Raspi}s in the
-configuration file \texttt{\${ROOTDIR}/home/pi/rasp\_config/nodes.csv} as
-shown:
+configuration file \texttt{\${ROOTDIR}/home/pi/rasp\_config/nodes.csv}. A
+sample of our file is shown as follows:
 
 % MAC and Hostname file
 \Suppressnumber\begin{lstlisting}[]
@@ -391,7 +395,8 @@ b8:27:eb:95:bd:11 rasp03
 The testbed administrator has to insert the \ac{MAC} addresses and hostnames
 of his/her \ac{Raspi}s obtained previously in the format shown in the
 configuration file. Once we have defined the hostnames in
-\texttt{\${ROOTDIR}/home/pi/rasp\_config/nodes.csv}, we use the following
+\texttt{\${ROOTDIR}/home/pi/rasp\_config/nodes.csv}, we use the
+\texttt{\${ROOTDIR}/home/pi/rasp\_config/set\_hostname}
 \ac{Bash} script to have each \ac{Raspi} assign its hostname:
 
 % Set hostname
@@ -425,12 +430,13 @@ the \ac{MAC} address of the node itself, (6) gets the current hostname, (7)
 gets the new hostname from the hostname list and (10-14) assigns the new
 hostname to the \ac{Raspi} where the script will be executed.
 
-It is likely that the testbed administrator needs to either change or add
-scripts to configure the \ac{Raspi}s. This would be tedious to distribute to
-all \ac{Raspi}s at a later stage. We ease this task by making the \ac{Raspi}s fetch the
-configuration scripts during start up before running the configuration scripts.
-
-The below script attempts to download/update the scripts:
+It is possible that the testbed administrator requires to add other
+scripts to configure the \ac{Raspi}s besides the ones introduced here.
+This would be tedious to distribute to all \ac{Raspi}s at a later stage.
+We ease this task by making the \ac{Raspi}s fetch all the configuration
+scripts during start up from a \texttt{.zip} file before running the
+configuration scripts. The below script attempts to download/update the
+scripts:
 
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$\{ROOTDIR\}/home/pi/rasp\_config/update\_rasp\_config}@>
@@ -461,10 +467,8 @@ unzip -q -o /tmp/${config_file} -d /home/pi/
     \item Line 13: Unzips the files to \texttt{/home/pi/} while ignoring existing files/directories
 \end{itemize}
 
-
-
-For the above scripts to work in the \ac{Raspi}s, it is required that the \ac{Raspi}
-\ac{MAC} address is found in \texttt{nodes.csv}. Thus,
+For the above scripts to work in the \ac{Raspi}s, it is required that the
+\ac{Raspi} \ac{MAC} address is found in \texttt{nodes.csv}. Thus,
 \texttt{rasp\_config.csv} needs to be unzipped, altered, and zipped again in
 the \ac{HTTP} server from which the \ac{Raspi} retrieves the files from.
 The testbed administrator will therefore need to also edit the \ac{URL} in the
