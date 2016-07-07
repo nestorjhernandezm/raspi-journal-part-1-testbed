@@ -556,29 +556,30 @@ exit 0
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
+
 Notice that \texttt{set\_hostname} is now called by the \texttt{main}
 script instead. The update script is still called directly. This ensures that
 all configuration scripts are updated before executed. Changes to the update
 script itself will first take effect at next system startup.
 
-\subsection{Image Package Updating}
-Besides adding and configuring files within the image, the testbed
-administrator can also install and update the software packages within
-the image which will be illustrated in this subsection.
-
-It may be desired to pre-install some programs in the image before it is
-written to all the memory cards that goes into the \ac{Raspi}s.
-This can be done from any linux x86 machine using QEMU Chroot~\cite{QemuUserEmulation}
-(change root).
 %\url{https://wiki.debian.org/QemuUserEmulation}
 %\url{https://wiki.archlinux.org/index.php/Raspberry_Pi}
+\subsection{Image Package Updating}
+Besides adding and configuring files within the image, the testbed
+administrator may want to install and update the software packages
+within the image before it is written to all the memory cards that goes
+into the \ac{Raspi}s. From any Linux x86 machine as the testbed administrator
+\ac{PC}, this can be done using \texttt{chroot} command in the
+QEMU~\cite{QemuUserEmulation} hypervisor for \ac{ARM} processors.
 
-Due to the \ac{ARM} processor that \ac{Raspi}s are using, it is required to
-install some additional software:
-%Because \ac{Raspi}s are equipped with an \ac{ARM} processor
-%%it is not as
-%straightforward as performing the task for two Linux systems of the same
-%architecture.
+\texttt{chroot} is a method in Linux that modifies the apparent root
+filesystem location from \texttt{/} to any other path. Consequently, in
+our case, we can use the Raspbian Lite image root filesystem within the
+testbed administrator Linux distribution. Then, QEMU allows the execution
+of commands for the \ac{Raspi} image (\ac{ARM} instructions) through the ones
+from the testbed administrator \ac{PC} architecture. Due to the \ac{ARM}
+processor that the \ac{Raspi}s employ, t is required to install the QEMU related software first and verigy that QEMU is \ac{ARM} enabled. To do so,
+run the following commands:
 
 % CHROOT to OS image
 \begin{lstlisting}[]
@@ -598,8 +599,9 @@ qemu-arm (enabled):
 % This was neccessary on arch
 %# update-binfmts --importdir /var/lib/binfmts/ --import
 
-Make sure the second command writes "enabled" as the output above. If that
-is not the case, then try enabling it:
+In the previous output, the testbed administrator must be sure that the second
+command writes \texttt{qemu-arm (enabled)} as indicated. If that is not the
+case, then it should be possible to enable it by running:
 
 \begin{lstlisting}[]
 # update-binfmts --enable qemu-arm
@@ -607,19 +609,14 @@ is not the case, then try enabling it:
 \FloatBarrier
 \vspace{-5mm}
 
-Provided that qemu-arm is enabled, we should now be able to change root (chroot)
-into our Raspbian lite image. Change root is a method in Linux that enables
-the root (/) to be changed. Thus, enabling a Linux installation within a
-Linux installation.
-
-There are a few commands to be performed before actually changing root into the
-root partion of the image.
+Provided that qemu-arm is enabled, we should now be able to \texttt{chroot}
+into our Raspbian lite image. However, there are a few commands to be
+performed before actually changing root into the root partion of the image.
 First, to get internet access from within the Raspbian lite image it is needed
-to copy our \texttt{resolv.conf} into the filesystem. Line 1 change directory
-into root filesystem of the image. The second line copies \texttt{resolv.conf}
-from the testbed administrators \ac{PC} to the image.
+to copy the testbed administrator Linux distribution \texttt{resolv.conf} file
+into the image root filesystem. To do this, it is required to run the
+following:
 
-% CHROOT to OS image
 \begin{lstlisting}[]
 $ cd $ROOTDIR
 # cp /etc/resolv.conf ${ROOTDIR}/etc/resolv.conf
@@ -627,8 +624,9 @@ $ cd $ROOTDIR
 \FloatBarrier
 \vspace{-5mm}
 
-Now, because of the \ac{ARM} architecture,
-\texttt{/usr/bin/qemu-arm-static} needs to be copied into the image before continuing:
+Now, because of the \ac{ARM} architecture, the
+\texttt{/usr/bin/qemu-arm-static} command needs to be copied into the
+image before continuing by running:
 
 % CHROOT to OS image
 \begin{lstlisting}[]
@@ -637,8 +635,10 @@ Now, because of the \ac{ARM} architecture,
 \FloatBarrier
 \vspace{-5mm}
 
-The final preparation before changing root is to populate the directories \texttt{proc},
-\texttt{sys}, and \texttt{dev}:
+Before changing root it is necessary to populate the directories
+\texttt{proc}, \texttt{sys} and \texttt{dev} for the image to get control
+as the testbed administrator apparent root filesystem. This is made by the
+following commands:
 
 % CHROOT to OS image
 \begin{lstlisting}[]
@@ -650,34 +650,30 @@ The final preparation before changing root is to populate the directories \textt
 \FloatBarrier
 \vspace{-5mm}
 
-Finally, it is time to change root.
-%Finally, the filesystem is ready for us to change root.
-This can be done with \texttt{proot}. It may be required to install
-\texttt{proot} using \texttt{apt-get install proot}:
+Finally, to change root the following needs to be run:
 
-% CHROOT to OS image
 \begin{lstlisting}[]
-# proot -q qemu-arm-static -S ${ROOTDIR}
+# chroot ${ROOTDIR} /usr/bin/qemu-arm-static /bin/bash
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-Most available material online uses the more known \texttt{chroot} command as
-written in the code block below instead of \texttt{proot}. This did not work
-correctly in our machines, but we present the command as an alternative to
-\texttt{proot} in case the testbed administrator should be in the opposite
-situration where \texttt{proot} is not working.
+% In some cases, \texttt{chroot} may not work properly. tgus, in this case, an
+% alternative can be \texttt{proot}. It may be required to install it
+% before changing the root with \texttt{apt-get install proot}. Then, it
+% should possible for the testbed administrator to run the following:
 
-% CHROOT to OS image
-\begin{lstlisting}[]
-# chroot ${ROOTDIR} /usr/bin/qemu-arm-static /bin/bash    (ALTERNATIVE TO proot)
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-If everything went well, we should now be \texttt{chrooted} into the Raspbian lite
-filesystem under its root. Optionally, change the prompt title to indicate that it
-is a \texttt{chrooted} environment:
+% % CHROOT to OS image
+% \begin{lstlisting}[]
+% # proot -q qemu-arm-static -S ${ROOTDIR}
+% \end{lstlisting}
+% \FloatBarrier
+% \vspace{-5mm}
+If successfully executed, our terminal should have changed the prompt
+indicating that we are the root user in the Raspbian lite root filesystem as
+the apparent root. To be aware of the mode that we are working now, we change
+the prompt title to indicate that it is a \texttt{chroot} environment as
+follows:
 
 % Optionally, we may create a unique prompt to indicate we have changed root
 \begin{lstlisting}[]
@@ -686,16 +682,13 @@ is a \texttt{chrooted} environment:
 \FloatBarrier
 \vspace{-5mm}
 
-The Raspbian lite system image should now be possible to use almost as if it
-had been booted in a \ac{Raspi}.
-A major difference is that the testbed administrator's \ac{PC} is likely
-significantly faster than a \ac{Raspi}.
-%The only difference is that the laptop that we are using is
-%significantly faster than a \ac{Raspi}.
-Thus enabling updates, upgrades, and installing new software packages much
-faster than in the \ac{Raspi}s.
-%Thus enabling us to for example update,
-%upgrade, and install software packages:
+The Raspbian lite image should now be possible to use almost as if it had
+been booted in a \ac{Raspi}. A major difference is that the testbed
+administrator \ac{PC} is likely significantly faster than a \ac{Raspi}.
+Hence, enabling updates, upgrades and installing new software packages
+should be much faster than in a \ac{Raspi}. Still updating and upgrading
+the packages for the \ac{Raspi} might take some amount of time. To get
+the upgraded system packages, it is necessary to run:
 
 % Update system
 \begin{lstlisting}[]
@@ -705,7 +698,7 @@ faster than in the \ac{Raspi}s.
 \FloatBarrier
 \vspace{-5mm}
 
-We also install a few packages that we find useful:
+We further install some packages that we consider useful:
 %Lets install some useful applications:
 % Install packages
 \begin{lstlisting}[]
@@ -714,7 +707,10 @@ We also install a few packages that we find useful:
 \FloatBarrier
 \vspace{-5mm}
 
-When writing the image to a memory card, all these change that has been made
-to the image so far will exists in all \ac{Raspi}s.
-%All the changes that are made here will exists in all \ac{Raspi}s when the
-%image is written to a memory card.
+\texttt{vim} is the improved \texttt{vi} editor for Linux, \texttt{git}
+for managing Git repositories and \texttt{screen} for better handling of
+long-runnning processes. When writing the image either to a memory card
+or storing it remotely \todot{Are we going to store the image
+into a memory card or remotely in a URL? Since this is not completely clear
+yet.}, all these change that has been made to the image so far will exists in
+all \ac{Raspi}s.
