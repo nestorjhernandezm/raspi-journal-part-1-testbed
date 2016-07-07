@@ -3,73 +3,47 @@ In principle, our procedure modifies the image file only once in
 the testbed administrator \ac{PC} when its setup is made. Also, keeping
 this image in the \ac{Raspi}s provides the same initial system for all
 the devices. This system is later distributed locally to a memory card
-in each device.However, if we do not make any further modifications during
+in each device. However, if we do not make any further modifications during
 the image setup, any files created after the initial boot of a \ac{Raspi}
-will remain in the me
+will remain in the memory card. This is cumbersome to maintain since
+the size of the memory card is relatively reduced (8 GB) and there
+might be various users utilizing the testbed. Also, different testbed
+users could be interested in running their experiments in a fresh
+rebooted system with the original customized image. Nevertheless, we
+emphasize that this step is not necessary if the tesbed administrator
+wants to consider only persistent storage for its devices. A use case
+for this scenario could be a single user for the testbed or when a testbed
+administrator only wants to setup a few \ac{Raspi}s.
 
+Therefor, if both persistent and non-persistent storage are required for
+the \ac{Raspi}s, here we present the steps to setup an overlay filesystem.
+This type of filesystem enables an \textit{upper} filesystem to overlay
+into a \textit{lower} filesystem. Whenever a file is requested, the upper
+filesystem will forward the request to the lower filesystem in case it
+does not have it itself. If the upper filesystem has the requested file,
+it will simpy return the file. This idea can be used in our setup to mount
+the root filesystem (i.e. Raspbian lite) in the \ac{Raspi}s during startup
+as read-only filesystem. Thus, on the one hand, the image configuration files
+will remain after a reboot and will not be modifiable. On the other hand,
+to enable the possibility of non-persistent changes, we overlay the upper
+filesystem that is mounted in the \ac{Raspi} \ac{RAM}, i.e. \texttt{/tmp}
+as read/writable on top of the lower root filesystem. Thus, reading a file
+may return a file from the lower filesytem, but if it is stored, it will
+be saved in the upper filesystem. Accessing this file again will return
+the stored file from the upper layer. After a reboot, all the stored files
+in the upper filesystem will be erasured.
 
+\subsection{Overlaying Filesystem Installation}
 
-to have the same
-configuration files.
-
-Our goal was to enable the users of the testbed to change however the
-
-
-\ac{Raspi} are configured while still being able to revert those changes easily.
-
-
-
-\subsection{Installation an overlaying filesystem}
-
-
-
-We do this by storing a users work in the \ac{Raspi}s in \ac{RAM}. Thus a
-\ac{Raspi}, when a \ac{Raspi} is rebooted, it will forget all changes.
-
-A way to do this is using stacked filesystem. Stacking filesystem enables
-a filesystem to overlay another filesystem. Whenever a file is accessed,
-the upper filesystem will forward the request to the lower filesystem in
-case it does not have it itself. If it has it, it will simpy return the file.
-
-This idea can be used in our setup to mount the root filesystem (i.e. Raspbian
-lite) in the \ac{Raspi}s duing startup as read-only. Thus, the files will not
-be changable. Some programs needs to change files and the testbed admin might
-want to change configurations. To enable this, it is possible to
-overlay a filesystem that is mounted in \ac{RAM} as read/writable on top of
-the regular root. Thus, reading a file may return a file from the lower filesytem,
-but if it is stored, it will be saved in the upper filesystem. Accessing this file
-again will return the stored file from the upper layer.
-
-
-
-%We do this using an overlay filesystem. The idea is to let the \ac{Raspi}s
-%mount their root filesystem as
-%
-%We do this using an overlay filesystem (overlayfs).
-%Overlayfs enables a filesystem to be stacked on top of another filesystem. Thus,
-%if the \ac{Raspi}s mount their root filesystem (/) as read-onlyif we mount our root (/) filesystem as
-%
-%
-%Overlayfs enables filesystems
-%to be stacked on top of each other. We will be using this to make a lower
-%filesystem and an upper filesystem. The lower filesystem will be our
-%traditional filesystem and the upper filesystem will be mounted in tmpfs
-%(i.e. mounted in \ac{RAM}).
-%
-%Thus, when a file is requsted from stacked filesystem, it will first attempt
-%to fetch the file in the upper filesystem if it does not exists there, it will
-%request it from the lower filessytem.
-
-Assuming that you are still \texttt{chrooted} into the Raspbian lite filesystem, we
-can setup the overlay filesystem (overlayfs).
-
-There already exists implementations overlaying the root filesystem. We will
-use an existing implementation
-available at github: \cite{overlayroot}.
-
-We installed git in a previous step, so lets clone the repository. The below
-code stores it in /tmp which is really mounted in \ac{RAM}. Thus, the files
-will disappear when the machine is rebooted.
+Assuming that we are still using the \texttt{chroot} commands into the
+Raspbian lite root filesystem for installing packages, we can setup the
+overlay filesystem at this point of the procedure. There already exists
+implementations overlaying the root filesystem. We use an implementation
+available at the Git repository in\cite{overlayroot}. Since we have
+installed git in a previous step, we clone the repository. The
+command block below stores it in \texttt{/tmp} which is really mounted in
+\ac{RAM}. Then, all the files stored here will disappear a \ac{Raspi} is
+rebooted.
 
 % Get files
 \begin{lstlisting}[]
