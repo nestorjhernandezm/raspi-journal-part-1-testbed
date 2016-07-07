@@ -5,10 +5,10 @@ Select and download the \ac{OS} image file, alter the image structure and
 configure the \ac{OS} files. We proceed to detail all these steps providing
 brief discussions to our setup choices when required. To perform these
 steps, we indicate with command-line blocks the required sequential
-commands to be typed by the testbed administrator in its \ac{PC} to obtain
-the desired setting. In all the following sections, the number sign
-(\#) and dollar sign (\$) will be used in the command blocks in the paper
-to indicate if an operation needs to be run with root permissions or
+commands to be typed by the testbed administrator in his / her \ac{PC}
+to obtain the desired setting. In all the following sections, the number
+sign (\#) and dollar sign (\$) will be used in the command blocks in the
+paper to indicate if an operation needs to be run with root permissions or
 common user permissions, respectively. The signs will be posted as the
 terminal prompt in the command blocks.
 
@@ -321,23 +321,28 @@ image as desired by editing the files in \texttt{ROOTDIR}. We take
 advantage of this to edit configuration files, append new files and even
 update and install packages.
 
-\subsection{Default OS Files and Configuration Scripts Setup}
-
+\subsection{Image OS Files and Configuration Scripts Setup}
 In general, the \ac{Raspi}s should be setup as similar as possible. However,
 some particularities exist to differentiate the devices in principle. Also,
 scripts containing further configurations for the \ac{Raspi}s are desirable
 to be distributed as part of the common image. Therefore, here we present
 the steps to setup basic properties of the \ac{Raspi}s and distributing
-configuration scripts to each of them through the image. First, we indicate
-how to obtain and put our configuration scripts in the image. Later, we
-describe the tasks performed by these configuration scripts. Nevertheless,
-any testbed administrator might modify or include other tasks besides the
-presented in this procedure according to his / her needs.
+configuration scripts to each of them through the image. For this, we first
+indicate how to obtain and put our configuration scripts in the image. Later,
+we describe the tasks performed by these configuration scripts. Finally, we
+indicate how and in which order are the scripts executed to configure all the
+devices. Nevertheless, any testbed administrator might modify or include other
+tasks besides the presented in this procedure according to his / her needs
+as we will show.
 
-In our case, we have our configuration scripts stored in a \texttt{.zip}
-file located in a web server. We first retrieve this compressed file with
-\texttt{wget} and unzip it locally into our Raspbian lite image. These
-commands and the output of the last one are shown as follows:
+\subsubsection{Image Default Configuration Scripts Download}
+\label{sec:configuration_files_download}
+In our case, we have our default configuration scripts stored in a
+\texttt{rasp\_config.zip} file located in the same \ac{URL} where the image
+was retrieved from, i.e. the one in the environment variable \texttt{URL}.
+We first manually download this compressed file with \texttt{wget} and
+extract it locally into our Raspbian lite image. These commands and the
+output of the last one are shown as follows:
 
 % Get the configuration files that are compressed in a remote server
 \begin{lstlisting}[]
@@ -359,23 +364,19 @@ folder in the image. In what follows, we describe which features do we
 require all the \ac{Raspi}s to have and how are they achieved with
 these configuration scripts.
 
+\subsubsection{Device Hostnames}
 Among the settings that we want to be different in the devices is
 their hostname. The hostname helps the user to physically distinguish the
 devices from each other. Thus, in our case we require the devices in our
-testbed to have different hostnames. Moreover, besides this standard task,
-other testbed administrators may need to also include other scripts to
-configure their \ac{Raspi}s. Hence, we want to ensure that all the \ac{Raspi}
-configuration scripts of any testbed administrators are obtained in a simple
-way. Therefore, we ease this task by making the \ac{Raspi}s fetch the
-configuration scripts during start up before running them.
+testbed to have different hostnames. Hence, we define the hostnames based
+on the \ac{MAC} addresses of the \ac{Raspi}s wired Ethernet interface.
 
-Hence, we define the hostnames based on the \ac{MAC} addresses
-of the \ac{Raspi}s wired Ethernet interface. Prior to this stage, the
-\ac{MAC} address of a network card can be found using the command
-\texttt{ifconfig} or \texttt{ip addr} on a given \ac{Raspi}.
-We store the \ac{MAC} addresses and hostnames of the \ac{Raspi}s in the
-configuration file \texttt{\${ROOTDIR}/home/pi/rasp\_config/nodes.csv}. A
-sample of our file is shown as follows:
+Prior to this stage, the \ac{MAC} address of a network card can be found
+using the command \texttt{ifconfig} or \texttt{ip addr} on a given
+\ac{Raspi}. We store the \ac{MAC} addresses and hostnames of the
+\ac{Raspi}s in the configuration file
+\texttt{\${ROOTDIR}/home/pi/rasp\_config/nodes.csv}. A sample of our file
+is shown as follows:
 
 % MAC and Hostname file
 \Suppressnumber\begin{lstlisting}[]
@@ -394,10 +395,13 @@ b8:27:eb:95:bd:11 rasp03
 
 The testbed administrator has to insert the \ac{MAC} addresses and hostnames
 of his/her \ac{Raspi}s obtained previously in the format shown in the
-configuration file. Once we have defined the hostnames in
-\texttt{\${ROOTDIR}/home/pi/rasp\_config/nodes.csv}, we use the
+configuration file. In the file format, on each line there is a \ac{MAC}
+address and the corresponding hostname for the given \ac{Raspi}. For
+simplicity in the example above, we just include three \ac{Raspi}s.
+This list file will be employed by the
 \texttt{\${ROOTDIR}/home/pi/rasp\_config/set\_hostname}
-\ac{Bash} script to have each \ac{Raspi} assign its hostname:
+\ac{Bash} script to assign the hostname of each \ac{Raspi}.
+The script content is the following:
 
 % Set hostname
 \Suppressnumber\begin{lstlisting}[]
@@ -423,25 +427,37 @@ fi
 \FloatBarrier
 \vspace{-5mm}
 
-The \texttt{\$\{ROOTDIR\}/home/pi/rasp\_config/set\_hostname} script (in
-script lines): (1) tells the system to interpret the script using \ac{Bash},
-(3-4) gets the path to the script itself and the list of hostnames, (5) gets
-the \ac{MAC} address of the node itself, (6) gets the current hostname, (7)
-gets the new hostname from the hostname list and (10-14) assigns the new
-hostname to the \ac{Raspi} where the script will be executed.
+The script (in lines): (1) tells the system to interpret the script
+using \ac{Bash}, (3-4) gets the path to the script itself and the list of
+hostnames, (5) gets the \ac{MAC} address of the node itself, (6) gets the
+current hostname, (7) gets the new hostname from the hostname list and
+(10-14) assigns the new hostname to the \ac{Raspi} where the script
+will be executed.
 
-Besides the scripts introduced up to this point of our procedure, it is
-possible that the testbed administrator requires to add other scripts to
-configure its \ac{Raspi}s. We ease this task by making the \ac{Raspi}s
-fetch all the configuration scripts during start up from a \texttt{.zip}
-file before running the configuration scripts. The role of this script
-is the same as theThe below script attempts to download/update the
-scripts:
+\subsubsection{Updating Default Configuration Files and Scripts}
+Besides the single script with its configuration file introduced up
+to this point of our procedure, it is possible that the testbed
+administrator may require to add other scripts to configure
+his / her \ac{Raspi}s. Hence, we want
+to ensure that all the \ac{Raspi} configuration scripts of any testbed
+administrators are obtained in a simple way. We automate this task by
+including the \texttt{\$\{ROOTDIR\}/home/pi/rasp\_config/update\_rasp\_config}
+script in our procedure. The purpose of this script is to make all the
+\ac{Raspi}s fetch all the configuration scripts located with the image
+during a testbed start up.
+
+In our case as the testbed administrator for presenting the procedure, we want
+to fetch all our configuration scripts in
+\texttt{\$\{URL\%/*\}/raspi\_config.zip}. Thus, the update script
+\textit{automatically} downloads all the required configuration files in
+\texttt{rasp\_config.zip} file from a remote location. This is the same that
+we manually did earlier to get our files but this will be made in an
+automated wat after booting up the system. This script contents are:
 
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$\{ROOTDIR\}/home/pi/rasp\_config/update\_rasp\_config}@>
 <@\textcolor{gray}{
----------------------------------------------------------------}
+--------------------------------------------------------------------------------------------------}
 \Reactivatenumber @>
 #!/usr/bin/env bash
 
@@ -460,73 +476,73 @@ unzip -q -o /tmp/${config_file} -d /home/pi/
 \FloatBarrier
 \vspace{-5mm}
 
-\begin{itemize}
-    \item Line 3-4: Is the url and zip file that should be downloaded
-    \item Line 7-10: Downloads the new configuration files to \texttt{/tmp}
-        and prints a warning in case of errors
-    \item Line 13: Unzips the files to \texttt{/home/pi/} while ignoring existing files/directories
-\end{itemize}
+The update script: (3-4) checks for the \ac{URL} and \texttt{.zip} file that
+should be downloaded, (7-10) downloads the configuration files to \texttt{/tmp}
+folder in the corresponding \ac{Raspi}. It also prints a warning in case of
+errors and (13) unzips the files to \texttt{/home/pi/}, the \ac{Raspi} home
+directory, while ignoring existing files and / or directories there.
 
 For the above scripts to work in the \ac{Raspi}s, it is required that the
-\ac{Raspi} \ac{MAC} address is found in \texttt{nodes.csv}. Thus,
-\texttt{rasp\_config.csv} needs to be unzipped, altered, and zipped again in
-the \ac{HTTP} server from which the \ac{Raspi} retrieves the files from.
-The testbed administrator will therefore need to also edit the \ac{URL} in the
-script \texttt{update\_rasp\_config}.
-%"nodes.csv" can be changed using a text editor. For vim, this could be done
-%the following way:
-%\begin{lstlisting}[]
-%$ vim ${ROOTDIR}/home/pi/rasp_config/nodes.csv
-%\end{lstlisting}
-%\FloatBarrier
-%\vspace{-5mm}
+\ac{Raspi}s \ac{MAC} addresses are found in \texttt{nodes.csv}. Also, it
+should be noted that for other testbed administrators besides ourselves,
+the \ac{URL} for file fetching and the configuration
+scripts themselves can be modified to fit their requirements. Thus, if
+required for a testbed administrator, the \texttt{rasp\_config.zip}
+will need to be edited to include all the required configuration files
+and scripts. Also, it might be needed to edit the \ac{URL} in the script
+\texttt{update\_rasp\_config} to store and fetch from a different location.
+Nevertheless, both the \ac{URL} and configuration files presented here can be
+used as a starting boilerplate if desired.
 
-Finally, to actually make the \ac{Raspi}s change hostname, we have to make
-each \ac{Raspi} call the above script when it starts up. Optionally,
-also run the update script before running other scripts.
-Do this with root permissions by inserting the line(s) below before
-\texttt{"exit 0"} using your favorite editor:
-%"\$\{ROOTDIR\}/etc/rc.local" using
-%your favorite text editor..
-%The file
-%can be opened with your favorite text editor.
+\subsubsection{Configuration Scripts Execution Order}
+To actually make the \ac{Raspi}s change hostnames and any other considered
+configurations, we have to make each \ac{Raspi} call the above scripts when
+it starts up. After finishing the setup process, all the unzipped files
+presented in Section~\ref{sec:configuration_files_download} should be
+locally available at each \ac{Raspi} after getting the root filesystem.
+Therefore, we first need to run the update script before running
+any other configuration scripts. To do this after boot up, we include
+a call for the update script in the image \texttt{\$\{ROOTDIR\}/etc/rc.local}
+file before \texttt{exit 0} using a file editor. To do this, it is required
+to edit this file as root. The resulting file should look like the following:
 
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$\{ROOTDIR\}/etc/rc.local}@>
 <@\textcolor{gray}{
------------------------------------------------------}
+---------------------------------------------}
 \Reactivatenumber @>
 ...
 bash /home/pi/rasp_config/update_rasp_config
-bash /home/pi/rasp_config/set_hostname
 ...
 exit 0
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-Configuring \texttt{rc.local} makes it really cumbersome for the testbed
-administrator to add new scripts since it first needs to be included
-in \texttt{rasp\_config.zip} and then each \ac{Raspi} needs to have an additional
-line added to \texttt{rc.local} in the root image or in all memory cards depending on
-the final testbed setup.
+If it is required to have more configuration scripts, adding them
+in the \texttt{rc.local} file difficults its maintenance by the testbed
+administrator since this needs to be both in the image and the
+downloaded \texttt{rasp\_config.zip}. To avoid this problem, we include
+the \texttt{\$\{ROOTDIR\}/home/pi/rasp\_config/main} script which
+calls all other configuration scripts (besides \texttt{update\_rasp\_config})
+in sequential order. This script content is the following:
 
-A solution to this is to make yet another script in \texttt{rasp\_config.zip}
-that calls all the other scripts in the desired order. This would look like
-below:
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$\{ROOTDIR\}/home/pi/rasp\_config/main}@>
 <@\textcolor{gray}{
------------------------------------------------------}
+---------------------------------------------------------------------}
 \Reactivatenumber @>
 #!/usr/bin/env bash
 
 bash /home/pi/rasp_config/set_hostname
+# Any other required configuration scripts...
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-Now, to use the above script, \texttt{rc.local} needs to look like this:
+In this way, the automation process is simplify since we only need to modify
+the image \texttt{\$\{ROOTDIR\}/etc/rc.local} file once to execute this script:
+
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$\{ROOTDIR\}/etc/rc.local}@>
 <@\textcolor{gray}{
@@ -544,32 +560,11 @@ Notice that \texttt{set\_hostname} is now called by the \texttt{main}
 script instead. The update script is still called directly. This ensures that
 all configuration scripts are updated before executed. Changes to the update
 script itself will first take effect at next system startup.
-%Had the update script
-%been called in \texttt{main} instead would mean that changes to the
-%\texttt{main} script would also first have been available at next startup.
 
-%This can be done by inserting a call to the script
-%set\_hostname in rc.local before it exits.
-%
-%Call set\_hostname script at startup. We insert a line of code to call script in rc.local just after the initial comments (i.e. lines starting with \#).
-%\begin{lstlisting}[]
-%# line_number=$(egrep -n -m1 "(^[^#])|(^$)" ${ROOTDIR}/etc/rc.local | cut -d: -f1)
-%# sed -i "${line_number}c bash /home/pi/rasp_config/set_hostname" ${ROOTDIR}/etc/rc.local
-%\end{lstlisting}
-%\FloatBarrier
-%$ line="bash /home/pi/.rasp_config/set_hostname"
-%# awk -v text="$line" '!/^#/ && !p {print text; p=1} 1' ${ROOTDIR}/etc/rc.local > <@ \Suppressnumber @>
-%    ${ROOTDIR}/etc/rc.local <@ \Reactivatenumber @>
-
-%WE NEED TO ADD A FEW COMMANDS TELLING HOW TO ZIP, MODIFY, AND UNZIP
-%FOR THE READER TO BE ABLE TO UPLOAD A CONSTRUCT HIS/HER OWN BUNDLE.
-
-%All other files could be updated as well.
-It is not only possible to add and configure files to/within the image. One can
-also install and update the packages within the image which will be illustrated
-in the next section.
-
-\subsection{Installing and updating the image}
+\subsection{Image Package Updating}
+Besides adding and configuring files within the image, the testbed
+administrator can also install and update the software packages within
+the image which will be illustrated in this subsection.
 
 It may be desired to pre-install some programs in the image before it is
 written to all the memory cards that goes into the \ac{Raspi}s.
