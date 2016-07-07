@@ -1,12 +1,27 @@
 \label{sec:ovelay_fs}
+In principle, our procedure modifies the image file only once in
+the testbed administrator \ac{PC} when its setup is made. Also, keeping
+this image in the \ac{Raspi}s provides the same initial system for all
+the devices. This system is later distributed locally to a memory card
+in each device.However, if we do not make any further modifications during
+the image setup, any files created after the initial boot of a \ac{Raspi}
+will remain in the me
 
+
+
+to have the same
+configuration files.
+
+Our goal was to enable the users of the testbed to change however the
+
+
+\ac{Raspi} are configured while still being able to revert those changes easily.
 
 
 
 \subsection{Installation an overlaying filesystem}
 
-Our goal was to enable the users of the testbed to change however the
-\ac{Raspi} are configured while still being able to revert those changes easily.
+
 
 We do this by storing a users work in the \ac{Raspi}s in \ac{RAM}. Thus a
 \ac{Raspi}, when a \ac{Raspi} is rebooted, it will forget all changes.
@@ -28,11 +43,11 @@ again will return the stored file from the upper layer.
 
 
 %We do this using an overlay filesystem. The idea is to let the \ac{Raspi}s
-%mount their root filesystem as 
+%mount their root filesystem as
 %
 %We do this using an overlay filesystem (overlayfs).
 %Overlayfs enables a filesystem to be stacked on top of another filesystem. Thus,
-%if the \ac{Raspi}s mount their root filesystem (/) as read-onlyif we mount our root (/) filesystem as 
+%if the \ac{Raspi}s mount their root filesystem (/) as read-onlyif we mount our root (/) filesystem as
 %
 %
 %Overlayfs enables filesystems
@@ -43,7 +58,7 @@ again will return the stored file from the upper layer.
 %
 %Thus, when a file is requsted from stacked filesystem, it will first attempt
 %to fetch the file in the upper filesystem if it does not exists there, it will
-%request it from the lower filessytem.  
+%request it from the lower filessytem.
 
 Assuming that you are still \texttt{chrooted} into the Raspbian lite filesystem, we
 can setup the overlay filesystem (overlayfs).
@@ -99,7 +114,7 @@ needs a different kernel than \ac{Raspi} version 2 and version 3. Thus, start
 by finding the available kernel modules:
 %Because \texttt{initramfs} is executed within a
 %\texttt{chrooted} environment, it will not be able to detect the
-%kernel modules in the \texttt{chrooted} environment. The kernel modules will 
+%kernel modules in the \texttt{chrooted} environment. The kernel modules will
 
 
 % Create an initramfs
@@ -132,7 +147,7 @@ Lets proceed by generating an initial \ac{RAM} filesystem for both kernels:
 %RASP-VERSION1=4.4.13+, RASP-VERSION2=4.4.13-V7+, RASP-VERSION3=4.4.13-V7+
 
 Although there might be printet a few warnings, the above commands should successfully
-generate working initial \ac{RAM} filesystems. 
+generate working initial \ac{RAM} filesystems.
 
 An initial \ac{RAM} filesystem needs to be called by the bootloader. In Raspbian
 this is done by adding a command to \texttt{config.txt} in the boot partition.
@@ -176,7 +191,7 @@ some directories where files are not flushed upon rebooting the \ac{Raspi}s.
 The following procedure will create an extra partition in the image for
 the \ac{Raspi} users home directory that will be made storage persistent.
 %Provided that a stacked filesystem was configured to make the root
-%filesystem forget chances upon reboots is not always desired. 
+%filesystem forget chances upon reboots is not always desired.
 
 Expand image according to the desired home directory size. Keep in mind not
 to make the image bigger than the target memory card.
@@ -214,7 +229,7 @@ $ (echo n; echo p; echo ; echo 4806656; echo ; echo p; echo w) | fdisk ${IMAGE}.
 \FloatBarrier
 \vspace{-5mm}
 
-Create loopback device: 
+Create loopback device:
 \begin{lstlisting}[]
 # export DEV=$(sudo losetup --show -f -P ${IMAGE}.img); echo $DEV
 /dev/loop0
@@ -277,7 +292,7 @@ be used in the \ac{Raspi}s.
 %\FloatBarrier
 %\vspace{-5mm}
 
-%If successfully unmounted, you can 
+%If successfully unmounted, you can
 Insert a memory card in your machine. It will be available as
 \texttt{/dev/mmcblkX} or \texttt{/dev/sdX}
 
@@ -285,7 +300,7 @@ Insert a memory card in your machine. It will be available as
 %different on different machines. For internal memory card readers, it will
 %probably be named /dev/mmcblkX where X is some number and if the memory card
 %reader is connected through \ac{USB}, then it is likely called /dev/sdX.
-Make absolutely sure to write to the correct device as everything will be 
+Make absolutely sure to write to the correct device as everything will be
 overwritten!
 Inserting/Ejecting the memory card a couple of times and using the commands
 below may help deducing the correct device:

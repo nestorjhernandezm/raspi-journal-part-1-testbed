@@ -184,7 +184,7 @@ Device                               Boot  Start     End Sectors  Size Id Type
 \vspace{-5mm}
 
 Now, in this command block output, we observe that the change has taken
-effect by noticing the total available image size is 2.3GiB. To expand the
+effect by noticing the total available image size is 2.3 GiB. To expand the
 root filesystem, it is required to first remove the Linux partition
 and then add it again with one \ac{GB} more. To do this, we make use
 again of \texttt{fdisk} in command mode to alter the partition table.
@@ -234,8 +234,10 @@ After successfully resizing the image file, we use a loopback device to make
 the Raspbian image available as a block device in the filesystem. For this
 command to work, the tested administrator distribution must have the
 \texttt{util-linux} package with version 2.21 or higher. Otherwise, the
-\texttt{-P} argument of \texttt{losetup} will appear as invalid.
-
+\texttt{-P} argument of \texttt{losetup} will appear as invalid. If the
+version of \texttt{losetup} can not be updated for some reason, an
+alternative option for this part is presented in
+Section~\ref{sec:alternative_losetup} of the Appendix.
 
 \begin{lstlisting}[]
 # export DEV=$(sudo losetup --show -f -P ${IMAGE}.img); echo $DEV
