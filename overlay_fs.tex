@@ -215,10 +215,10 @@ Again, if for some reason, the \texttt{-P} option is not available for
 \texttt{losetup}, we provide an alternative command line in
 Section~\ref{sec:alternative_losetup}. Finally, if the previous filesystem
 formatting was successful, the filesystem is now available for use. Thus,
-we need to inform the Raspbian root filesystem to mount the home partition
-that we have just created. We will notify to the Raspbian \ac{OS} during
-the startup of the \ac{Raspi}s. This can be done by adding an entry in
-\texttt{fstab} as follows:
+we need to inform the Raspbian \ac{OS} to mount the home partition
+that we have just created. We will notify the \ac{OS} while
+booting during the startup of the \ac{Raspi}s. This can be done by adding
+an entry in \texttt{fstab} as follows:
 
 \begin{lstlisting}[]
 # mount ${DEV}p2 ${ROOTDIR}
@@ -236,7 +236,7 @@ therefore copy the content to the new home partition:
 \FloatBarrier
 \vspace{-5mm}
 
-That is it. unmount partitions and detach loop device:
+Now, unmount again all the partitions and detach the loop devices as follows:
 \begin{lstlisting}[]
 # umount --recursive ${ROOTDIR}
 # losetup -d ${DEV}
@@ -244,31 +244,18 @@ That is it. unmount partitions and detach loop device:
 \FloatBarrier
 \vspace{-5mm}
 
-\subsection{Write image to memory card}
+If the steps have been properly made up to this point, the customized image
+is ready to be deployed into the \ac{Raspi}s. In the following section, we
+indicate how to proceed with the writing of the image into various memory
+cards, although a more complex setup with a \ac{HTTP} server is also presented
+in Section~\ref{sec:http} of the Appendix.
 
-
-EMPHASIZE THAT THIS SETUP IS ONLY FOR THE SETUP WHERE THE ROOT IMAGE ARE
-WRITTEN TO THE MEMORY CARDS
-
-The final step is to write the image to all the memory cards before they can
-be used in the \ac{Raspi}s.
-
-%This is done by first leaving the \texttt{chrooted}
-%filesystem and unmounting all the directories we mounted:
-
-% Exit chroot, umount, and write to memory card
-%\begin{lstlisting}[]
-%# exit
-%# cd ..
-%# umount --recursive ${ROOTDIR}
-%# losetup -d ${DEV}.img
-%\end{lstlisting}
-%\FloatBarrier
-%\vspace{-5mm}
-
-%If successfully unmounted, you can
-Insert a memory card in your machine. It will be available as
-\texttt{/dev/mmcblkX} or \texttt{/dev/sdX}
+\subsection{Customized Image Writing to Memory Cards}
+For a basic system setup, the final step is to write the customized image
+to all the memory cards before they can be used in the \ac{Raspi}s. For
+our current considered system, we do this manually for each card. Insert
+a memory card in your machine. It will be available as \texttt{/dev/mmcblkX}
+or \texttt{/dev/sdX}.
 
 %In most systems, this memory card was available under \texttt{/dev/mmcblk0}, but this may be
 %different on different machines. For internal memory card readers, it will
