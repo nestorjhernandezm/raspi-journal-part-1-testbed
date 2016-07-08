@@ -248,7 +248,8 @@ proc            /proc            proc    defaults          0       0
 \vspace{-5mm}
 
 Originally, the home folder is located in the root filesystem. Although,
-we have to move its content to the new home partition and store it properly
+we have to move its content to the new home partition and store it properly.
+We do that as follows:
 
 \begin{lstlisting}[]
 # mount ${DEV}p3 ${ROOTDIR}/mnt
@@ -277,28 +278,20 @@ to all the memory cards before they can be used in the \ac{Raspi}s. For
 our current considered system, we do this manually for each card.
 The testbed administrator needs to insert each memory card in its \ac{PC}
 and follow the procedure in this section. A given card will be available as
-\texttt{/dev/mmcblk*} or \texttt{/dev/sd*} with X a given
+\texttt{/dev/mmcblkX} for memory card readers or \texttt{/dev/sdX} USB-through
+readers , where \texttt{X} a natural number. It is \textit{very important}
+to write to the correct device as everything will be overwritten. To avoid
+removing information from the wrong device, a testbed administrator can
+insert / eject a memory card a couple of times and using the
+\texttt{sudo lsblk} and \texttt commands to deduce the correct device.
 
-For internal memory card readers,
-it will probably be named /dev/mmcblkX where X is a given integer number
-and if the memory card reader is connected through \ac{USB}, then it is likely called /dev/sdX. It is very important Make absolutely sure to write to the correct device as everything will be overwritten!
-Inserting/Ejecting the memory card a couple of times and using the commands
-below may help deducing the correct device:
-%The commands below may help deduce which device is the correct:
-%Below is a few commands that may help you to deduce which device is correct:
+For our case, the device was \texttt{/dev/mmcblk0}. Once identified, to write
+the image to a memory card, the following command is used:
 
-\begin{lstlisting}[]
-# lsblk
-# df -h
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-For us, the device was \texttt{/dev/mmcblk0}. Write the image to a memory card:
 \begin{lstlisting}[]
 # dd if=${IMAGE}.img of=/dev/mmcblk0 bs=4M && sync
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-The memory card can now be started in a \ac{Raspi}.
+After this is made, the memory card can now be started in a \ac{Raspi}.
