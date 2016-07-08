@@ -251,12 +251,12 @@ Originally, the home folder is located in the root filesystem. Although,
 we have to move its content to the new home partition and store it properly
 
 \begin{lstlisting}[]
-# mount ${DEV}p3 ${ROOTDIR}/home
+# mount ${DEV}p3 ${ROOTDIR}/mnt
+# cp -r ${ROOTDIR}/home/* ${ROOTDIR}/mnt/
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
-%# mount ${DEV}p3 ${ROOTDIR}/home
-%# mv ${ROOTDIR}/home/* ${ROOTDIR}/mnt/
+
 Now, unmount again all the partitions and detach the loop devices as follows:
 \begin{lstlisting}[]
 # umount --recursive ${ROOTDIR}
