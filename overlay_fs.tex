@@ -252,7 +252,7 @@ we have to move its content to the new home partition and store it properly
 
 \begin{lstlisting}[]
 # mount ${DEV}p3 ${ROOTDIR}/mnt
-# cp -r ${ROOTDIR}/home ${ROOTDIR}/mnt/
+# mv ${ROOTDIR}/home/* ${ROOTDIR}/mnt/
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
