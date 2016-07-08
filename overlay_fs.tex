@@ -222,13 +222,34 @@ an entry in \texttt{fstab} as follows:
 
 \begin{lstlisting}[]
 # mount ${DEV}p2 ${ROOTDIR}
-# sh -c "echo '/dev/mmcblk0p3 /home ext4 defaults,noatime 0 2' >> ${ROOTDIR}/etc/fstab"
+# sed -i '$a /dev/mmcblk0p3 /home ext4 defaults,noatime 0 2' ${ROOTDIR}/etc/fstab
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-The home folder was originally located in the root filesystem. We should
-therefore copy the content to the new home partition:
+If the last command was executed correctly, the
+\texttt{\${ROOTDIR}/etc/fstab} file should have the new line. However,
+the line will not be properly indented. To verify the correct line
+insertion and fix the indentation, edit the file with
+\texttt{sudo vim \$\{ROOTDIR\}/etc/fstab}. The resulting file should like
+the following:
+
+\begin{lstlisting}[]
+<@\textcolor{gray}{\$\{ROOTDIR\}/etc/fstab}@>
+<@\textcolor{gray}{
+----------------------------------------}
+\Reactivatenumber @>
+proc            /proc            proc    defaults          0       0
+/dev/mmcblk0p1  /boot            vfat    defaults          0       2
+/dev/mmcblk0p2  /                ext4    defaults,noatime  0       1
+/dev/mmcblk0p3  /home            ext4    defaults,noatime  0       2
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Originally, the home folder is located in the root filesystem. Although,
+we have to move its content to the new home partition and store it properly
+
 \begin{lstlisting}[]
 # mount ${DEV}p3 ${ROOTDIR}/mnt
 # mv ${ROOTDIR}/home/* ${ROOTDIR}/mnt/
@@ -244,7 +265,7 @@ Now, unmount again all the partitions and detach the loop devices as follows:
 \FloatBarrier
 \vspace{-5mm}
 
-If the steps have been properly made up to this point, the customized image
+If the steps are successfully executed up to this point, the customized image
 is ready to be deployed into the \ac{Raspi}s. In the following section, we
 indicate how to proceed with the writing of the image into various memory
 cards, although a more complex setup with a \ac{HTTP} server is also presented
@@ -253,16 +274,14 @@ in Section~\ref{sec:http} of the Appendix.
 \subsection{Customized Image Writing to Memory Cards}
 For a basic system setup, the final step is to write the customized image
 to all the memory cards before they can be used in the \ac{Raspi}s. For
-our current considered system, we do this manually for each card. Insert
-a memory card in your machine. It will be available as \texttt{/dev/mmcblkX}
-or \texttt{/dev/sdX}.
+our current considered system, we do this manually for each card.
+The testbed administrator needs to insert each memory card in its \ac{PC}
+and follow the procedure in this section. A given card will be available as
+\texttt{/dev/mmcblk*} or \texttt{/dev/sd*} with X a given
 
-%In most systems, this memory card was available under \texttt{/dev/mmcblk0}, but this may be
-%different on different machines. For internal memory card readers, it will
-%probably be named /dev/mmcblkX where X is some number and if the memory card
-%reader is connected through \ac{USB}, then it is likely called /dev/sdX.
-Make absolutely sure to write to the correct device as everything will be
-overwritten!
+For internal memory card readers,
+it will probably be named /dev/mmcblkX where X is a given integer number
+and if the memory card reader is connected through \ac{USB}, then it is likely called /dev/sdX. It is very important Make absolutely sure to write to the correct device as everything will be overwritten!
 Inserting/Ejecting the memory card a couple of times and using the commands
 below may help deducing the correct device:
 %The commands below may help deduce which device is the correct:
