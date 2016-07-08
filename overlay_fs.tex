@@ -139,12 +139,13 @@ partitions and detaches the loopback devices:
 \FloatBarrier
 \vspace{-5mm}
 
-For the \texttt{--recursive} to work properly, it is necessary that
+For the \texttt{----recursive} option to work properly, it is necessary that
 the package \texttt{util-linux} version is greater than or equal to 2.22.
 Otherwise, an alternative is to either update the package or follow the
 procedure in Section~\ref{sec:umount} of the Appendix.
 
 \subsection{Persistent Image Directories}
+\label{sec:persistent_directories}
 Provided the stacked filesystem is configured, now it is possible to have
 directories where files are not removed upon rebooting the \ac{Raspi}s.
 The following procedure creates an extra partition in the image for
@@ -160,11 +161,12 @@ $ dd if=/dev/zero bs=1M count=1024 >> ${IMAGE}.img && sync
 \FloatBarrier
 \vspace{-5mm}
 
-Create home partition after the root partition. Use \texttt{fdisk} to
-find the next available sector in the image. In our case, the new
-partition should start at sector 4806656:
+We create a partition for the home directory after the root partition.
+To do this, we again use \texttt{fdisk} to find the next available sector
+in the image. To verify the new available space for the full image and observe
+the next available sector, we run:
 \begin{lstlisting}[]
-$ fdisk -lu ${IMAGE}.img
+$ fdisk -u sectors -l ${IMAGE}.img
 Disk 2016-05-27-raspbian-jessie-lite.img: 3.3 GiB, 3534749696 bytes, 6903808 sectors
 Units: sectors of 1 * 512 = 512 bytes
 Sector size (logical/physical): 512 bytes / 512 bytes
@@ -179,31 +181,45 @@ Device                               Boot  Start     End Sectors  Size Id Type
 \FloatBarrier
 \vspace{-5mm}
 
-Create new partition:
+We notice that one GB is now available to be used in the partitions. Also, we
+observe the new partition should start at sector 4806656. To create it, we
+show the introduced command and its output:
 
 \begin{lstlisting}[]
-$ (echo n; echo p; echo ; echo 4806656; echo ; echo p; echo w) | fdisk ${IMAGE}.img
+$ (echo n; echo p; echo 3; echo 4806656; echo ; echo w) | fdisk ${IMAGE}.img
+
+Command (m for help): Partition type:
+   p primary (1 primary, 0 extended, 3 free)
+   e extended
+Partition number (1-4, default 3): Using default value 3
+First sector (2048-6903807, default 2048): Last sector, +sectors or
++size{K,M,G} (4806656-6903807, default 6903807): Using default value 6903807
+
+Command (m for help): The partition table has been altered!
+
+Syncing disks.
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-Create loopback device:
+We create again a loopback device and format the new partition, as follows:
 \begin{lstlisting}[]
 # export DEV=$(sudo losetup --show -f -P ${IMAGE}.img); echo $DEV
 /dev/loop0
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-Format new partition:
-\begin{lstlisting}[]
 # mkfs.ext4 ${DEV}p3
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-The last thing to remember is to inform Raspbian to mount the home partition
-we created during startup. This can be done by adding an entry in \texttt{fstab}:
+Again, if for some reason, the \texttt{-P} option is not available for
+\texttt{losetup}, we provide an alternative command line in
+Section~\ref{sec:alternative_losetup}. Finally, if the previous filesystem
+formatting was successful, the filesystem is now available for use. Thus,
+we need to inform the Raspbian root filesystem to mount the home partition
+that we have just created. We will notify to the Raspbian \ac{OS} during
+the startup of the \ac{Raspi}s. This can be done by adding an entry in
+\texttt{fstab} as follows:
+
 \begin{lstlisting}[]
 # mount ${DEV}p2 ${ROOTDIR}
 # sudo sh -c "echo '/dev/mmcblk0p3 /home ext4 defaults,noatime 0 2' >> ${ROOTDIR}/etc/fstab"

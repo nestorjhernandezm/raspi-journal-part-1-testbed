@@ -1,54 +1,96 @@
-\section{Alternative for losetup}
+\section{Advanced Setup: HTTP Image Fetching}
+\label{sec:http}
+
+The HTTP description
+
+\section{Alternative Commands for Outdated Packages}
+This section describes alternative commands in case the testbed administrator
+is not able to update old packages in its Linux distribution for performing
+the commands, particularly the ones regarding the \texttt{util-linux} package.
+
+\subsection{Losetup for Loopback Devices}
 \label{sec:alternative_losetup}
 
-\begin{lstlisting}[]
-# export DEV="${losetup -f}"
-/dev/loop0
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
+In case the \texttt{losetup -P} is not available given that a version
+higher or equal than 2.21 for \texttt{util-linux} is neither not available,
+a possible option is to manually set all the loopback devices used during the
+whole procedure with \texttt{mknod}. To do this, the alternative commands are:
 
 \begin{lstlisting}[]
-# mknod -m 660 ${DEV}p1 b 7 1
-# mknod -m 660 ${DEV}p2 b 7 2
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-\begin{lstlisting}[]
-# fdisk -lu ${IMAGE}.img
-WHAT WILL BE THE OUTPUT?
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-I THINK SIZELIMIT IS NOT REQUIRED
-\begin{lstlisting}[]
+$ export DEV="/dev/loop0"
+# mknod ${DEV}p1 b 7 1
+# mknod ${DEV}p2 b 7 2
 # losetup -o $((8192*512)) --sizelimit $((137215*512)) ${DEV}p1 ${IMAGE}.img
 # losetup -o $((137216*512)) --sizelimit $((4806655*512)) ${DEV}p2 ${IMAGE}.img
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-The output from \texttt{lsblk} will look a bit different
+However, there will be a few differences by using the above code as an
+alternative to the \texttt{losetup -P} case. First, the output from
+\texttt{lsblk} will look different:
 
-\section{Alternative for Recursive Unmount after Image Chroot}
+\begin{lstlisting}[]
+# lsblsk
+  NAME   MAJ:MIN RM   SIZE RO TYPE MOUNTPOINT
+  sda      8:0    0 238.5G  0 disk
+    sda1   8:1    0   512M  0 part /boot
+    sda2   8:2    0   168G  0 part /
+    sda3   8:3    0     2G  0 part [SWAP]
+    sda4   8:4    0    68G  0 part
+  loop1    7:1    0    67M  0 loop
+  loop2    7:2    0   2.2G  0 loop
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Second, detaching the loop devices will also be different:
+
+\begin{lstlisting}[]
+# losetup -d ${DEV}p{1,2}
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Working with these loopback devices will be transparent for the remainding
+procedure.
+
+Also, when creating the persistent home directory partition in
+Section~\ref{sec:persistent_directories}, for recreating the loopback devices
+the commands are:
+
+\begin{lstlisting}[]
+$ export DEV="/dev/loop0"
+# mknod ${DEV}p2 b 7 2
+# mknod ${DEV}p3 b 7 3
+# losetup -o $((137216*512)) --sizelimit $(( (4806655-137216+1)*512)) ${DEV}p2 ${IMAGE}.img
+# losetup -o $((4806656*512)) --sizelimit $(( (6903807-4806656+1)*512)) ${DEV}p3 ${IMAGE}.img
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Finally, for detaching in this case the command is:
+\begin{lstlisting}[]
+# losetup -d ${DEV}p{2,3}
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+\subsection{Umount after Image Chroot}
 \label{sec:umount}
 
 In case the \texttt{umount --recursive} is not available given that a version
 higher or equal than 2.22 for \texttt{util-linux} is neither not available,
 a possible option is to manually umount all the partitions used during the
-\texttt{chroot} environment.
+\texttt{chroot} environment. The directories must be unmounted in the reverse
+order as when they were mounted. These commands are:
 
 \begin{lstlisting}[]
-# losetup -o $((8192*512)) --sizelimit $((137215*512)) ${DEV}p1 ${IMAGE}.img
-# losetup -o $((137216*512)) --sizelimit $((4806655*512)) ${DEV}p2 ${IMAGE}.img
+# umount ${ROOTDIR}/dev/pts
+# umount ${ROOTDIR}/dev
+# umount ${ROOTDIR}/sys
+# umount ${ROOTDIR}/proc
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
-
-\section{http}
-\label{sec:http}
-
-The HTTP description
-
