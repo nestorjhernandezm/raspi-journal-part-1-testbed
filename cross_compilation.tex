@@ -237,86 +237,60 @@ $ cd kodo-cpp
 \FloatBarrier
 \vspace{-5mm}
 
-Configure Kodo to build executables for the \ac{ARM} architecture using
-the \ac{Raspi} toolchain:
+We first configure \texttt{kodo-cpp} to build executables for the
+\ac{ARM} architecture using the \ac{Raspi} toolchain and later build them
+by running:
 \begin{lstlisting}[]
 $ python waf configure --cxx_mkspec=cxx_raspberry_gxx49_arm
 ...
 'configure' finished successfully (X.XXXs)
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-Build executables:
-\begin{lstlisting}[]
-$ python waf build --run_tests
+$ python waf build
 ...
-'build' finished successfully (2m22.918s)
+'build' finished successfully (XmXX.XXs)
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-Make shared library:
+If the configuration and build steps are successful, the binaries should
+have been created. To be able to use them, we need to create a shared library
+that we will use in the \ac{Raspi}. To do this, we run the following command:
+
 \begin{lstlisting}[]
 $ python waf install --install_shared_libs --install_path="./shared_test"
+...
+'install' finished successfully (X.XXXs)
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-Copy shared library to a \ac{Raspi}'s home directory (Alternatively, Kodo can also generate static libraries):
+Now, we copy the shared library, binary files and related headers to the
+\ac{Raspi} home directory as follows:
+
 \begin{lstlisting}[]
 $ scp -r shared_test/include shared_test/libkodoc.so pi@<RASP_IP>:~/
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-Copy a binary using Kodo shared library to the \ac{Raspi}'s home directory:
-\begin{lstlisting}[]
-$ scp -r shared_test/encode_decode_simple pi@<RASP_IP>:~/
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
+Alternatively and for the testbed administrator reference, Kodo can also
+generate static libraries. We log in to the \ac{Raspi} and execute the unit
+tests and one of the binaries by running:
 
-Execute binary:
 \begin{lstlisting}[]
-$ ssh pi@<RASP_IP> ./encode_decode_simple
+$ ssh pi@<RASP_IP>
+$ ./kodocpp_tests
+...
+[----------] Global test environment tear-down
+[==========] 17 tests from 15 test cases ran. (XXXX ms total)
+[  PASSED  ] 17 tests.
+$ ./encode_decode_simple
 Data decoded correctly
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-Cross compiling Kodo applications works provided that above command
-returned "Data decoded correctly".
-
-%\item Navigate to the repository and configure \texttt{waf} by typing:
-%\texttt{python config.py} and select the 16th ``make specification'' file
-%for the \ac{Raspi}, e.g. option \texttt{[16]cxx\_raspberry\_gxx49\_arm}
-%presented by the file.
-%
-%This command configures \texttt{waf} to use the proper compiler and its
-%required flags to generate the binaries for the \ac{Raspi}. If the
-%configuration was correct, the output will indicate:
-%\texttt{'configure' finished successfully (X.XXXs)}, where \texttt{X.XXX}
-%is total time in seconds for configuring the project in the server. \\
-%
-%\item Execute \texttt{python waf build}. If the build process was
-%successful, the generated binaries for the \ac{Raspi} should be located
-%in \texttt{build/cxx\_raspberry\_gxx49\_arm} in the Kodo repository.
-%\textbf{Indicate how the binary files should look like}.
-%
-%Once this procedure is made, the testbed administrator can relocate the
-%generated binary files to the \ac{Raspi}s through the network as desired
-%by using the \texttt{scp} command during the configuration step.
-
-%\subsection{Kodo Builds for the \ac{Raspi}, Platform Support and Documentation \textcolor{red}{(WHAT IS THE PURPOSE OF THIS SUBSECTION?)}}
-%
-%You can check the build status of Kodo, Fifi and other relevant projects
-%through their respective repository master branch on our buildbot page
-%\cite{steinwurf2016buildbot}. Our buildbot displays the status of the builds
-%for Raspbian 8 and GCC 4.9 for the ARM architecture which is the relevant one
-%for the \ac{Raspi}. At the link, you can check build status and build
-%statistics. Also, documentation about Kodo basics with a tutorial is available
-%at \cite{kododocs}.
+If the Kodo cross-compilation worked properly, both the unit tests and
+binary run should provide the shown outputs.
 
 %\subsection{Kodo python}
 %
@@ -340,9 +314,6 @@ returned "Data decoded correctly".
 %directory as .
 %
 %Kodo-python is available at \url{https://github.com/steinwurf/kodo-python}.
-%
-%
-%
 %\begin{lstlisting}[]
 %$ apt-get update
 %$ apt-get install python build-essential libpython-dev python-dev
