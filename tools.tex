@@ -13,18 +13,35 @@ a description of how to cross-compile source code from the testbed
 administrator \ac{PC} to the \ac{Raspi}s. To be able to run all the following
 commands, it is required to have \ac{SSH} connectivity with the \ac{Raspi}s,
 otherwise the commands need to be run locally in a \ac{Raspi} making
-necessary to use a keyboard and a monitor.
+necessary to use a keyboard and a monitor. To do so, the testbed
+administrator needs to put the memory cards in the \ac{Raspi}s and turn them
+on, for them to be able to boot. The devices should boot properly and have
+connectivity if the image and \ac{DHCP} server were properly set previously.
 
 
 \subsection{Fabric}
 Controlling multiple devices using \ac{SSH} from a single \ac{PC}
-often leads to a lot of repetitive tasks. Among these, we can mention:
+often leads to many repetitive tasks. Among these, we can mention:
 (i) rebooting a set of devices, (ii) installing applications in multiple
-devices and (iii) copying files to and / or from multiple devices. To
-simplify the management and avoid execution issues, \texttt{Fabric} provides
-a Python library to ease the task of working with multiple devices from
-a single \ac{PC}. The code below provides a small script that can perform
-the few items above:
+devices and (iii) copying files to and / or from multiple devices, etc. To
+simplify the management and avoid execution issues, Fabric provides
+a Python library to ease the major task of working with multiple devices from
+a single \ac{PC}. First, the testbed administrator creates a directory to
+hold the \texttt{Fabric} source code:
+
+\begin{lstlisting}[]
+$ export CODEDIR="${HOME}/code"
+$ mkdir -p ${CODEDIR}
+$ cd ${CODEDIR}
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Then, the \texttt{\$CODEDIR/fabfile.py} file below provides a script with
+some basic functionalities that can perform the few items above (i-iii).
+In general, other administrators may require different functionalities
+but that goes out of the scope of this work. Nevertheless, the following
+file serves as a starting boilerplate:
 
 % Exit chroot, umount, and write to memory card
 \Suppressnumber\begin{lstlisting}[]
@@ -32,7 +49,7 @@ the few items above:
 <@\textcolor{gray}{
 -------------------------------------}
 \Reactivatenumber @>
-from fabric.api import run, env, task
+from fabric.api import env, task, sudo
 # Python Fabric script to run commands on multiple hosts through ssh
 #
 # Run script as 'fab <task>', where <task> is one of the scripts functions
@@ -69,28 +86,39 @@ def push(src,dst):
 \end{lstlisting}
 \FloatBarrier
 
-The script functions can be called from the shell in the following
-manner. \texttt{Fabric} will automatically search the directory for a file
-named 'fabfile.py'. The syntax for executing a task and arguments is in the form
-'fab <FUNCTION>:arg1,arg2,...:
+The previous \texttt{fabfile} shows three function that perform our
+example tasks. These functions utilize variables and subsequent functions
+from the Fabric \ac{API} such as \texttt{env}, \texttt{task} and \texttt{sudo}
+among others. Each of these \ac{API} functions permit to define environment
+variables, create the administrator tasks through decorators or run the
+mentioned task in \texttt{sudo} mode, respectively.
+When a task is called from the terminal, Fabric searches the directory for
+the \texttt{fabfile.py} file and executes the desired task. The syntax for
+executing a task with arguments is in the form
+\texttt{fab <FUNCTION>:arg1,arg2,...}. Some executions from the terminal
+are shown as follows \todot{Test the following commands later and print the
+outputs}:
+
 \begin{lstlisting}[]
 $ fab reboot
 $ fab install:tmux
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
-The first function above reboots the \ac{Raspi}s in the lists of hosts, and
-the install function installs a program given by an argument. In the above case,
-\texttt{tmux} is installed.
-%The two functions above reboots the \ac{Raspi}s specified in the list of hosts
 
-Below is a slightly more complicated function call that copies a file from
-a \ac{PC} to all \ac{Raspi}s in the list of hosts:
+The first function above reboots the \ac{Raspi}s in the lists of hosts and
+the second function installs a program given by an argument. In both cases,
+after a successful \ac{SSH} connection is made, Fabric employs the
+\ac{Raspi}'s \texttt{reboot} and \texttt{apt-get} commands in \texttt{sudo}
+mode to do the required tasks. Below it is shown an example for
+the \texttt{push} task which uses two arguments. Here we copy
+\texttt{my\_file} from the testbed administrator \ac{PC} to all the host
+\ac{Raspi}s:
 
 \begin{lstlisting}[]
-$ fab push:"${CODEDIR}/hello_world",'~/'
+$ fab push:"${CODEDIR}/my_file",'~/'
 [192.168.87.107] Executing task 'push'
-[192.168.87.107] put: /home/<USER>/code/hello_world -> /home/pi/hello_world
+[192.168.87.107] put: /home/<USER>/code/my_file -> /home/pi/my_file
 
 Done.
 Disconnecting from 192.168.87.107... done.
@@ -98,53 +126,35 @@ Disconnecting from 192.168.87.107... done.
 \FloatBarrier
 \vspace{-5mm}
 
-\texttt{Fabric} has many other useful functionalities that are useful in
-controlling a bunch of \ac{Raspi}s.
+Fabric has many other functionalities that are useful in
+controlling a large set of \ac{Raspi}s. For example, we may extract files
+or run automated experiments. The included functionalities in
+the \texttt{\$CODEDIR/fabfile.py} file will depend on the requirements
+of the testbed administrator.
 
 %execute a script function by calling "fab install:feh"
-
-
-
-
 \subsection{Long running jobs using SSH}
+There are times when a task may need to run for several hours or even days
+in the \ac{Raspi}s, particularly when related to simulations or measurement
+campaigns. For this purpose, it might be necessary to keep open a \ac{SSH}
+connection in the \ac{Raspi}s without risking that the connection will
+be interrupted and a given \ac{Raspi} terminating the task.
 
-There may be times when a simulation has to run for days in the \ac{Raspi}s.
-For this purpose, it may be inconvenient to keep a \ac{SSH} connection
-open to the \ac{Raspi}s risking that the connection will be interrupted and
-thus leading to the \ac{Raspi} automatically terminating the process.
-
-%There may be times when it is desired to start a simulation that will
-%run for days. For that purpose, it may not be desired to keep
-%a \ac{SSH} connection open to the \ac{Raspi} risking that the connection
-%will be interrupted and thus result in the \ac{Raspi} terminating
-%the running simulation.
-
-There exists a few methods to enable the \ac{Raspi}s to continue running
+There are methods to enable the \ac{Raspi}s to continue running
 applications although the connection is terminated either on purpose or
-unexpectedly.
-%There exists a few methods to avoid the risk of simulations terminating
-%unexpectedly.
-One method is to run programs within a \texttt{screen} session.
-\texttt{screen} enables a user to run applications within a \texttt{screen}
-session which never terminates. Users can attach and detach from such a
-session as desired.
-%a session as it is
-%desired. Programs within the screen session just keeps running.
-
-The following procedure presents how to use \texttt{screen} with \ac{SSH}:
-\begin{enumerate}
-    \item login to a \ac{Raspi}
-    \item open a screen session
-    \item execute a command
-    \item detach from the screen session
-    \item terminate SSH connection
-    \item login to the \ac{Raspi} again
-    \item attach to screen session to see the program still running
-\end{enumerate}
-
-Start by establishing SSH connection to a \ac{Raspi} and open a screen session:
+unexpectedly. One method is to run programs within a \texttt{screen} session.
+\texttt{screen} enables a user to run applications within a shell
+window, a \texttt{screen} session, which does not terminate even with
+connectivity interruptions. Users can attach and detach from such a session
+as desired. The following procedure presents how to use \texttt{screen} with
+\ac{SSH} to: (i) Login to a \ac{Raspi}, (ii) open a screen session, (iii)
+execute an example command, (iv) detach from the screen session, (v)
+terminate the \ac{SSH} connection, (vi) login to the \ac{Raspi} again
+and (vii) attach to screen session to see the program still running.
+From the testbed administrator, we start by establishing \ac{SSH} connection
+to a \ac{Raspi} and open a screen session:
 \begin{lstlisting}[]
-$ SSH pi@<RASP_IP>
+$ ssh pi@<RASP_IP>
 $ screen
 Screen version 4.02.01 (GNU) 28-Apr-14
 ...
@@ -200,9 +210,6 @@ by pressing 'q', and then type 'exit' two times to first exit the
 
 
 %Problem when you logout, then applications will terminate. SCREEN is the answer.
-
-
-
 \subsection{Cross-compilation: From your PC to the Raspberry Pi}
 Some processing expensive tasks such as compiling code libraries can with
 advantage be performed in a \ac{PC} rather than a \ac{Raspi} to save time.
@@ -386,14 +393,6 @@ a \texttt{hello\_world} c++ example to the \ac{Raspi}'s ARM architecture
 and 2) how to copy and execute the binary in a \ac{Raspi} using \ac{SCP} and
 \ac{SSH}.
 
-Lets create a directory to hold our code:
-\begin{lstlisting}[]
-$ CODEDIR="${HOME}/code"
-$ mkdir -p ${CODEDIR}
-$ cd ${CODEDIR}
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
 
 Create the file \texttt{hello\_world.cpp} with the following content using your
 favorite text editor:
