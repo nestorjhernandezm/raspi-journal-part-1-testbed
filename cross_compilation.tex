@@ -114,21 +114,18 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 \FloatBarrier
 \vspace{-5mm}
 
-\subsection{Cross compile example}
-
-The following example will provide a very basic example of 1) how to cross compile
-a \texttt{hello\_world} c++ example to the \ac{Raspi}'s ARM architecture
-and 2) how to copy and execute the binary in a \ac{Raspi} using \ac{SCP} and
-\ac{SSH}.
-
-
-Create the file \texttt{hello\_world.cpp} with the following content using your
-favorite text editor:
+\subsection{Cross-compile Example}
+The following shows: (i) How to cross compile the classic \texttt{hello\_world}
+C++ example for the \ac{Raspi} ARM architecture and (ii) how to copy and
+execute the binary in a \ac{Raspi} using \ac{SCP} and \ac{SSH}. First, we
+create the file \texttt{hello\_world.cpp}. For simplicity, we create it
+in the directory where we stored the \texttt{fabfile.py} file
+with the following content using any text editor:
 
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\${CODEDIR}/hello\_world.cpp}@>
 <@\textcolor{gray}{
----------------------------------------------------------------}
+-----------------------------------------------}
 \Reactivatenumber @>
 #include <iostream>
 
@@ -139,44 +136,48 @@ int main()
 }
 \end{lstlisting}
 \FloatBarrier
+\vspace{-5mm}
 
-Save \texttt{hello\_world.cpp} and compile it for \ac{Raspi}:
+We save the previous file and compile it for \ac{Raspi} in the testbed
+administrator \ac{PC} by doing:
 
 \begin{lstlisting}[]
-$ raspberry-gxx49-arm-g++ hello_world.cpp -o hello_world
+$ ${TOOLCHAINBINARY} hello_world.cpp -o hello_world
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-This should produce a binary \texttt{hello\_world}. Copy it to a \ac{Raspi}
-and test it. We will use \ac{SCP} to copy the binary file to one of the \ac{Raspi}s.
-
-The default username for our Raspbian lite distribution is "pi" and password is "raspberry"
+This should produce a binary \texttt{hello\_world} that should only be
+useful in the \ac{Raspi}. We copy it to a \ac{Raspi} to test it. We will
+use \ac{SCP} to copy the binary file to one of the \ac{Raspi}s. Still, we
+for example might use Fabric if we are interested in deploying a compiled
+binary for many \ac{Raspi}s.
 
 \begin{lstlisting}[]
-$ scp main pi:<RASP_IP>:~/
+$ scp hello_world pi@<RASP_IP>:~/
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-If you do not know the \ac{IP} address of a \ac{Raspi} in your network, you can
-connect a monitor to it and run the following command after you have logged in:
-\begin{lstlisting}[]
-pi@rasp01:~ $ ifconfig
-eth0      Link encap:Ethernet  HWaddr b8:27:eb:72:77:54
-          inet addr:192.168.87.107  Bcast:192.168.87.255  Mask:255.255.255.0
-          inet6 addr: fe80::e0a5:38f3:6f82:bc79/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:1537 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:445 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:259117 (253.0 KiB)  TX bytes:52551 (51.3 KiB)
+% If you do not know the \ac{IP} address of a \ac{Raspi} in your network, you can
+% connect a monitor to it and run the following command after you have logged in:
+% \begin{lstlisting}[]
+% pi@rasp01:~ $ ifconfig
+% eth0      Link encap:Ethernet  HWaddr b8:27:eb:72:77:54
+%           inet addr:192.168.87.107  Bcast:192.168.87.255  Mask:255.255.255.0
+%           inet6 addr: fe80::e0a5:38f3:6f82:bc79/64 Scope:Link
+%           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+%           RX packets:1537 errors:0 dropped:0 overruns:0 frame:0
+%           TX packets:445 errors:0 dropped:0 overruns:0 carrier:0
+%           collisions:0 txqueuelen:1000
+%           RX bytes:259117 (253.0 KiB)  TX bytes:52551 (51.3 KiB)
 
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
+% \end{lstlisting}
+% \FloatBarrier
+% \vspace{-5mm}
 
-After the executable has been copied to a \ac{Raspi}. Then, \ac{SSH} to it:
+After the executable has been copied to the \ac{Raspi}. We login through
+\ac{SSH} to it:
 
 \begin{lstlisting}[]
 $ ssh pi:<RASP_IP>
@@ -185,107 +186,98 @@ $ ssh pi:<RASP_IP>
 \vspace{-5mm}
 
 We can list the directory content after we have logged into the \ac{Raspi} and
-see that \texttt{hello\_world} is there:
+verify that the compiled \texttt{hello\_world} binary is there:
 
 \begin{lstlisting}[]
-pi@rasp07:~ $ ls
+pi@<RASP_IP>:~ $ ls
 hello_world  rasp_config
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-Now, simply execute the \texttt{hello\_world} to confirm that cross compiling
-\texttt{hello\_world} worked properly:
+Finally, we simply execute the \texttt{hello\_world} to confirm that
+the cross-compiling of \texttt{hello\_world} worked properly:
 
 \begin{lstlisting}[]
-pi@rasp07:~ $ ./hello_world
+pi@<RASP_IP>:~ $ ./hello_world
 Hello World!
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-\subsection{Cross compile Kodo}
+\subsection{Cross-compile Kodo}
 
-Kodo is a C++11 network coding library. It is available through bindings in
-a variety of programming languages.
-%There exists a number of bindings for
-%Kodo to other popular programming languages.
-This procedure will present how to configure the Kodo C++ bindings (Kodo-cpp)
-to cross compile applications that can run in \ac{Raspi}. More details are
-provided in the code documentation~\cite{kodocppdoc}.
+As we originally mentioned, Kodo is a C++11 network coding library that
+permits to implement network coding functionalities by allowing any network
+protocol designer to use and test the primitive encoding, decoding and
+recoding operations of \ac{RLNC}. In this way, a designer only needs to
+focus on the design and test of a network coding-based protocol. Kodo is
+available through programming bindings for a variety of popular
+programming languages. This procedure will present how to configure the
+Kodo C++ bindings \texttt{kodo-cpp} to cross-compile applications that can
+run in \ac{Raspi}. \texttt{kodo-cpp} provides a simple interface to the
+underlying C++11 code that exists in the libraries \texttt{kodo-core} for
+the object structure and \texttt{kodo-rlnc} for the \ac{RLNC} codec
+implementation. More details about Kodo are provided in the code
+documentation~\cite{kodocppdoc}.
 
-%This procedure will go through
-%how to setup Kodo-cpp to cross compile applications that can run in \ac{Raspi}. Kodo-cpp provides a
-%simple interface to the underlying C++11 code that exists in the libraries
-%Kodo-core and Kodo-rlnc.
+To use Kodo for research, it is required to obtain a research free license.
+To do this, only a request form needs to be filled
+in~\cite{steinwurflicenselink} and wait for grant access. Once
+the access for Kodo has been granted, the source code can be pulled from
+its Git repositories to be compiled. Thus, assuming that testbed
+administrator already has access, we clone the Kodo repository locally
+in \texttt{\${CODEDIR}} and change directory into the repository by doing:
 
-To use Kodo, it is required to obtain a research- and
-education-friendly license.
-It can be be obtained from~\cite{steinwurflicenselink} and is free
-for research and educational purposes.
-
-%A more detailed procedure of setting up Kodo-cpp than provided below is available at
-
-\begin{enumerate}
-
-\item Start by creating a directory to hold the code:
 \begin{lstlisting}[]
-$ CODEDIR="${HOME}/code"
-$ mkdir -p ${CODEDIR}
 $ cd ${CODEDIR}
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-\item Clone the Kodo repository and change directory into the repository:
-\begin{lstlisting}[]
-$ git clone https://github.com/steinwurf/kodo-cpp.git
+$ git clone git@github.com:steinwurf/kodo-cpp.git
 $ cd kodo-cpp
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-\item Configure Kodo to build executables for the \ac{ARM} architecture using the \ac{Raspi} toolchain:
+Configure Kodo to build executables for the \ac{ARM} architecture using
+the \ac{Raspi} toolchain:
 \begin{lstlisting}[]
 $ python waf configure --cxx_mkspec=cxx_raspberry_gxx49_arm
 ...
-'configure' finished successfully (0.620s)
+'configure' finished successfully (X.XXXs)
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-\item Build executables:
+Build executables:
 \begin{lstlisting}[]
-$ python waf build
+$ python waf build --run_tests
 ...
 'build' finished successfully (2m22.918s)
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-
-\item Make shared library:
+Make shared library:
 \begin{lstlisting}[]
 $ python waf install --install_shared_libs --install_path="./shared_test"
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-\item Copy shared library to a \ac{Raspi}'s home directory (Alternatively, Kodo can also generate static libraries):
+Copy shared library to a \ac{Raspi}'s home directory (Alternatively, Kodo can also generate static libraries):
 \begin{lstlisting}[]
 $ scp -r shared_test/include shared_test/libkodoc.so pi@<RASP_IP>:~/
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-\item Copy a binary using Kodo shared library to the \ac{Raspi}'s home directory:
+Copy a binary using Kodo shared library to the \ac{Raspi}'s home directory:
 \begin{lstlisting}[]
 $ scp -r shared_test/encode_decode_simple pi@<RASP_IP>:~/
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-\item Execute binary:
+Execute binary:
 \begin{lstlisting}[]
 $ ssh pi@<RASP_IP> ./encode_decode_simple
 Data decoded correctly
@@ -315,9 +307,6 @@ returned "Data decoded correctly".
 %Once this procedure is made, the testbed administrator can relocate the
 %generated binary files to the \ac{Raspi}s through the network as desired
 %by using the \texttt{scp} command during the configuration step.
-
-
-\end{enumerate}
 
 %\subsection{Kodo Builds for the \ac{Raspi}, Platform Support and Documentation \textcolor{red}{(WHAT IS THE PURPOSE OF THIS SUBSECTION?)}}
 %
