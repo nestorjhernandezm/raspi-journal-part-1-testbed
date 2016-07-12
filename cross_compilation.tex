@@ -1,0 +1,454 @@
+\label{sec:cross_compilation}
+An important case of a computational expensive task is to compile software
+packages and large libraries. Given the computing capabilities of the
+\ac{Raspi}, such tasks can be challenging if not prohibitive in terms of
+\ac{CPU}, memory or space usage and / or compilation time. Thus, in
+this Section we present a procedure of how to cross-compile C++
+source code from the testbed administrator \ac{PC} for the \ac{ARM}
+architecture of the \ac{Raspi}s. By doing this, we take advantage
+of the (typically) much higher computing power of the testbed
+administrator \ac{PC} in order to save time and computational resources.
+Hence, we give an example of compiling a simple C++ program to run
+on a \ac{Raspi}.
+
+Furthermore, given that our testbed purpose is for
+network coding applications, we also present how to cross-compile Kodo
+\cite{kodo2011pedersen}, a C++11 network coding library to perform
+encoding, decoding and recoding operations. In this way, we aim to present
+a fully configurable and manageable testbed with the capabilities to
+evaluate network coding protocols with several \ac{Raspi}s and locally
+store measurements from different evaluations. Therefore, we also show
+how \texttt{kodo-cpp}, a set of high-level C++ bindings for Kodo, can be
+cross-compiled for applications with the \ac{Raspi}.
+
+
+
+%The toolchain is mandatory on most consumer \ac{PC}s due to the different
+%processor architecture.
+%
+%Furthermore, we will cover how to cross compile a simple C++ example and
+%Kodo-cpp as well as how the binaries can be copied from a \ac{PC} to a
+%\ac{Raspi} and executed.
+
+\subsection{Setup toolchain on PC}
+
+%Besides the previous description (\textbf{Include compiling Kodo from the
+%RasPi from the scratch}), the testbed administrator can compile Kodo in its
+%personal workstation and transfer the generated binaries directly to
+%a path in the \ac{Raspi}. To achieve this, we get a toolchain that
+%contains the binaries for the \texttt{raspberry-gxx49-arm-g++} compiler
+%for the \ac{Raspi}. Therefore, we strongly recommend any testbed
+%administrator to do the following procedure. In what follows, we provide
+%the instructions considering that the NFS server uses the \texttt{\$HOME}
+%directory as the working directory. However, the administrator may choose
+%some other working directory of its preference if desired.
+
+\begin{enumerate}
+
+\item Create toolchain directory:
+\begin{lstlisting}[]
+$ TOOLCHAINDIR="${HOME}/toolchains"
+$ mkdir -p $TOOLCHAINDIR
+$ cd $TOOLCHAINDIR
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\item Download the \ac{Raspi} toolchain for 64-bit Linux from.
+A more recent \ac{Raspi} toolchain may be available at
+\texttt{http://buildbot.steinwurf.dk/toolchains/linux/}:
+
+\begin{lstlisting}[]
+$ TOOLCHAIN="raspberry-gxx49-arm"
+$ wget http://kom.aau.dk/project/TuneSCode/raspi/${TOOLCHAIN}.zip
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\item Extract the downloaded file:
+%locally in the NFS server. After
+%this operation, there should be a new directory for the toolchain
+%in the server. \\
+\begin{lstlisting}[]
+$ unzip ${TOOLCHAIN}.zip
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\item (Optional) Delete zip file:
+%locally in the NFS server. After
+%this operation, there should be a new directory for the toolchain
+%in the server. \\
+\begin{lstlisting}[]
+$ rm ${TOOLCHAIN}.zip
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\item We can now verify that the ARM cross compiler is working:
+
+\begin{lstlisting}[]
+$ ${TOOLCHAINDIR}/${TOOLCHAIN}/bin/${TOOLCHAIN}-g++ --version
+raspberry-gxx49-arm-g++ (crosstool-NG 1.21.0) 4.9.3 20150311 (prerelease)
+Copyright (C) 2014 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+%\begin{lstlisting}[]
+%$ echo "${TOOLCHAINDIR}/${TOOLCHAIN}/bin/${TOOLCHAIN}-g++"
+%/home/<USER>/toolchains/raspberry-gxx49-arm/bin/raspberry-gxx49-arm-g++
+%\end{lstlisting}
+%\FloatBarrier
+%\vspace{-5mm}
+
+%    The ARM cross compilers should now be located in
+
+\item Make toolchain binaries available systemwide. Instead of calling
+the ARM cross compiler using its full path, we can make it accessible
+from the command shell systemwide. One way to do this is by adding the
+toolchain binaries directory to the Linux environment variable \texttt{PATH}
+when the \ac{OS} starts up:
+
+%\item Add toolchain binaries to \texttt{PATH}. Instead specifying the full
+%path to the toolchain binaries we can instead tell the operation system
+%where to search for it. This makes the toolchain binaries available
+%systemwide.
+
+\begin{lstlisting}[]
+$ echo PATH=\"\$PATH:${TOOLCHAINDIR}/${TOOLCHAIN}/bin\" >> ${HOME}/.profile
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+%$ printf 'PATH="%s/%s/bin"\n' "${TOOLCHAINDIR}" "${TOOLCHAIN}" >> ${HOME}/.profile
+
+%\item Add the \texttt{bin} folder of the toolchain to the \texttt{PATH}
+%Linux environment variable of the server. This will help the server OS
+%to recognize the location of the compiler command, which will be needed
+%later. To do so, edit the \texttt{\$HOME/.profile} to add in a newline:
+%\texttt{PATH="\$PATH:\$HOME/raspberry-gxx49-arm/bin"}. Save the
+%\texttt{\$HOME/.profile}. \\
+
+\texttt{.profile} should now contain the line we inserted. There may be more
+code in you file.
+% MAC and Hostname file
+\Suppressnumber\begin{lstlisting}[]
+<@\textcolor{gray}{\$HOME/.profile}@>
+<@\textcolor{gray}{
+---------------------------------------------------------------}
+\Reactivatenumber @>
+PATH="$PATH:/home/<USERNAME>/toolchains/raspberry-gxx49-arm/bin"
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\item Update \texttt{PATH}. Source \texttt{.profile} to make the changes
+take effect in your system:
+\begin{lstlisting}[]
+$ source ${HOME}/.profile
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\item ARM cross compiler should now be available systemwide:
+
+\begin{lstlisting}[]
+$ raspberry-gxx49-arm-g++ --version
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+%\item Restart the server session in order for the changes made in the
+%previous step take effect. To verify this, open a new terminal and type:
+%\texttt{raspberry-gxx49-arm-g++ --version}. A correct binary installation
+%should return an output similar to:
+%
+%\texttt{raspberry-gxx49-arm-g++ (crosstool-NG 1.21.0) 4.9.3 20150311 (prerelease)
+%Copyright (C) 2014 Free Software Foundation, Inc.
+%This is free software; see the source for copying conditions.  There is NO
+%warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.} \\
+
+\end{enumerate}
+
+\subsection{Cross compile example}
+
+The following example will provide a very basic example of 1) how to cross compile
+a \texttt{hello\_world} c++ example to the \ac{Raspi}'s ARM architecture
+and 2) how to copy and execute the binary in a \ac{Raspi} using \ac{SCP} and
+\ac{SSH}.
+
+
+Create the file \texttt{hello\_world.cpp} with the following content using your
+favorite text editor:
+
+\Suppressnumber\begin{lstlisting}[]
+<@\textcolor{gray}{\${CODEDIR}/hello\_world.cpp}@>
+<@\textcolor{gray}{
+---------------------------------------------------------------}
+\Reactivatenumber @>
+#include <iostream>
+
+int main()
+{
+    std::cout << "Hello World!" << std::endl;
+    return 0;
+}
+\end{lstlisting}
+\FloatBarrier
+
+Save \texttt{hello\_world.cpp} and compile it for \ac{Raspi}:
+
+\begin{lstlisting}[]
+$ raspberry-gxx49-arm-g++ hello_world.cpp -o hello_world
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+This should produce a binary \texttt{hello\_world}. Copy it to a \ac{Raspi}
+and test it. We will use \ac{SCP} to copy the binary file to one of the \ac{Raspi}s.
+
+The default username for our Raspbian lite distribution is "pi" and password is "raspberry"
+
+\begin{lstlisting}[]
+$ scp main pi:<RASP_IP>:~/
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+If you do not know the \ac{IP} address of a \ac{Raspi} in your network, you can
+connect a monitor to it and run the following command after you have logged in:
+\begin{lstlisting}[]
+pi@rasp01:~ $ ifconfig
+eth0      Link encap:Ethernet  HWaddr b8:27:eb:72:77:54
+          inet addr:192.168.87.107  Bcast:192.168.87.255  Mask:255.255.255.0
+          inet6 addr: fe80::e0a5:38f3:6f82:bc79/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:1537 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:445 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:259117 (253.0 KiB)  TX bytes:52551 (51.3 KiB)
+
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+After the executable has been copied to a \ac{Raspi}. Then, \ac{SSH} to it:
+
+\begin{lstlisting}[]
+$ ssh pi:<RASP_IP>
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+We can list the directory content after we have logged into the \ac{Raspi} and
+see that \texttt{hello\_world} is there:
+
+\begin{lstlisting}[]
+pi@rasp07:~ $ ls
+hello_world  rasp_config
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Now, simply execute the \texttt{hello\_world} to confirm that cross compiling
+\texttt{hello\_world} worked properly:
+
+\begin{lstlisting}[]
+pi@rasp07:~ $ ./hello_world
+Hello World!
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\subsection{Cross compile Kodo}
+
+Kodo is a C++11 network coding library. It is available through bindings in
+a variety of programming languages.
+%There exists a number of bindings for
+%Kodo to other popular programming languages.
+This procedure will present how to configure the Kodo C++ bindings (Kodo-cpp)
+to cross compile applications that can run in \ac{Raspi}. More details are
+provided in the code documentation~\cite{kodocppdoc}.
+
+%This procedure will go through
+%how to setup Kodo-cpp to cross compile applications that can run in \ac{Raspi}. Kodo-cpp provides a
+%simple interface to the underlying C++11 code that exists in the libraries
+%Kodo-core and Kodo-rlnc.
+
+To use Kodo, it is required to obtain a research- and
+education-friendly license.
+It can be be obtained from~\cite{steinwurflicenselink} and is free
+for research and educational purposes.
+
+%A more detailed procedure of setting up Kodo-cpp than provided below is available at
+
+\begin{enumerate}
+
+\item Start by creating a directory to hold the code:
+\begin{lstlisting}[]
+$ CODEDIR="${HOME}/code"
+$ mkdir -p ${CODEDIR}
+$ cd ${CODEDIR}
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\item Clone the Kodo repository and change directory into the repository:
+\begin{lstlisting}[]
+$ git clone https://github.com/steinwurf/kodo-cpp.git
+$ cd kodo-cpp
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\item Configure Kodo to build executables for the \ac{ARM} architecture using the \ac{Raspi} toolchain:
+\begin{lstlisting}[]
+$ python waf configure --cxx_mkspec=cxx_raspberry_gxx49_arm
+...
+'configure' finished successfully (0.620s)
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\item Build executables:
+\begin{lstlisting}[]
+$ python waf build
+...
+'build' finished successfully (2m22.918s)
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+
+\item Make shared library:
+\begin{lstlisting}[]
+$ python waf install --install_shared_libs --install_path="./shared_test"
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\item Copy shared library to a \ac{Raspi}'s home directory (Alternatively, Kodo can also generate static libraries):
+\begin{lstlisting}[]
+$ scp -r shared_test/include shared_test/libkodoc.so pi@<RASP_IP>:~/
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\item Copy a binary using Kodo shared library to the \ac{Raspi}'s home directory:
+\begin{lstlisting}[]
+$ scp -r shared_test/encode_decode_simple pi@<RASP_IP>:~/
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\item Execute binary:
+\begin{lstlisting}[]
+$ ssh pi@<RASP_IP> ./encode_decode_simple
+Data decoded correctly
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Cross compiling Kodo applications works provided that above command
+returned "Data decoded correctly".
+
+%\item Navigate to the repository and configure \texttt{waf} by typing:
+%\texttt{python config.py} and select the 16th ``make specification'' file
+%for the \ac{Raspi}, e.g. option \texttt{[16]cxx\_raspberry\_gxx49\_arm}
+%presented by the file.
+%
+%This command configures \texttt{waf} to use the proper compiler and its
+%required flags to generate the binaries for the \ac{Raspi}. If the
+%configuration was correct, the output will indicate:
+%\texttt{'configure' finished successfully (X.XXXs)}, where \texttt{X.XXX}
+%is total time in seconds for configuring the project in the server. \\
+%
+%\item Execute \texttt{python waf build}. If the build process was
+%successful, the generated binaries for the \ac{Raspi} should be located
+%in \texttt{build/cxx\_raspberry\_gxx49\_arm} in the Kodo repository.
+%\textbf{Indicate how the binary files should look like}.
+%
+%Once this procedure is made, the testbed administrator can relocate the
+%generated binary files to the \ac{Raspi}s through the network as desired
+%by using the \texttt{scp} command during the configuration step.
+
+
+\end{enumerate}
+
+%\subsection{Kodo Builds for the \ac{Raspi}, Platform Support and Documentation \textcolor{red}{(WHAT IS THE PURPOSE OF THIS SUBSECTION?)}}
+%
+%You can check the build status of Kodo, Fifi and other relevant projects
+%through their respective repository master branch on our buildbot page
+%\cite{steinwurf2016buildbot}. Our buildbot displays the status of the builds
+%for Raspbian 8 and GCC 4.9 for the ARM architecture which is the relevant one
+%for the \ac{Raspi}. At the link, you can check build status and build
+%statistics. Also, documentation about Kodo basics with a tutorial is available
+%at \cite{kododocs}.
+
+%\subsection{Kodo python}
+%
+%Often when simplicity and fast prototyping is of higher importance than speed
+%it is often desired to use a scripting language rather than the often faster
+%compiled language. Kodo-python provides roughly similar bindings to the
+%underlying C++11 implementation of Kodo as Kodo-cpp does. This means that
+%python calls to Kodo-python are actually executed in the underlying C++11
+%compilied code.
+%
+%Parsing calls and variables between Python and C++ compiled code is
+%not free, but this small introduced overhead may in many cases be worth
+%it to take advantage of Pythons and other scripting languages many
+%benefits.
+%
+%Below is a short procedure to use Kodo-python in a \ac{Raspi}.
+%
+%One advantage of Python compared to Kodo-cpp is that only the Kodo-python
+%library needs to be cross compiled. The python scripts using the Kodo
+%library needs not to be cross compiled but simply copied to the same
+%directory as .
+%
+%Kodo-python is available at \url{https://github.com/steinwurf/kodo-python}.
+%
+%
+%
+%\begin{lstlisting}[]
+%$ apt-get update
+%$ apt-get install python build-essential libpython-dev python-dev
+%\end{lstlisting}
+%\FloatBarrier
+%\vspace{-5mm}
+%  % IN ARCH LINUX, MOD_PYTHON NEEDS TO BE INSTALLED
+%
+%
+%Create a directory to hold our code:
+%\begin{lstlisting}[]
+%$ CODEDIR="${HOME}/code"
+%$ mkdir -p ${CODEDIR}
+%$ cd ${CODEDIR}
+%\end{lstlisting}
+%\FloatBarrier
+%\vspace{-5mm}
+%
+%\begin{lstlisting}[]
+%$ git clone git@github.com:steinwurf/kodo-python.git
+%\end{lstlisting}
+%\FloatBarrier
+%\vspace{-5mm}
+%
+%\begin{lstlisting}[]
+%$ cd kodo-python
+%$ python2.7 waf configure --cxx_mkspec=cxx_raspberry_gxx49_arm
+%$ python waf build
+%\end{lstlisting}
+%\FloatBarrier
+%\vspace{-5mm}
+%
+%KODO-PYTHON IS NOT WORKING!! WAITING FOR HELP ON STEINWURF DEV.
+%
+%WRITE HOW TO RUN A KODO PYTHON SCRIPT IN THE RASPIS
+
+%\texttt{hello\_world} returns immediately. This is not always the case.
+%Sometimes it is desired to run simulations that should run for days.
+%A software package called \texttt{screen} can be used for this purpose.
+%Simply run ...

@@ -5,12 +5,8 @@ Within the testbed everyday use, there exists frequent tasks that require
 a set of various commands in a given \ac{Raspi}. This could be tedious, prone
 to errors and time consuming to realize everytime the task is required to be
 made. Therefore, in this section we introduce a set of tools that help to
-automate and monitor routinary task execution in the \ac{Raspi}s. Given the
-computing capabilities of the \ac{Raspi}, common computational demanding tasks
-such as source code compilation and library linking can be challenginng if
-not prohibitive in terms of \ac{CPU} or memory usage. Thus, we also include
-a description of how to cross-compile source code from the testbed
-administrator \ac{PC} to the \ac{Raspi}s. To be able to run all the following
+automate and monitor routinary tasks execution in the \ac{Raspi}s and show
+relevant example commands with them. To be able to run all the following
 commands, it is required to have \ac{SSH} connectivity with the \ac{Raspi}s,
 otherwise the commands need to be run locally in a \ac{Raspi} making
 necessary to use a keyboard and a monitor. To do so, the testbed
@@ -95,7 +91,7 @@ mentioned task in \texttt{sudo} mode, respectively.
 When a task is called from the terminal, Fabric searches the directory for
 the \texttt{fabfile.py} file and executes the desired task. The syntax for
 executing a task with arguments is in the form
-\texttt{fab <FUNCTION>:arg1,arg2,...}. Some executions from the terminal
+\texttt{fab <TASK>:arg1,arg2,...}. Some executions from the terminal
 are shown as follows \todot{Test the following commands later and print the
 outputs}:
 
@@ -147,527 +143,103 @@ unexpectedly. One method is to run programs within a \texttt{screen} session.
 window, a \texttt{screen} session, which does not terminate even with
 connectivity interruptions. Users can attach and detach from such a session
 as desired. The following procedure presents how to use \texttt{screen} with
-\ac{SSH} to: (i) Login to a \ac{Raspi}, (ii) open a screen session, (iii)
+\ac{SSH} to: (i) Login to a generic \ac{Raspi} with \ac{IP} address as
+\texttt{<RASP\_IP>}, (ii) open a screen session, (iii)
 execute an example command, (iv) detach from the screen session, (v)
 terminate the \ac{SSH} connection, (vi) login to the \ac{Raspi} again
 and (vii) attach to screen session to see the program still running.
 From the testbed administrator, we start by establishing \ac{SSH} connection
 to a \ac{Raspi} and open a screen session:
+
 \begin{lstlisting}[]
 $ ssh pi@<RASP_IP>
+...
+pi@<RASP_IP>'s password:
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Tue Jul 12 13:04:31 2016
+
 $ screen
 Screen version 4.02.01 (GNU) 28-Apr-14
 ...
+[Press space or Return to end.]
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
-Press space or return to clear the shell.
 
-At this stage, we are in a screen session. Now execute a program that never ends:
+To enter in the \texttt{screen} session after the introduction message, we
+have to press either the \texttt{Space} or \texttt{Return} key in the
+keyboard to clear the shell. After doing so, we should be in a
+\texttt{screen} session although its appearance is the same as a regular
+terminal shell. Inside this example session, we execute a program that
+never ends:
+
 \begin{lstlisting}[]
 $ top
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-When \texttt{top} is running, press Ctrl+a Crtl+d to detach from
-the \texttt{screen} session.
+The \texttt{top} command simply shows continuously the table of processes
+executed in the \ac{Raspi} like in any Linux distribution. When \texttt{top}
+is running, we first press \texttt{Ctrl+a} and later \texttt{Crtl+d}
+in the keyboard to detach from the \texttt{screen} session. We now
+terminate the \ac{SSH} connection and login again to verify that the
+\texttt{top} command is still running. Without using \texttt{screen},
+the \texttt{top} program should terminate since its hosting shell was
+terminated. To log out, we run:
 
-Terminate the SSH connection and login again:
 \begin{lstlisting}[]
 $ exit
-$ SSH pi@<RASP_IP>
+logout
+Connection to <RASP_IP> closed.
+$ ssh pi@<RASP_IP>
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-Now that we are logged in to the \ac{Raspi} again, lets see if a
-\texttt{screen} session is still running:
+Now that we are logged in to the \ac{Raspi} again, we first check the
+available detached sessions by running:
 \begin{lstlisting}[]
 $ screen -list
 There is a screen on:
-  1668.pts-0.rasp09 (06/06/16 04:02:15) (Detached)
+  824.pts-0.raspXX (07/12/16 13:17:30) (Detached)
 1 Socket in /var/run/screen/S-pi.
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-It is seen that the session is still running and that no user is currently
-attached to the session. Attach to the session:
-\begin{lstlisting}[]
-$ screen -r 1668.pts-0.rasp09
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-After attaching again, \texttt{top} should still be running. \texttt{screen}
-has a few more functionalities that is outside the scope of this
-paper.
-
-To terminate the \texttt{screen} session. First, terminate \texttt{top}
-by pressing 'q', and then type 'exit' two times to first exit the
-\texttt{screen} session and then terminate the \ac{SSH} connection:
-
-
-%Problem when you logout, then applications will terminate. SCREEN is the answer.
-\subsection{Cross-compilation: From your PC to the Raspberry Pi}
-Some processing expensive tasks such as compiling code libraries can with
-advantage be performed in a \ac{PC} rather than a \ac{Raspi} to save time.
-This section will present how to setup a toolchain in a \ac{PC} that may
-be used to cross compile C++ code to run in \ac{Raspi}s.
-There will be given an example of compiling a simple C++ application to run
-on \ac{Raspi}, but also how Kodo-cpp can be cross compiled for \ac{Raspi}.
-
-%Some tasks can with advantage be performed in \ac{PC} rather than a \ac{Raspi}
-%due to the
-%
-%Modern \ac{PC}s are significantly better equipped than the \ac{Raspi}s that in
-%contrasts to \ac{PC}s target a far more affortable and smaller module size. This
-%means that it may be preferred or even mandatory to perform some computational
-%expensive tasks in a \ac{PC} rather than in \ac{Raspi}s.
-%Example of tasks that are quite computational expensive is to compile software
-%packages and large libraries.
-%Another reason to use a \ac{PC} may be the hardware limitations of \ac{Raspi}s
-%in terms of e.g. memory and disk space. Some software packages might simply be
-%too memory demanding to be compiled in a \ac{Raspi}.
-%Thus, this section will present how to setup a toolchain in a \ac{PC} that can
-%be used to cross compile C++ code to the ARM architecture that the \ac{Raspi}s.
-%The toolchain is mandatory on most consumer \ac{PC}s due to the different
-%processor architecture.
-%
-%Furthermore, we will cover how to cross compile a simple C++ example and
-%Kodo-cpp as well as how the binaries can be copied from a \ac{PC} to a
-%\ac{Raspi} and executed.
-%There exists bindings to Kodo in various programming language. We will present
-%how to also run a Kodo-python application in a \ac{Raspi}.
-
-%WRITE INTRO OF WHY WE WANT TO CROSS COMPILE. E.G. 1) WE DO NOT HAVE MONITORS
-%CONNECTED TO THE RASPIS, 2) A PC IS SIGNIFICANTLY FASTER AND FAR BETTER EQUIPPED (RAM, CPU, HARDDRIVE), 3) MORE CONVINIENT TO DO EVERYTHING IN ONE PC AND DISTRIBUTE IT TO THE RASPIS AFTERWARDS. MORE?
-
-\subsubsection{Setup toolchain on PC}
-
-%Besides the previous description (\textbf{Include compiling Kodo from the
-%RasPi from the scratch}), the testbed administrator can compile Kodo in its
-%personal workstation and transfer the generated binaries directly to
-%a path in the \ac{Raspi}. To achieve this, we get a toolchain that
-%contains the binaries for the \texttt{raspberry-gxx49-arm-g++} compiler
-%for the \ac{Raspi}. Therefore, we strongly recommend any testbed
-%administrator to do the following procedure. In what follows, we provide
-%the instructions considering that the NFS server uses the \texttt{\$HOME}
-%directory as the working directory. However, the administrator may choose
-%some other working directory of its preference if desired.
-
-\begin{enumerate}
-
-\item Create toolchain directory:
-\begin{lstlisting}[]
-$ TOOLCHAINDIR="${HOME}/toolchains"
-$ mkdir -p $TOOLCHAINDIR
-$ cd $TOOLCHAINDIR
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-\item Download the \ac{Raspi} toolchain for 64-bit Linux from.
-A more recent \ac{Raspi} toolchain may be available at
-\texttt{http://buildbot.steinwurf.dk/toolchains/linux/}:
+From the command output, we see that the session is still running in our
+generic \ac{Raspi} number \texttt{XX} and that no user is currently attached
+to the session. To attach to the session, we execute:
 
 \begin{lstlisting}[]
-$ TOOLCHAIN="raspberry-gxx49-arm"
-$ wget http://kom.aau.dk/project/TuneSCode/raspi/${TOOLCHAIN}.zip
+$ screen -r 824.pts-0.raspXX
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-\item Extract the downloaded file:
-%locally in the NFS server. After
-%this operation, there should be a new directory for the toolchain
-%in the server. \\
-\begin{lstlisting}[]
-$ unzip ${TOOLCHAIN}.zip
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
+After attaching again, we should see the \texttt{top} still running.
+\texttt{screen} has more functionalities that can be used in this
+or other contexts but that is outside the scope of this work.
+To terminate the \texttt{screen} session, first terminate \texttt{top}
+by pressing \texttt{q} in the keyboard. Once out of the \texttt{top}
+output, we need to type \texttt{exit} two times to first exit the
+\texttt{screen} session and then terminate the \ac{SSH} connection.
+An output should be as follows:
 
-\item (Optional) Delete zip file:
-%locally in the NFS server. After
-%this operation, there should be a new directory for the toolchain
-%in the server. \\
-\begin{lstlisting}[]
-$ rm ${TOOLCHAIN}.zip
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-\item We can now verify that the ARM cross compiler is working:
 
 \begin{lstlisting}[]
-$ ${TOOLCHAINDIR}/${TOOLCHAIN}/bin/${TOOLCHAIN}-g++ --version
-raspberry-gxx49-arm-g++ (crosstool-NG 1.21.0) 4.9.3 20150311 (prerelease)
-Copyright (C) 2014 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+[screen is terminating]
+pi@<RASP_IP>:~ $ exit
+logout
+Connection to <RASP_IP> closed.
+$
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
-
-%\begin{lstlisting}[]
-%$ echo "${TOOLCHAINDIR}/${TOOLCHAIN}/bin/${TOOLCHAIN}-g++"
-%/home/<USER>/toolchains/raspberry-gxx49-arm/bin/raspberry-gxx49-arm-g++
-%\end{lstlisting}
-%\FloatBarrier
-%\vspace{-5mm}
-
-%    The ARM cross compilers should now be located in
-
-\item Make toolchain binaries available systemwide. Instead of calling
-the ARM cross compiler using its full path, we can make it accessible
-from the command shell systemwide. One way to do this is by adding the
-toolchain binaries directory to the Linux environment variable \texttt{PATH}
-when the \ac{OS} starts up:
-
-%\item Add toolchain binaries to \texttt{PATH}. Instead specifying the full
-%path to the toolchain binaries we can instead tell the operation system
-%where to search for it. This makes the toolchain binaries available
-%systemwide.
-
-\begin{lstlisting}[]
-$ echo PATH=\"\$PATH:${TOOLCHAINDIR}/${TOOLCHAIN}/bin\" >> ${HOME}/.profile
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-%$ printf 'PATH="%s/%s/bin"\n' "${TOOLCHAINDIR}" "${TOOLCHAIN}" >> ${HOME}/.profile
-
-%\item Add the \texttt{bin} folder of the toolchain to the \texttt{PATH}
-%Linux environment variable of the server. This will help the server OS
-%to recognize the location of the compiler command, which will be needed
-%later. To do so, edit the \texttt{\$HOME/.profile} to add in a newline:
-%\texttt{PATH="\$PATH:\$HOME/raspberry-gxx49-arm/bin"}. Save the
-%\texttt{\$HOME/.profile}. \\
-
-\texttt{.profile} should now contain the line we inserted. There may be more
-code in you file.
-% MAC and Hostname file
-\Suppressnumber\begin{lstlisting}[]
-<@\textcolor{gray}{\$HOME/.profile}@>
-<@\textcolor{gray}{
----------------------------------------------------------------}
-\Reactivatenumber @>
-PATH="$PATH:/home/<USERNAME>/toolchains/raspberry-gxx49-arm/bin"
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-\item Update \texttt{PATH}. Source \texttt{.profile} to make the changes
-take effect in your system:
-\begin{lstlisting}[]
-$ source ${HOME}/.profile
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-\item ARM cross compiler should now be available systemwide:
-
-\begin{lstlisting}[]
-$ raspberry-gxx49-arm-g++ --version
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-%\item Restart the server session in order for the changes made in the
-%previous step take effect. To verify this, open a new terminal and type:
-%\texttt{raspberry-gxx49-arm-g++ --version}. A correct binary installation
-%should return an output similar to:
-%
-%\texttt{raspberry-gxx49-arm-g++ (crosstool-NG 1.21.0) 4.9.3 20150311 (prerelease)
-%Copyright (C) 2014 Free Software Foundation, Inc.
-%This is free software; see the source for copying conditions.  There is NO
-%warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.} \\
-
-\end{enumerate}
-
-\subsubsection{Cross compile example}
-
-The following example will provide a very basic example of 1) how to cross compile
-a \texttt{hello\_world} c++ example to the \ac{Raspi}'s ARM architecture
-and 2) how to copy and execute the binary in a \ac{Raspi} using \ac{SCP} and
-\ac{SSH}.
-
-
-Create the file \texttt{hello\_world.cpp} with the following content using your
-favorite text editor:
-
-\Suppressnumber\begin{lstlisting}[]
-<@\textcolor{gray}{\${CODEDIR}/hello\_world.cpp}@>
-<@\textcolor{gray}{
----------------------------------------------------------------}
-\Reactivatenumber @>
-#include <iostream>
-
-int main()
-{
-    std::cout << "Hello World!" << std::endl;
-    return 0;
-}
-\end{lstlisting}
-\FloatBarrier
-
-Save \texttt{hello\_world.cpp} and compile it for \ac{Raspi}:
-
-\begin{lstlisting}[]
-$ raspberry-gxx49-arm-g++ hello_world.cpp -o hello_world
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-This should produce a binary \texttt{hello\_world}. Copy it to a \ac{Raspi}
-and test it. We will use \ac{SCP} to copy the binary file to one of the \ac{Raspi}s.
-
-The default username for our Raspbian lite distribution is "pi" and password is "raspberry"
-
-\begin{lstlisting}[]
-$ scp main pi:<RASP_IP>:~/
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-If you do not know the \ac{IP} address of a \ac{Raspi} in your network, you can
-connect a monitor to it and run the following command after you have logged in:
-\begin{lstlisting}[]
-pi@rasp01:~ $ ifconfig
-eth0      Link encap:Ethernet  HWaddr b8:27:eb:72:77:54
-          inet addr:192.168.87.107  Bcast:192.168.87.255  Mask:255.255.255.0
-          inet6 addr: fe80::e0a5:38f3:6f82:bc79/64 Scope:Link
-          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
-          RX packets:1537 errors:0 dropped:0 overruns:0 frame:0
-          TX packets:445 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:259117 (253.0 KiB)  TX bytes:52551 (51.3 KiB)
-
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-After the executable has been copied to a \ac{Raspi}. Then, \ac{SSH} to it:
-
-\begin{lstlisting}[]
-$ ssh pi:<RASP_IP>
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-We can list the directory content after we have logged into the \ac{Raspi} and
-see that \texttt{hello\_world} is there:
-
-\begin{lstlisting}[]
-pi@rasp07:~ $ ls
-hello_world  rasp_config
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-Now, simply execute the \texttt{hello\_world} to confirm that cross compiling
-\texttt{hello\_world} worked properly:
-
-\begin{lstlisting}[]
-pi@rasp07:~ $ ./hello_world
-Hello World!
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-\subsubsection{Cross compile Kodo}
-
-Kodo is a C++11 network coding library. It is available through bindings in
-a variety of programming languages.
-%There exists a number of bindings for
-%Kodo to other popular programming languages.
-This procedure will present how to configure the Kodo C++ bindings (Kodo-cpp)
-to cross compile applications that can run in \ac{Raspi}. More details are
-provided in the code documentation~\cite{kodocppdoc}.
-
-%This procedure will go through
-%how to setup Kodo-cpp to cross compile applications that can run in \ac{Raspi}. Kodo-cpp provides a
-%simple interface to the underlying C++11 code that exists in the libraries
-%Kodo-core and Kodo-rlnc.
-
-To use Kodo, it is required to obtain a research- and
-education-friendly license.
-It can be be obtained from~\cite{steinwurflicenselink} and is free
-for research and educational purposes.
-
-%A more detailed procedure of setting up Kodo-cpp than provided below is available at
-
-\begin{enumerate}
-
-\item Start by creating a directory to hold the code:
-\begin{lstlisting}[]
-$ CODEDIR="${HOME}/code"
-$ mkdir -p ${CODEDIR}
-$ cd ${CODEDIR}
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-\item Clone the Kodo repository and change directory into the repository:
-\begin{lstlisting}[]
-$ git clone https://github.com/steinwurf/kodo-cpp.git
-$ cd kodo-cpp
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-\item Configure Kodo to build executables for the \ac{ARM} architecture using the \ac{Raspi} toolchain:
-\begin{lstlisting}[]
-$ python waf configure --cxx_mkspec=cxx_raspberry_gxx49_arm
-...
-'configure' finished successfully (0.620s)
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-\item Build executables:
-\begin{lstlisting}[]
-$ python waf build
-...
-'build' finished successfully (2m22.918s)
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-
-\item Make shared library:
-\begin{lstlisting}[]
-$ python waf install --install_shared_libs --install_path="./shared_test"
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-\item Copy shared library to a \ac{Raspi}'s home directory (Alternatively, Kodo can also generate static libraries):
-\begin{lstlisting}[]
-$ scp -r shared_test/include shared_test/libkodoc.so pi@<RASP_IP>:~/
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-\item Copy a binary using Kodo shared library to the \ac{Raspi}'s home directory:
-\begin{lstlisting}[]
-$ scp -r shared_test/encode_decode_simple pi@<RASP_IP>:~/
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-\item Execute binary:
-\begin{lstlisting}[]
-$ ssh pi@<RASP_IP> ./encode_decode_simple
-Data decoded correctly
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-Cross compiling Kodo applications works provided that above command
-returned "Data decoded correctly".
-
-%\item Navigate to the repository and configure \texttt{waf} by typing:
-%\texttt{python config.py} and select the 16th ``make specification'' file
-%for the \ac{Raspi}, e.g. option \texttt{[16]cxx\_raspberry\_gxx49\_arm}
-%presented by the file.
-%
-%This command configures \texttt{waf} to use the proper compiler and its
-%required flags to generate the binaries for the \ac{Raspi}. If the
-%configuration was correct, the output will indicate:
-%\texttt{'configure' finished successfully (X.XXXs)}, where \texttt{X.XXX}
-%is total time in seconds for configuring the project in the server. \\
-%
-%\item Execute \texttt{python waf build}. If the build process was
-%successful, the generated binaries for the \ac{Raspi} should be located
-%in \texttt{build/cxx\_raspberry\_gxx49\_arm} in the Kodo repository.
-%\textbf{Indicate how the binary files should look like}.
-%
-%Once this procedure is made, the testbed administrator can relocate the
-%generated binary files to the \ac{Raspi}s through the network as desired
-%by using the \texttt{scp} command during the configuration step.
-
-
-\end{enumerate}
-
-%\subsection{Kodo Builds for the \ac{Raspi}, Platform Support and Documentation \textcolor{red}{(WHAT IS THE PURPOSE OF THIS SUBSECTION?)}}
-%
-%You can check the build status of Kodo, Fifi and other relevant projects
-%through their respective repository master branch on our buildbot page
-%\cite{steinwurf2016buildbot}. Our buildbot displays the status of the builds
-%for Raspbian 8 and GCC 4.9 for the ARM architecture which is the relevant one
-%for the \ac{Raspi}. At the link, you can check build status and build
-%statistics. Also, documentation about Kodo basics with a tutorial is available
-%at \cite{kododocs}.
-
-
-
-
-
-
-%\subsection{Kodo python}
-%
-%Often when simplicity and fast prototyping is of higher importance than speed
-%it is often desired to use a scripting language rather than the often faster
-%compiled language. Kodo-python provides roughly similar bindings to the
-%underlying C++11 implementation of Kodo as Kodo-cpp does. This means that
-%python calls to Kodo-python are actually executed in the underlying C++11
-%compilied code.
-%
-%Parsing calls and variables between Python and C++ compiled code is
-%not free, but this small introduced overhead may in many cases be worth
-%it to take advantage of Pythons and other scripting languages many
-%benefits.
-%
-%Below is a short procedure to use Kodo-python in a \ac{Raspi}.
-%
-%One advantage of Python compared to Kodo-cpp is that only the Kodo-python
-%library needs to be cross compiled. The python scripts using the Kodo
-%library needs not to be cross compiled but simply copied to the same
-%directory as .
-%
-%Kodo-python is available at \url{https://github.com/steinwurf/kodo-python}.
-%
-%
-%
-%\begin{lstlisting}[]
-%$ apt-get update
-%$ apt-get install python build-essential libpython-dev python-dev
-%\end{lstlisting}
-%\FloatBarrier
-%\vspace{-5mm}
-%  % IN ARCH LINUX, MOD_PYTHON NEEDS TO BE INSTALLED
-%
-%
-%Create a directory to hold our code:
-%\begin{lstlisting}[]
-%$ CODEDIR="${HOME}/code"
-%$ mkdir -p ${CODEDIR}
-%$ cd ${CODEDIR}
-%\end{lstlisting}
-%\FloatBarrier
-%\vspace{-5mm}
-%
-%\begin{lstlisting}[]
-%$ git clone git@github.com:steinwurf/kodo-python.git
-%\end{lstlisting}
-%\FloatBarrier
-%\vspace{-5mm}
-%
-%\begin{lstlisting}[]
-%$ cd kodo-python
-%$ python2.7 waf configure --cxx_mkspec=cxx_raspberry_gxx49_arm
-%$ python waf build
-%\end{lstlisting}
-%\FloatBarrier
-%\vspace{-5mm}
-%
-%KODO-PYTHON IS NOT WORKING!! WAITING FOR HELP ON STEINWURF DEV.
-%
-%WRITE HOW TO RUN A KODO PYTHON SCRIPT IN THE RASPIS
-
-%\texttt{hello\_world} returns immediately. This is not always the case.
-%Sometimes it is desired to run simulations that should run for days.
-%A software package called \texttt{screen} can be used for this purpose.
-%Simply run ...
