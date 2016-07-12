@@ -1,11 +1,9 @@
 \label{sec:testbed_http}
 
 
-\subsection{HTTP}
-
 %This part will explain how to prepare the existing image to be downloaded from
 %a \ac{HTTP} server.
-The Linux image that has been made so far has two partitions. One 
+The Linux image that has been made so far has two partitions. One
 partition with the boot files and one containing the root file system.
 
 This section will present how the partitions can be extracted from the image,
@@ -16,10 +14,10 @@ The advantage of this setup is that multiple \ac{Raspi}s can share the same
 root image. This significantly eases the maintainance task.
 
 %An alternative to the setup explained in this procedure is to use \ac{NFS}
-%instead of \ac{HTTP}. 
+%instead of \ac{HTTP}.
 
 %The first program called when a \ac{Raspi} starts is the Boot Loader,
-%\texttt{U-Boot}. \texttt{U-Boot} 
+%\texttt{U-Boot}. \texttt{U-Boot}
 %
 %When Raspbian starts up, the first program called
 %
@@ -28,11 +26,11 @@ root image. This significantly eases the maintainance task.
 %
 %there exists only one root file
 %
-%The advantage of this is that the root filesystem only one all \ac{Raspi}s can automatically download the 
+%The advantage of this is that the root filesystem only one all \ac{Raspi}s can automatically download the
 %
 %The boot partition will be required in the \ac{Raspi}s, but the root image can
 
-Start by declaring the path and names of the boot- and root-image:. 
+Start by declaring the path and names of the boot- and root-image:.
 \begin{lstlisting}[]
 $ export HTTPBOOTIMAGE="${WORKDIR}/httpboot"
 $ export HTTPROOTIMAGE="${WORKDIR}/httproot"
@@ -73,7 +71,7 @@ from a \ac{HTTP} server before mounting it.
 
 The initial \ac{RAM} filesystem contains an \texttt{init} script that
 sets up the prepares the yis first
-called. This script initializes the  may be rewritten, but 
+called. This script initializes the  may be rewritten, but
 
 Create the following file (THE READ-ONLY OPTION IS STILL NOT CONFIGURABLE IN THIS SCRIPT)
 \Suppressnumber\begin{lstlisting}[]
@@ -259,7 +257,7 @@ Exit chroot
 Unmount:
 \begin{lstlisting}[]
 $ cd ..
-# umount ${HTTPROOTIMAGE}/{dev/pts,proc,sys,dev}  
+# umount ${HTTPROOTIMAGE}/{dev/pts,proc,sys,dev}
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
@@ -356,8 +354,8 @@ PROBABLY A BETTER IDEA TO USE BTRFS TRANSPARENT COMPRESSION
 
 \begin{lstlisting}[]
 # apt-get install squashfs-tools
-# mount -o loop ${HTTPROOTIMAGE}.img ${HTTPROOTDIR} 
-# mksquashfs ${HTTPROOTDIR} compressed_${HTTPROOTIMAGE}.img       
+# mount -o loop ${HTTPROOTIMAGE}.img ${HTTPROOTDIR}
+# mksquashfs ${HTTPROOTDIR} compressed_${HTTPROOTIMAGE}.img
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}

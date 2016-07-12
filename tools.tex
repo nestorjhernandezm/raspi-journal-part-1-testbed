@@ -1,6 +1,209 @@
 
 %\subsection{Kodo cross-compilation: From your PC to the Raspberry Pi}
-\label{sec:cross_compilation}
+\label{sec:tools}
+Within the testbed everyday use, there exists frequent tasks that require
+a set of various commands in a given \ac{Raspi}. This could be tedious, prone
+to errors and time consuming to realize everytime the task is required to be
+made. Therefore, in this section we introduce a set of tools that help to
+automate and monitor routinary task execution in the \ac{Raspi}s. Given the
+computing capabilities of the \ac{Raspi}, common computational demanding tasks
+such as source code compilation and library linking can be challenginng if
+not prohibitive in terms of \ac{CPU} or memory usage. Thus, we also include
+a description of how to cross-compile source code from the testbed
+administrator \ac{PC} to the \ac{Raspi}s. To be able to run all the following
+commands, it is required to have \ac{SSH} connectivity with the \ac{Raspi}s,
+otherwise the commands need to be run locally in a \ac{Raspi} making
+necessary to use a keyboard and a monitor.
+
+
+\subsection{Fabric}
+Controlling multiple devices using \ac{SSH} from a single \ac{PC}
+often leads to a lot of repetitive tasks. Among these, we can mention:
+(i) rebooting a set of devices, (ii) installing applications in multiple
+devices and (iii) copying files to and / or from multiple devices. To
+simplify the management and avoid execution issues, \texttt{Fabric} provides
+a Python library to ease the task of working with multiple devices from
+a single \ac{PC}. The code below provides a small script that can perform
+the few items above:
+
+% Exit chroot, umount, and write to memory card
+\Suppressnumber\begin{lstlisting}[]
+<@\textcolor{gray}{\$CODEDIR/fabfile.py}@>
+<@\textcolor{gray}{
+-------------------------------------}
+\Reactivatenumber @>
+from fabric.api import run, env, task
+# Python Fabric script to run commands on multiple hosts through ssh
+#
+# Run script as 'fab <task>', where <task> is one of the scripts functions
+# marked as a tesk. The task marked as 'default' will be run if <task> is not
+# specified
+
+env.hosts = ['rasp00.domain.com','rasp01.domain.com','rasp02.domain.com']
+env.user = 'pi'
+env.password = 'raspberry'
+
+@task
+def reboot():
+    """ Reboot device """
+    sudo('reboot', quiet=True)
+
+@task
+def install(program):
+    """
+    Install a program
+    program: program name
+    """
+    result = sudo('apt-get install -y {}'.format(program), quiet=True)
+    print(result)
+
+@task
+def push(src,dst):
+    """
+    Copy file to device
+    src: source file path
+    dst: destination file path
+    """
+    put(src, dst)
+
+\end{lstlisting}
+\FloatBarrier
+
+The script functions can be called from the shell in the following
+manner. \texttt{Fabric} will automatically search the directory for a file
+named 'fabfile.py'. The syntax for executing a task and arguments is in the form
+'fab <FUNCTION>:arg1,arg2,...:
+\begin{lstlisting}[]
+$ fab reboot
+$ fab install:tmux
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+The first function above reboots the \ac{Raspi}s in the lists of hosts, and
+the install function installs a program given by an argument. In the above case,
+\texttt{tmux} is installed.
+%The two functions above reboots the \ac{Raspi}s specified in the list of hosts
+
+Below is a slightly more complicated function call that copies a file from
+a \ac{PC} to all \ac{Raspi}s in the list of hosts:
+
+\begin{lstlisting}[]
+$ fab push:"${CODEDIR}/hello_world",'~/'
+[192.168.87.107] Executing task 'push'
+[192.168.87.107] put: /home/<USER>/code/hello_world -> /home/pi/hello_world
+
+Done.
+Disconnecting from 192.168.87.107... done.
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+\texttt{Fabric} has many other useful functionalities that are useful in
+controlling a bunch of \ac{Raspi}s.
+
+%execute a script function by calling "fab install:feh"
+
+
+
+
+\subsection{Long running jobs using SSH}
+
+There may be times when a simulation has to run for days in the \ac{Raspi}s.
+For this purpose, it may be inconvenient to keep a \ac{SSH} connection
+open to the \ac{Raspi}s risking that the connection will be interrupted and
+thus leading to the \ac{Raspi} automatically terminating the process.
+
+%There may be times when it is desired to start a simulation that will
+%run for days. For that purpose, it may not be desired to keep
+%a \ac{SSH} connection open to the \ac{Raspi} risking that the connection
+%will be interrupted and thus result in the \ac{Raspi} terminating
+%the running simulation.
+
+There exists a few methods to enable the \ac{Raspi}s to continue running
+applications although the connection is terminated either on purpose or
+unexpectedly.
+%There exists a few methods to avoid the risk of simulations terminating
+%unexpectedly.
+One method is to run programs within a \texttt{screen} session.
+\texttt{screen} enables a user to run applications within a \texttt{screen}
+session which never terminates. Users can attach and detach from such a
+session as desired.
+%a session as it is
+%desired. Programs within the screen session just keeps running.
+
+The following procedure presents how to use \texttt{screen} with \ac{SSH}:
+\begin{enumerate}
+    \item login to a \ac{Raspi}
+    \item open a screen session
+    \item execute a command
+    \item detach from the screen session
+    \item terminate SSH connection
+    \item login to the \ac{Raspi} again
+    \item attach to screen session to see the program still running
+\end{enumerate}
+
+Start by establishing SSH connection to a \ac{Raspi} and open a screen session:
+\begin{lstlisting}[]
+$ SSH pi@<RASP_IP>
+$ screen
+Screen version 4.02.01 (GNU) 28-Apr-14
+...
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+Press space or return to clear the shell.
+
+At this stage, we are in a screen session. Now execute a program that never ends:
+\begin{lstlisting}[]
+$ top
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+When \texttt{top} is running, press Ctrl+a Crtl+d to detach from
+the \texttt{screen} session.
+
+Terminate the SSH connection and login again:
+\begin{lstlisting}[]
+$ exit
+$ SSH pi@<RASP_IP>
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Now that we are logged in to the \ac{Raspi} again, lets see if a
+\texttt{screen} session is still running:
+\begin{lstlisting}[]
+$ screen -list
+There is a screen on:
+  1668.pts-0.rasp09 (06/06/16 04:02:15) (Detached)
+1 Socket in /var/run/screen/S-pi.
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+It is seen that the session is still running and that no user is currently
+attached to the session. Attach to the session:
+\begin{lstlisting}[]
+$ screen -r 1668.pts-0.rasp09
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+After attaching again, \texttt{top} should still be running. \texttt{screen}
+has a few more functionalities that is outside the scope of this
+paper.
+
+To terminate the \texttt{screen} session. First, terminate \texttt{top}
+by pressing 'q', and then type 'exit' two times to first exit the
+\texttt{screen} session and then terminate the \ac{SSH} connection:
+
+
+%Problem when you logout, then applications will terminate. SCREEN is the answer.
+
+
+
+\subsection{Cross-compilation: From your PC to the Raspberry Pi}
 Some processing expensive tasks such as compiling code libraries can with
 advantage be performed in a \ac{PC} rather than a \ac{Raspi} to save time.
 This section will present how to setup a toolchain in a \ac{PC} that may
@@ -9,7 +212,7 @@ There will be given an example of compiling a simple C++ application to run
 on \ac{Raspi}, but also how Kodo-cpp can be cross compiled for \ac{Raspi}.
 
 %Some tasks can with advantage be performed in \ac{PC} rather than a \ac{Raspi}
-%due to the 
+%due to the
 %
 %Modern \ac{PC}s are significantly better equipped than the \ac{Raspi}s that in
 %contrasts to \ac{PC}s target a far more affortable and smaller module size. This
@@ -34,7 +237,7 @@ on \ac{Raspi}, but also how Kodo-cpp can be cross compiled for \ac{Raspi}.
 %WRITE INTRO OF WHY WE WANT TO CROSS COMPILE. E.G. 1) WE DO NOT HAVE MONITORS
 %CONNECTED TO THE RASPIS, 2) A PC IS SIGNIFICANTLY FASTER AND FAR BETTER EQUIPPED (RAM, CPU, HARDDRIVE), 3) MORE CONVINIENT TO DO EVERYTHING IN ONE PC AND DISTRIBUTE IT TO THE RASPIS AFTERWARDS. MORE?
 
-\subsection{Setup toolchain on PC}
+\subsubsection{Setup toolchain on PC}
 
 %Besides the previous description (\textbf{Include compiling Kodo from the
 %RasPi from the scratch}), the testbed administrator can compile Kodo in its
@@ -107,12 +310,12 @@ warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 %\end{lstlisting}
 %\FloatBarrier
 %\vspace{-5mm}
-    
+
 %    The ARM cross compilers should now be located in
 
 \item Make toolchain binaries available systemwide. Instead of calling
 the ARM cross compiler using its full path, we can make it accessible
-from the command shell systemwide. One way to do this is by adding the 
+from the command shell systemwide. One way to do this is by adding the
 toolchain binaries directory to the Linux environment variable \texttt{PATH}
 when the \ac{OS} starts up:
 
@@ -176,7 +379,7 @@ $ raspberry-gxx49-arm-g++ --version
 
 \end{enumerate}
 
-\subsection{Cross compile example}
+\subsubsection{Cross compile example}
 
 The following example will provide a very basic example of 1) how to cross compile
 a \texttt{hello\_world} c++ example to the \ac{Raspi}'s ARM architecture
@@ -233,13 +436,13 @@ If you do not know the \ac{IP} address of a \ac{Raspi} in your network, you can
 connect a monitor to it and run the following command after you have logged in:
 \begin{lstlisting}[]
 pi@rasp01:~ $ ifconfig
-eth0      Link encap:Ethernet  HWaddr b8:27:eb:72:77:54  
+eth0      Link encap:Ethernet  HWaddr b8:27:eb:72:77:54
           inet addr:192.168.87.107  Bcast:192.168.87.255  Mask:255.255.255.0
           inet6 addr: fe80::e0a5:38f3:6f82:bc79/64 Scope:Link
           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
           RX packets:1537 errors:0 dropped:0 overruns:0 frame:0
           TX packets:445 errors:0 dropped:0 overruns:0 carrier:0
-          collisions:0 txqueuelen:1000 
+          collisions:0 txqueuelen:1000
           RX bytes:259117 (253.0 KiB)  TX bytes:52551 (51.3 KiB)
 
 \end{lstlisting}
@@ -274,7 +477,7 @@ Hello World!
 \FloatBarrier
 \vspace{-5mm}
 
-\subsection{Cross compile Kodo}
+\subsubsection{Cross compile Kodo}
 
 Kodo is a C++11 network coding library. It is available through bindings in
 a variety of programming languages.
@@ -448,7 +651,7 @@ returned "Data decoded correctly".
 %\vspace{-5mm}
 %
 %\begin{lstlisting}[]
-%$ git clone git@github.com:steinwurf/kodo-python.git 
+%$ git clone git@github.com:steinwurf/kodo-python.git
 %\end{lstlisting}
 %\FloatBarrier
 %\vspace{-5mm}
@@ -465,200 +668,7 @@ returned "Data decoded correctly".
 %
 %WRITE HOW TO RUN A KODO PYTHON SCRIPT IN THE RASPIS
 
-\subsection{Fabric}
-
-Controlling multiple devices using \ac{SSH} from a single \ac{PC}
-often leads to a lot of repetitive work. E.g.
-
-\begin{itemize}
-    \item rebooting a set of devices
-    \item installing applications in multiple devices
-    \item copy files to/from multiple devices
-    %\item run a script in multiple devices
-\end{itemize}
-
-\texttt{Fabric} provides a python library to ease the task of working
-with multiple devices from a single \ac{PC}. The code below provides
-a small script that can perform the few items above:
-
-
-
-% Exit chroot, umount, and write to memory card
-\Suppressnumber\begin{lstlisting}[]
-<@\textcolor{gray}{\$CODEDIR/fabfile.py}@>
-<@\textcolor{gray}{
--------------------------------------------}
-\Reactivatenumber @>
-from fabric.api import run, env, task
-# Python Fabric script to run commands on multiple hosts through ssh
-#
-# Run script as 'fab <task>', where <task> is one of the scripts functions
-# marked as a tesk. The task marked as 'default' will be run if <task> is not
-# specified
-
-env.hosts = ['rasp00.domain.com','rasp01.domain.com','rasp02.domain.com']
-env.user = 'pi'
-env.password = 'raspberry'
-
-@task
-def reboot():
-    """ Reboot device """
-    sudo('reboot', quiet=True)
-
-@task
-def install(program):
-    """
-    Install a program
-    program: program name
-    """
-    result = sudo('apt-get install -y {}'.format(program), quiet=True)
-    print(result)
-
-@task
-def push(src,dst):
-    """
-    Copy file to device
-    src: source file path
-    dst: destination file path
-    """
-    put(src, dst)
-
-\end{lstlisting}
-\FloatBarrier
-
-The script functions can be called from the shell in the following
-manner. \texttt{Fabric} will automatically search the directory for a file 
-named 'fabfile.py'. The syntax for executing a task and arguments is in the form
-'fab <FUNCTION>:arg1,arg2,...:
-\begin{lstlisting}[]
-$ fab reboot
-$ fab install:tmux
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-The first function above reboots the \ac{Raspi}s in the lists of hosts, and
-the install function installs a program given by an argument. In the above case,
-\texttt{tmux} is installed.
-%The two functions above reboots the \ac{Raspi}s specified in the list of hosts
-
-Below is a slightly more complicated function call that copies a file from 
-a \ac{PC} to all \ac{Raspi}s in the list of hosts:
-
-\begin{lstlisting}[]
-$ fab push:"${CODEDIR}/hello_world",'~/'
-[192.168.87.107] Executing task 'push'
-[192.168.87.107] put: /home/<USER>/code/hello_world -> /home/pi/hello_world
-
-Done.
-Disconnecting from 192.168.87.107... done.
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-\texttt{Fabric} has many other useful functionalities that are useful in
-controlling a bunch of \ac{Raspi}s.
-
-%execute a script function by calling "fab install:feh"
-
-
-
-
-\subsection{Long running jobs using SSH}
-
-There may be times when a simulation has to run for days in the \ac{Raspi}s.
-For this purpose, it may be inconvenient to keep a \ac{SSH} connection
-open to the \ac{Raspi}s risking that the connection will be interrupted and
-thus leading to the \ac{Raspi} automatically terminating the process.
-
-%There may be times when it is desired to start a simulation that will
-%run for days. For that purpose, it may not be desired to keep
-%a \ac{SSH} connection open to the \ac{Raspi} risking that the connection
-%will be interrupted and thus result in the \ac{Raspi} terminating
-%the running simulation.
-
-There exists a few methods to enable the \ac{Raspi}s to continue running
-applications although the connection is terminated either on purpose or
-unexpectedly.
-%There exists a few methods to avoid the risk of simulations terminating
-%unexpectedly.
-One method is to run programs within a \texttt{screen} session.
-\texttt{screen} enables a user to run applications within a \texttt{screen}
-session which never terminates. Users can attach and detach from such a
-session as desired.
-%a session as it is
-%desired. Programs within the screen session just keeps running.
-
-The following procedure presents how to use \texttt{screen} with \ac{SSH}:
-\begin{enumerate}
-    \item login to a \ac{Raspi}
-    \item open a screen session
-    \item execute a command
-    \item detach from the screen session
-    \item terminate SSH connection
-    \item login to the \ac{Raspi} again
-    \item attach to screen session to see the program still running
-\end{enumerate}
-
-Start by establishing SSH connection to a \ac{Raspi} and open a screen session:
-\begin{lstlisting}[]
-$ SSH pi@<RASP_IP>
-$ screen
-Screen version 4.02.01 (GNU) 28-Apr-14
-...
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-Press space or return to clear the shell.
-
-At this stage, we are in a screen session. Now execute a program that never ends:
-\begin{lstlisting}[]
-$ top
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-When \texttt{top} is running, press Ctrl+a Crtl+d to detach from
-the \texttt{screen} session.
-
-Terminate the SSH connection and login again:
-\begin{lstlisting}[]
-$ exit
-$ SSH pi@<RASP_IP>
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-Now that we are logged in to the \ac{Raspi} again, lets see if a
-\texttt{screen} session is still running:
-\begin{lstlisting}[]
-$ screen -list
-There is a screen on:
-	1668.pts-0.rasp09	(06/06/16 04:02:15)	(Detached)
-1 Socket in /var/run/screen/S-pi.
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-It is seen that the session is still running and that no user is currently
-attached to the session. Attach to the session:
-\begin{lstlisting}[]
-$ screen -r 1668.pts-0.rasp09
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-After attaching again, \texttt{top} should still be running. \texttt{screen}
-has a few more functionalities that is outside the scope of this
-paper.
-
-To terminate the \texttt{screen} session. First, terminate \texttt{top}
-by pressing 'q', and then type 'exit' two times to first exit the
-\texttt{screen} session and then terminate the \ac{SSH} connection:
-
-
-%Problem when you logout, then applications will terminate. SCREEN is the answer.
-
 %\texttt{hello\_world} returns immediately. This is not always the case.
-%Sometimes it is desired to run simulations that should run for days. 
+%Sometimes it is desired to run simulations that should run for days.
 %A software package called \texttt{screen} can be used for this purpose.
 %Simply run ...
