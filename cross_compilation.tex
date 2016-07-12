@@ -8,7 +8,8 @@ source code from the testbed administrator \ac{PC} for the \ac{ARM}
 architecture of the \ac{Raspi}s. By doing this, we take advantage
 of the (typically) much higher computing power of the testbed
 administrator \ac{PC} in order to save time and computational resources.
-Hence, we give an example of compiling a simple C++ program to run
+Hence, we give an example of compiling a simple C++ program and
+copying the generated binaries with \ac{SSH} to run locally
 on a \ac{Raspi}.
 
 Furthermore, given that our testbed purpose is for
@@ -21,156 +22,97 @@ store measurements from different evaluations. Therefore, we also show
 how \texttt{kodo-cpp}, a set of high-level C++ bindings for Kodo, can be
 cross-compiled for applications with the \ac{Raspi}.
 
+\subsection{Toolchain Setup}
+To compile in a given architecture that is aimed for a different one,
+the testbed administrator needs to install a toolchain in its \ac{PC}.
+The toolchain is mandatory due to the different processor architectures
+where the source can be compiled from / to.
 
+Given that compiling a toolchaing can be an ardous task, we get the toolchain
+recommended for the \ac{ARM} architecture of the \ac{Raspi}s.
+This toolchain is available from \cite{2016rpitoolchain} and
+it already contains the binaries for different compilers based on
+\texttt{gcc 4.9}. In what follows, we extract the binaries adjusting
+them to our coding style and compiling convention. For this, we use the
+\texttt{\$TOOLCHAIN} directory as the working directory. However,
+the testbed administrator may choose some other working directory of
+its preference if desired. First, we create the toolchain directory:
 
-%The toolchain is mandatory on most consumer \ac{PC}s due to the different
-%processor architecture.
-%
-%Furthermore, we will cover how to cross compile a simple C++ example and
-%Kodo-cpp as well as how the binaries can be copied from a \ac{PC} to a
-%\ac{Raspi} and executed.
-
-\subsection{Setup toolchain on PC}
-
-%Besides the previous description (\textbf{Include compiling Kodo from the
-%RasPi from the scratch}), the testbed administrator can compile Kodo in its
-%personal workstation and transfer the generated binaries directly to
-%a path in the \ac{Raspi}. To achieve this, we get a toolchain that
-%contains the binaries for the \texttt{raspberry-gxx49-arm-g++} compiler
-%for the \ac{Raspi}. Therefore, we strongly recommend any testbed
-%administrator to do the following procedure. In what follows, we provide
-%the instructions considering that the NFS server uses the \texttt{\$HOME}
-%directory as the working directory. However, the administrator may choose
-%some other working directory of its preference if desired.
-
-\begin{enumerate}
-
-\item Create toolchain directory:
 \begin{lstlisting}[]
-$ TOOLCHAINDIR="${HOME}/toolchains"
+$ export TOOLCHAINDIR="${HOME}/toolchains"
 $ mkdir -p $TOOLCHAINDIR
 $ cd $TOOLCHAINDIR
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-\item Download the \ac{Raspi} toolchain for 64-bit Linux from.
-A more recent \ac{Raspi} toolchain may be available at
-\texttt{http://buildbot.steinwurf.dk/toolchains/linux/}:
+Later, we download the \ac{Raspi} toolchain for 64-bit Linux. However,
+instead of working with the binaries from \cite{2016rpitoolchain},
+we use a zipped version with the original binaries and renamed symbolic
+links to the original files available in
+\cite{2016steinwurfrpitoolchain}. Finally, we unzip the downloaded file.
+This is made as follows:
 
 \begin{lstlisting}[]
-$ TOOLCHAIN="raspberry-gxx49-arm"
-$ wget http://kom.aau.dk/project/TuneSCode/raspi/${TOOLCHAIN}.zip
+$ wget http://files.steinwurf.com/toolchains/linux/raspberry-gcc-4.9.3/raspberry-gxx493-arm.zip
+$ unzip raspberry-gxx493-arm.zip
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-\item Extract the downloaded file:
-%locally in the NFS server. After
-%this operation, there should be a new directory for the toolchain
-%in the server. \\
+Instead of calling the ARM cross compiler using its full path, we make
+the binaries accessible from the command shell systemwide. A way to do
+this is by adding the following commands in the \texttt{\${HOME}/.profile}
+as follows:
+
 \begin{lstlisting}[]
-$ unzip ${TOOLCHAIN}.zip
+$ sed -i '$a export TOOLCHAINDIR=\"$HOME/toolchains\"' ${HOME}/.profile
+$ sed -i '$a export TOOLCHAINBINARY=\"raspberry-gxx49-arm-g++\"' ${HOME}/.profile
+$ sed -i '$a PATH=\"\$PATH:${TOOLCHAINDIR}/arm-rpi-4.9.3-linux-gnueabihf/bin\"' ${HOME}/.profile
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-\item (Optional) Delete zip file:
-%locally in the NFS server. After
-%this operation, there should be a new directory for the toolchain
-%in the server. \\
-\begin{lstlisting}[]
-$ rm ${TOOLCHAIN}.zip
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-\item We can now verify that the ARM cross compiler is working:
-
-\begin{lstlisting}[]
-$ ${TOOLCHAINDIR}/${TOOLCHAIN}/bin/${TOOLCHAIN}-g++ --version
-raspberry-gxx49-arm-g++ (crosstool-NG 1.21.0) 4.9.3 20150311 (prerelease)
-Copyright (C) 2014 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-%\begin{lstlisting}[]
-%$ echo "${TOOLCHAINDIR}/${TOOLCHAIN}/bin/${TOOLCHAIN}-g++"
-%/home/<USER>/toolchains/raspberry-gxx49-arm/bin/raspberry-gxx49-arm-g++
-%\end{lstlisting}
-%\FloatBarrier
-%\vspace{-5mm}
-
-%    The ARM cross compilers should now be located in
-
-\item Make toolchain binaries available systemwide. Instead of calling
-the ARM cross compiler using its full path, we can make it accessible
-from the command shell systemwide. One way to do this is by adding the
-toolchain binaries directory to the Linux environment variable \texttt{PATH}
-when the \ac{OS} starts up:
-
-%\item Add toolchain binaries to \texttt{PATH}. Instead specifying the full
-%path to the toolchain binaries we can instead tell the operation system
-%where to search for it. This makes the toolchain binaries available
-%systemwide.
-
-\begin{lstlisting}[]
-$ echo PATH=\"\$PATH:${TOOLCHAINDIR}/${TOOLCHAIN}/bin\" >> ${HOME}/.profile
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-%$ printf 'PATH="%s/%s/bin"\n' "${TOOLCHAINDIR}" "${TOOLCHAIN}" >> ${HOME}/.profile
-
-%\item Add the \texttt{bin} folder of the toolchain to the \texttt{PATH}
-%Linux environment variable of the server. This will help the server OS
-%to recognize the location of the compiler command, which will be needed
-%later. To do so, edit the \texttt{\$HOME/.profile} to add in a newline:
-%\texttt{PATH="\$PATH:\$HOME/raspberry-gxx49-arm/bin"}. Save the
-%\texttt{\$HOME/.profile}. \\
-
-\texttt{.profile} should now contain the line we inserted. There may be more
-code in you file.
+This helps the \ac{OS} to recognize the location of the compiler
+command everytime a new shell is opened. The \texttt{.profile} should now
+contain the lines we inserted. There might be more other
+code in your file. Leave other parts unmodified.
 % MAC and Hostname file
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$HOME/.profile}@>
 <@\textcolor{gray}{
----------------------------------------------------------------}
+---------------------------}
 \Reactivatenumber @>
-PATH="$PATH:/home/<USERNAME>/toolchains/raspberry-gxx49-arm/bin"
+...
+export TOOLCHAINDIR="$HOME/toolchains"
+export TOOLCHAINBINARY="raspberry-gxx49-arm-g++"
+PATH="$PATH:${TOOLCHAINDIR}/arm-rpi-4.9.3-linux-gnueabihf/bin"
+...
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-\item Update \texttt{PATH}. Source \texttt{.profile} to make the changes
-take effect in your system:
+To update the \texttt{PATH} variable and the \texttt{.profile}, we use the
+\texttt{source} command for the changes take effect in the administrator
+system:
 \begin{lstlisting}[]
 $ source ${HOME}/.profile
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-\item ARM cross compiler should now be available systemwide:
+A working ARM cross-compiler in the testbed administrator \ac{PC} should
+output the following:
 
 \begin{lstlisting}[]
-$ raspberry-gxx49-arm-g++ --version
+$ ${TOOLCHAINBINARY} --version
+raspberry-gxx49-arm-g++ (crosstool-NG crosstool-ng-1.22.0-88-g8460611) 4.9.3
+Copyright (C) 2015 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
-
-%\item Restart the server session in order for the changes made in the
-%previous step take effect. To verify this, open a new terminal and type:
-%\texttt{raspberry-gxx49-arm-g++ --version}. A correct binary installation
-%should return an output similar to:
-%
-%\texttt{raspberry-gxx49-arm-g++ (crosstool-NG 1.21.0) 4.9.3 20150311 (prerelease)
-%Copyright (C) 2014 Free Software Foundation, Inc.
-%This is free software; see the source for copying conditions.  There is NO
-%warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.} \\
-
-\end{enumerate}
 
 \subsection{Cross compile example}
 
