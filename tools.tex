@@ -91,42 +91,71 @@ mentioned task in \texttt{sudo} mode, respectively.
 When a task is called from the terminal, Fabric searches the directory for
 the \texttt{fabfile.py} file and executes the desired task. The syntax for
 executing a task with arguments is in the form
-\texttt{fab <TASK>:arg1,arg2,...}. Some executions from the terminal
-are shown as follows \todot{Test the following commands later and print the
-outputs}:
+\texttt{fab <TASK>:arg1,arg2,...}. In what follows, we denote the
+\ac{IP} address of a generic \ac{Raspi} for test as \texttt{<RASP\_IP>}.
+The executions from the terminal of some of these commands are shown as
+follows:
 
 \begin{lstlisting}[]
 $ fab reboot
+[<RASP_IP>] Executing task 'reboot'
+
+Done.
+Disconnecting from <RASP_IP>... done.
 $ fab install:tmux
+[<RASP_IP>] Executing task 'install'
+...
+The following NEW packages will be installed:
+  tmux
+0 upgraded, 1 newly installed, 0 to remove and 0 not upgraded.
+...
+Preparing to unpack .../archives/tmux_1.9-6_armhf.deb ...
+Unpacking tmux (1.9-6) ...
+Processing triggers for man-db (2.7.0.2-5) ...
+Setting up tmux (1.9-6) ...
+
+Done.
+Disconnecting from <RASP_IP>... done.
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
 The first function above reboots the \ac{Raspi}s in the lists of hosts and
-the second function installs a program given by an argument. In both cases,
-after a successful \ac{SSH} connection is made, Fabric employs the
-\ac{Raspi}'s \texttt{reboot} and \texttt{apt-get} commands in \texttt{sudo}
-mode to do the required tasks. Below it is shown an example for
-the \texttt{push} task which uses two arguments. Here we copy
-\texttt{my\_file} from the testbed administrator \ac{PC} to all the host
-\ac{Raspi}s:
+the second function installs a program given by an argument. For the
+connection to the devices, Fabric calls the Paramiko module from Python
+to make a \ac{SSH} connection. For this to work properly, the Paramiko
+version needs to be higher than or equal to 1.15.1. If not available,
+the \ac{SSH} connections from Fabric may fail. Thus in case of any problems,
+some instructions for updating the Paramiko package are available in
+Section~\ref{sec:paramiko} of the Appendix. This is a standard recommendation
+the Fabric troubleshooting guide~\cite{2016fabricsupport}.
+
+After a successful \ac{SSH}
+connection is made, in the previous two commands towards the \ac{Raspi},
+Fabric employs the \ac{Raspi}'s \texttt{reboot} and \texttt{apt-get}
+commands in \texttt{sudo} mode to do the required tasks. Below it is shown
+an example for the \texttt{push} task which uses two arguments. Here we
+copy \texttt{my\_file} from the testbed administrator \ac{PC} to a test
+host \ac{Raspi}:
 
 \begin{lstlisting}[]
 $ fab push:"${CODEDIR}/my_file",'~/'
-[192.168.87.107] Executing task 'push'
-[192.168.87.107] put: /home/<USER>/code/my_file -> /home/pi/my_file
+[<RASP_IP>] Executing task 'push'
+[<RASP_IP>] put: /home/<USER>/code/my_file -> /home/pi/my_file
 
 Done.
-Disconnecting from 192.168.87.107... done.
+Disconnecting from <RASP_IP>... done.
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-Fabric has many other functionalities that are useful in
-controlling a large set of \ac{Raspi}s. For example, we may extract files
-or run automated experiments. The included functionalities in
-the \texttt{\$CODEDIR/fabfile.py} file will depend on the requirements
-of the testbed administrator.
+To control a large set of devices, we simply need to include them in the
+\texttt{env.hosts} list in the \texttt{\$CODEDIR/fabfile.py} file. Fabric has
+many other functionalities that are useful in controlling a large set of
+\ac{Raspi}s. For example, we may extract files or run automated
+experiments. The included functionalities in the
+\texttt{\$CODEDIR/fabfile.py} file will depend on the requirements of the
+testbed administrator.
 
 %execute a script function by calling "fab install:feh"
 \subsection{Long running jobs using SSH}
@@ -143,9 +172,8 @@ unexpectedly. One method is to run programs within a \texttt{screen} session.
 window, a \texttt{screen} session, which does not terminate even with
 connectivity interruptions. Users can attach and detach from such a session
 as desired. The following procedure presents how to use \texttt{screen} with
-\ac{SSH} to: (i) Login to a generic \ac{Raspi} with \ac{IP} address as
-\texttt{<RASP\_IP>}, (ii) open a screen session, (iii)
-execute an example command, (iv) detach from the screen session, (v)
+\ac{SSH} to: (i) Login to a generic \ac{Raspi}, (ii) open a screen session,
+(iii) execute an example command, (iv) detach from the screen session, (v)
 terminate the \ac{SSH} connection, (vi) login to the \ac{Raspi} again
 and (vii) attach to screen session to see the program still running.
 From the testbed administrator, we start by establishing \ac{SSH} connection

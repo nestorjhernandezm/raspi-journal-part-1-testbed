@@ -1,4 +1,4 @@
-\section{Advanced Setup: HTTP Image Fetching}
+\section{HTTP Image Fetch Setup (Optional)}
 \label{sec:http}
 
 \input{testbed_http}
@@ -6,7 +6,8 @@
 \section{Alternative Commands for Outdated Packages}
 This section describes alternative commands in case the testbed administrator
 is not able to update old packages in its Linux distribution for performing
-the commands, particularly the ones regarding the \texttt{util-linux} package.
+the commands, particularly the ones regarding the \texttt{util-linux} package
+or if a command just fails.
 
 \subsection{Losetup for Loopback Devices}
 \label{sec:alternative_losetup}
@@ -73,6 +74,21 @@ Finally, for detaching in this case the command is:
 \FloatBarrier
 \vspace{-5mm}
 
+\subsection{Image Chroot with Proot}
+\label{sec:chroot}
+
+In some cases, \texttt{chroot} may not work properly. In this case, an
+alternative can be \texttt{proot}. It might be required to install it
+before changing the root with \texttt{apt-get install proot}. Then, it
+should be possible for the testbed administrator to run the following:
+
+% CHROOT to OS image
+\begin{lstlisting}[]
+# proot -q qemu-arm-static -S ${ROOTDIR}
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
 
 \subsection{Umount after Image Chroot}
 \label{sec:umount}
@@ -91,3 +107,25 @@ order as when they were mounted. These commands are:
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
+
+\subsection{Paramiko Package Update}
+\label{sec:paramiko}
+In case Paramiko version 1.15.1 or higher is not installed, we may observe
+a key exchange algorithm error. In this case, it might be
+necessary to update the Paramiko package and verify this by running:
+
+\begin{lstlisting}[]
+# pip install --upgrade paramiko
+...
+Sucesfully installed cffi-1.7.0 cryptography-1.4 paramiko-2.0.1
+# pip show paramiko
+...
+Name: paramiko
+Version: 2.0.1
+...
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+This should allow to make \ac{SSH} connections with Fabric by using the proper
+key exchange algorithms through Open SSH.

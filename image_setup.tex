@@ -144,7 +144,7 @@ Device                               Boot  Start     End Sectors  Size Id Type
 \FloatBarrier
 
 The output provides relevant information about the image. The image is in
-total 2709504 sectors (1.3GiB) in size and contains two partitions. The
+total 2709504 sectors (1.3 GiB) in size and contains two partitions. The
 first partition starts at sector 8192 and the other partition starts at
 sector 137216. The first partition type is FAT32 with a size of 63 MB
 and the second partition is a Linux one with a size of 1.2 GB. This
@@ -153,11 +153,11 @@ one is a traditional Linux root filesystem, i.e. \texttt{/}.
 
 \subsection{Image Resizing}
 Given that we want to customize the files stored in the \ac{Raspi}s,
-we need to resize the image file since 1.2GB might not be enough to store
+we need to resize the image file since 1.2 GB might not be enough to store
 the root filesystem due to the total size of the additional packages. Thus,
 we need to increase the partition size. The following procedure illustrates
-how the image and its root filesystem can be expanded by one \ac{GB}.
-First, to expand the image one \ac{GB}, we execute:
+how the image and its root filesystem can be expanded by one GB.
+First, to expand the image one GB, we execute:
 
 \begin{lstlisting}[]
 $ dd if=/dev/zero bs=1M count=1024 >> ${IMAGE}.img && sync
@@ -166,7 +166,7 @@ $ dd if=/dev/zero bs=1M count=1024 >> ${IMAGE}.img && sync
 \vspace{-5mm}
 
 Later, we use \texttt{fdisk} with the same arguments as before to see that
-the image is now one \ac{GB} larger:
+the image is now one GB larger:
 \begin{lstlisting}[literate={DOLLAR}{\$}1]
 DOLLAR fdisk -u sectors -l ${IMAGE}.img
 Disk 2016-05-27-raspbian-jessie-lite.img: 2.3 GiB, 2461007872 bytes, 4806656 sectors
@@ -186,7 +186,7 @@ Device                               Boot  Start     End Sectors  Size Id Type
 Now, in this command block output, we observe that the change has taken
 effect by noticing the total available image size is 2.3 GiB. To expand the
 root filesystem, it is required to first remove the Linux partition
-and then add it again with one \ac{GB} more. To do this, we make use
+and then add it again with one GB more. To do this, we make use
 again of \texttt{fdisk} in command mode to alter the partition table.
 For this, we pass the arguments of the command mode of \texttt{fdisk}
 through the \texttt{echo} command in Linux and the \texttt{|} operator
@@ -548,7 +548,7 @@ the image \texttt{\$\{ROOTDIR\}/etc/rc.local} file once to execute this script:
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$\{ROOTDIR\}/etc/rc.local}@>
 <@\textcolor{gray}{
------------------------------------------------------}
+---------------------------------------------}
 \Reactivatenumber @>
 ...
 bash /home/pi/rasp_config/update_rasp_config
@@ -566,7 +566,7 @@ script itself will first take effect at next system startup.
 
 %\url{https://wiki.debian.org/QemuUserEmulation}
 %\url{https://wiki.archlinux.org/index.php/Raspberry_Pi}
-\subsection{Image Package Updating}
+\subsection{Image Packages Updating by Changing the Apparent Root Directory}
 Besides adding and configuring files within the image, the testbed
 administrator may want to install and update the software packages
 within the image before it is written to all the memory cards that goes
@@ -660,20 +660,11 @@ Finally, to change root the following needs to be run:
 \FloatBarrier
 \vspace{-5mm}
 
-% In some cases, \texttt{chroot} may not work properly. tgus, in this case, an
-% alternative can be \texttt{proot}. It may be required to install it
-% before changing the root with \texttt{apt-get install proot}. Then, it
-% should possible for the testbed administrator to run the following:
-
-% % CHROOT to OS image
-% \begin{lstlisting}[]
-% # proot -q qemu-arm-static -S ${ROOTDIR}
-% \end{lstlisting}
-% \FloatBarrier
-% \vspace{-5mm}
 If successfully executed, our terminal should have changed the prompt
 indicating that we are the root user in the Raspbian lite root filesystem as
-the apparent root. To be aware of the mode that we are working now, we change
+the apparent root. In case the \texttt{chroot} command is not successful,
+we provide an alternative command in Section~\ref{sec:chroot} of the Appendix.
+To be aware of the mode that we are working now, we change
 the prompt title to indicate that it is a \texttt{chroot} environment as
 follows:
 

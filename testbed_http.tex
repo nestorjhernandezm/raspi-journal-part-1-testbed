@@ -1,44 +1,34 @@
 \label{sec:testbed_http}
+Creating manual copies of the customized image for each memory card can
+be also a time-consuming task that is prone to errors and become
+cumbersome. Therefore, we present an optional more advanced \ac{HTTP}
+image fetching setup for the existing image to be downloaded from a
+\ac{HTTP} server. We consider this an optional step since a testbed
+administrator might opt for not including this as part of his / her setup.
+We start our description consideri
 
+At the end of Section~\ref{sec:overlay_fs}, the final customized image was
+proposed to be splitted into three partitions. One for the boot files, one
+containing the root file system and one for the home directory. This is made
+considering an overlay filesystem approach. In this section, instead of
+writing the image direclty to the memory cards, we present how the
+partitions can be extracted from the image, and how the boot partition can
+be configured to download the root filesystem and home directory partitions
+from a \ac{HTTP} server during startup. The advantage of this setup is that
+we completely automate the image fetch which significantly eases its
+maintainance since any changes are required to be made only in the \ac{HTTP}
+server image. We start by declaring the variables for the path names of each
+partition:
 
-%This part will explain how to prepare the existing image to be downloaded from
-%a \ac{HTTP} server.
-The Linux image that has been made so far has two partitions. One
-partition with the boot files and one containing the root file system.
-
-This section will present how the partitions can be extracted from the image,
-and how the boot partition can be configured to download the root filesystem
-from a \ac{HTTP} server during startup.
-
-The advantage of this setup is that multiple \ac{Raspi}s can share the same
-root image. This significantly eases the maintainance task.
-
-%An alternative to the setup explained in this procedure is to use \ac{NFS}
-%instead of \ac{HTTP}.
-
-%The first program called when a \ac{Raspi} starts is the Boot Loader,
-%\texttt{U-Boot}. \texttt{U-Boot}
-%
-%When Raspbian starts up, the first program called
-%
-%The procedure explained below will customize the initial \ac{RAM} filesystem
-%
-%
-%there exists only one root file
-%
-%The advantage of this is that the root filesystem only one all \ac{Raspi}s can automatically download the
-%
-%The boot partition will be required in the \ac{Raspi}s, but the root image can
-
-Start by declaring the path and names of the boot- and root-image:.
 \begin{lstlisting}[]
 $ export HTTPBOOTIMAGE="${WORKDIR}/httpboot"
 $ export HTTPROOTIMAGE="${WORKDIR}/httproot"
+$ export HTTPHOMEIMAGE="${WORKDIR}/httphome"
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-The, setup a loopback device of the existing image and use \texttt{dd} to
+Then, we setup a loopback device of the existing image and use \texttt{dd} to
 extract the boot and root partitions from the image:
 \begin{lstlisting}[]
 # export DEV=$(sudo losetup --show -f -P ${IMAGE}.img); echo $DEV
@@ -65,7 +55,7 @@ $ mkdir -p ${HTTPROOTDIR}
 \vspace{-5mm}
 
 In a previous steps, the boot loader was configured to call an initial \ac{RAM}
-filesystem. The coming steps will present how to the initial \ac{RAM}
+filesystem. Now, we present how to the initial \ac{RAM}
 filesystem can be extended further to download and cache the root filesystem
 from a \ac{HTTP} server before mounting it.
 
