@@ -10,9 +10,9 @@ At the end of Section~\ref{sec:overlay_fs}, the final customized image was
 proposed to be splitted into three partitions. One for the boot files, one
 containing the root file system and one for the home directory. This is made
 considering an overlay filesystem approach. In this section, instead of
-writing the image directly to the memory cards, we present how the
-partitions can be extracted from the image, and how the boot partition can
-be configured to download the root filesystem and home directory partitions
+working with three partitions and writing the image directly to the memory
+cards, we present how to configure the boot partition to download the root
+filesystem partition and also configure the home directory partitions
 from a \ac{HTTP} server during startup. The advantage of this setup is that
 we completely automate the image fetch which significantly eases its
 maintainance since any changes are required to be made only in the \ac{HTTP}
@@ -22,7 +22,6 @@ partition:
 \begin{lstlisting}[]
 $ export HTTPBOOTIMAGE="${WORKDIR}/httpboot"
 $ export HTTPROOTIMAGE="${WORKDIR}/httproot"
-$ export HTTPHOMEIMAGE="${WORKDIR}/httphome"
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
@@ -63,10 +62,65 @@ filesystem can be extended further to download and cache the root filesystem
 from a \ac{HTTP} server before mounting it.
 
 The initial \ac{RAM} filesystem contains an \texttt{init} script that
-sets up the prepares the yis first
-called. This script initializes the  may be rewritten, but
+is first called to initializes
+\texttt{initramfs}, parse arguments specified in \texttt{cmdline.txt}, and
+call a specialized script that prepares the actual root filesystem. By default,
+Raspbian includes scripts to mount the root filesystem from 1) a block devices
+(i.e. the memory card) and 2) from a \ac{NFS} shared folder. We make a third
+script to mount the root filesystem from an image
+(i.e. the root image \texttt{httproot.img}) that is downloaded from a
+\ac{HTTP} server.
 
-Create the following file (THE READ-ONLY OPTION IS STILL NOT CONFIGURABLE IN THIS SCRIPT)
+The initramfs script to download and mount the image from a \ac{HTTP} server
+will require a few additional arguments. E.g. to specify from which \ac{HTTP}
+server to download the root filesystem image from.
+%This script that we will create will require a few additional arguments such
+%as which \ac{HTTP} server the image should be downloaded from.
+These arguments
+may be specified in \texttt{cmdline.txt}.
+%and later parsed within the \texttt{initramfs} script.
+
+Keep the content in \texttt{cmdline.txt}, but add/modify the variables
+\texttt{boot}, \texttt{ip}, \texttt{image}, \texttt{root}, and \texttt{url}.
+
+%Keep also all other variables as they are in
+%\texttt{cmdline.txt}.
+
+%Add the below configurations to \$\{HTTPROOTDIR\}/boot/cmdline.txt
+\textcolor{red}{(remove init=/usr/lib/raspi-config/init\_resize.sh earlier in guide)}
+\Suppressnumber\begin{lstlisting}[]
+<@\textcolor{gray}{\$\{HTTPROOTDIR\}/boot/cmdline.txt}@>
+<@\textcolor{gray}{
+---------------------------------------------------------------}
+\Reactivatenumber @>
+<@\Suppressnumber @>boot=http ip=dhcp image=/dev/mmcblk0p2:/httproot.img root=/dev/loop0
+    url=http://kom.aau.dk/project/TuneSCode/raspi/<@\Reactivatenumber @>
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+% ip=dhcp root=/dev/http http-options=hard,intr,ro
+
+Here is how the variables will be used in the \texttt{initramfs}:
+\begin{itemize}
+    \item boot=http: tells the init script in initramfs to call the \texttt{http} script that will be presented below
+    \item ip=dhcp: use \ac{DHCP} to obtain an \ac{IP} address in the \texttt{initramfs}
+    \item image=<device>:<root image path>: is where the \ac{Raspi} will store the downloaded root image.
+    \item root=/dev/loop0: The \texttt{http} initramfs script will make the root filesystem available on /dev/loop0
+    \item url=<URL to root image>: Is the directory on a \ac{HTTP} server where the root image will be iavailable.
+\end{itemize}
+
+
+%The \ac{URL} should be modified to reflect where
+%the \ac{Raspi}s should download the http root image. The \texttt{image} variable informs the
+%\texttt{http} initramfs script to download and cache the http root image in the second partition
+%on its memory card at path \texttt{/httproot.img}.
+
+
+
+
+The specialized script that we made to download and mount the root filesystem image from a \ac{HTTP} server should be created in the root filesystem as presented below:
+%Create the following file
+\textcolor{red}{(THE READ-ONLY OPTION IS STILL NOT CONFIGURABLE IN THIS SCRIPT. I'M NOT EVEN SURE IT IS POSSIBLE TO MAKE THE IMAGE READ-WRITABLE)}
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$\{HTTPROOTDIR\}/etc/initramfs-tools/scripts/http}@>
 <@\textcolor{gray}{
@@ -144,9 +198,6 @@ http_mount_root()
     # Mount root as readonly
     losetup /dev/loop0 $(readlink -f ${IMAGEPATH})
     mount -r -n -t ext4 -o nodiratime,noatime /dev/loop0 /root
-
-    # Bind /root/home to /home
-    #mount -n -o rbind /home /root/home
 }
 
 mountroot()
@@ -164,40 +215,31 @@ Make the script executable
 \FloatBarrier
 \vspace{-5mm}
 
-Keep the content in \texttt{cmdline.txt}, but add/modify the variables
-\texttt{boot}, \texttt{ip}, \texttt{image}, \texttt{root}, and \texttt{url}.
+The variable (boot=http) that we specified in \texttt{cmdline.txt} tells the
+\texttt{init} script to call the script above rather than the default scripts
+that mounts the root filesystem from a block device or a \ac{NFS} shared
+folder. The \texttt{init} script will call the function \texttt{http\_mount\_root}
+which in this case can be consired as the \texttt{main} function.
 
-%Keep also all other variables as they are in
-%\texttt{cmdline.txt}.
+As in any other shell scripts, this means that code in the global namespace
+will be executed by the interpretor before the function \texttt{http\_mount\_root}
+is entered.
+%Due to the variable that we specified in \texttt{cmdline.txt},
+Hence, line 9 will be the first command executed. This line creates a directory
+in \texttt{initramfs} named
+\texttt{imagedir} that we will use to hold the root image.
 
-%Add the below configurations to \$\{HTTPROOTDIR\}/boot/cmdline.txt
-(remove init=/usr/lib/raspi-config/init\_resize.sh earlier in guide)
-\Suppressnumber\begin{lstlisting}[]
-<@\textcolor{gray}{\$\{HTTPROOTDIR\}/boot/cmdline.txt}@>
-<@\textcolor{gray}{
----------------------------------------------------------------}
-\Reactivatenumber @>
-<@\Suppressnumber @>boot=http ip=dhcp image=/dev/mmcblk0p2:/httproot.img root=/dev/loop0
-    url=http://kom.aau.dk/project/TuneSCode/raspi/<@\Reactivatenumber @>
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-% ip=dhcp root=/dev/http http-options=hard,intr,ro
-
-Here is how the variables are used in the initramfs:
-\begin{itemize}
-    \item boot=http: tells the init script in initramfs to call the \texttt{http} script presented above
-    \item ip=dhcp: use \ac{DHCP} to obtain an \ac{IP} address in the initial ram filesystem
-    \item image=<device>:<root image path>: is where the \ac{Raspi} will store the downloaded root image.
-    \item root=/dev/loop0: The \texttt{http} initramfs script will make the root filesystem available on /dev/loop0
-    \item url=<URL to root image>: Is the directory on a \ac{HTTP} server where the root image will be iavailable.
-\end{itemize}
+Next, line 12 to line 44 will parse the additional arguments that we provided in
+\texttt{cmdline.txt}.
 
 
-%The \ac{URL} should be modified to reflect where
-%the \ac{Raspi}s should download the http root image. The \texttt{image} variable informs the
-%\texttt{http} initramfs script to download and cache the http root image in the second partition
-%on its memory card at path \texttt{/httproot.img}.
+The \ac{Raspi}s does not have enough \ac{RAM} to hold entire root
+filesystem, so we instead download it to the partition that, as specified in
+\texttt{fstab} later, will later be mounted as the \texttt{HOME} directory
+when the system starts. This will enable the \ac{Raspi}s to cache the root image
+and use the previously downloaded root image again after reboots (see the
+function \texttt{http\_fetch\_image} starting from line 56)\fxnote{is there a better way to reference to a function within the script? This reference will be invalid if the script is slightly modified}.
+
 
 
 
