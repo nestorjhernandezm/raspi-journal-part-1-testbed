@@ -5,13 +5,12 @@ cumbersome. Therefore, we present an optional more advanced \ac{HTTP}
 image fetching setup for the existing image to be downloaded from a
 \ac{HTTP} server. We consider this an optional step since a testbed
 administrator might opt for not including this as part of his / her setup.
-We start our description consideri
 
 At the end of Section~\ref{sec:overlay_fs}, the final customized image was
 proposed to be splitted into three partitions. One for the boot files, one
 containing the root file system and one for the home directory. This is made
 considering an overlay filesystem approach. In this section, instead of
-writing the image direclty to the memory cards, we present how the
+writing the image directly to the memory cards, we present how the
 partitions can be extracted from the image, and how the boot partition can
 be configured to download the root filesystem and home directory partitions
 from a \ac{HTTP} server during startup. The advantage of this setup is that
@@ -28,20 +27,24 @@ $ export HTTPHOMEIMAGE="${WORKDIR}/httphome"
 \FloatBarrier
 \vspace{-5mm}
 
-Then, we setup a loopback device of the existing image and use \texttt{dd} to
-extract the boot and root partitions from the image:
+We set loopback devices for each of the image partitions and use \texttt{dd} to
+extract them from the image:
 \begin{lstlisting}[]
 # export DEV=$(sudo losetup --show -f -P ${IMAGE}.img); echo $DEV
 # dd if=${DEV}p1 of=${HTTPBOOTIMAGE}.img bs=4M
 # dd if=${DEV}p2 of=${HTTPROOTIMAGE}.img bs=4M
+# dd if=${DEV}p3 of=${HTTPHOMEIMAGE}.img bs=4M
 # losetup -d ${DEV}
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-Now it is time to configure the boot- and root-image just extracted before
-the content of the boot image is copied to the a memory card and the root
-image is uploaded to a \ac{HTTP} server.
+Now, we configure each of these partitions. The content of the boot image is
+copied and modified just once into a memory card and the root
+and home images is uploaded to a \ac{HTTP} server. Even though we still
+have to manually configure and set the memory cards, we only have
+to make this one time, since the \ac{Raspi}s will fetch the root filesystem
+from the \ac{HTTP} server every they are turned on.
 
 Create a mountpoint and mount the http root and boot images:
 %Mount the http root image and home directories
@@ -253,7 +256,7 @@ $ cd ..
 \vspace{-5mm}
 
 
-\subsubsection{Prepare sd-card}
+\subsection{Prepare sd-card}
 
 IS SETTING UP THE SD-CARD REALLY THE SAME PROCEDURE AS FOR A LOCAL FILESYSTEM?
 
@@ -338,7 +341,7 @@ root image and unmount it again:
 \vspace{-5mm}
 
 
-\subsubsection{(Optional) Compressing root image}
+\subsection{Compressing root image (Optional)}
 
 PROBABLY A BETTER IDEA TO USE BTRFS TRANSPARENT COMPRESSION
 
@@ -350,7 +353,7 @@ PROBABLY A BETTER IDEA TO USE BTRFS TRANSPARENT COMPRESSION
 \FloatBarrier
 \vspace{-5mm}
 
-\subsubsection{Try it out}
+\subsection{Try it out}
 
 Upload the root image (\$\{HTTPROOTIMAGE\}.img) to the HTTP server used in the
 configurations above. Then, unplug the memory card from the computer.

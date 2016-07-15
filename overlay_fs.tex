@@ -2,8 +2,7 @@
 In principle, our procedure modifies the image file only once in
 the testbed administrator \ac{PC} when its setup is made. Also, keeping
 this image in the \ac{Raspi}s provides the same initial system for all
-the devices. This system is later distributed locally to a memory card
-in each device. However, if we do not make any further modifications during
+the devices. If we do not make any further modifications during
 the image setup, any files created after the initial boot of a \ac{Raspi}
 will remain in the memory card. This is cumbersome to maintain since
 the size of the memory card is relatively reduced (8 GB) and there
@@ -15,32 +14,32 @@ wants to consider only persistent storage for its devices. A use case
 for this scenario could be a single user for the testbed or when a testbed
 administrator only wants to setup a few \ac{Raspi}s.
 
-Therefor, if both persistent and non-persistent storage are required for
+If both persistent and non-persistent storage are required for
 the \ac{Raspi}s, here we present the steps to setup an overlay filesystem.
 This type of filesystem enables an \textit{upper} filesystem to overlay
 into a \textit{lower} filesystem. Whenever a file is requested, the upper
 filesystem will forward the request to the lower filesystem in case it
 does not have it itself. If the upper filesystem has the requested file,
 it will simpy return the file. This idea can be used in our setup to mount
-the root filesystem (i.e. Raspbian lite) in the \ac{Raspi}s during startup
+the root filesystem (i.e. Raspbian Lite) in the \ac{Raspi}s during startup
 as read-only filesystem. Thus, on the one hand, the image configuration files
 will remain after a reboot and will not be modifiable. On the other hand,
 to enable the possibility of non-persistent changes, we overlay the upper
 filesystem that is mounted in the \ac{Raspi} \ac{RAM}, i.e. \texttt{/tmp}
-as read/writable on top of the lower root filesystem. Thus, reading a file
+as read / writable on top of the lower root filesystem. Thus, reading a file
 may return a file from the lower filesytem, but if it is stored, it will
 be saved in the upper filesystem. Accessing this file again will return
 the stored file from the upper layer. After a reboot, all the stored files
-in the upper filesystem will be erasured.
+in the upper filesystem will be retrieved.
 
-\subsection{Overlaying Filesystem Installation}
+\subsection{Filesystem Installation}
 
-Assuming that we are still using the \texttt{chroot} commands into the
-Raspbian lite root filesystem for installing packages, we can setup the
+Assuming that we are still in the \texttt{chroot} environment into the
+Raspbian Lite root filesystem for installing packages, we can setup the
 overlay filesystem at this point of the procedure. There already exists
 implementations overlaying the root filesystem. We use an implementation
 available at the Git repository in \cite{overlayroot}. Since we have
-installed git in a previous step, we clone the repository. The
+installed \texttt{git} in a previous step, we clone the repository. The
 command block below stores it in \texttt{/tmp} which is really mounted in
 \ac{RAM}. Then, all the files stored here will disappear a \ac{Raspi} is
 rebooted.
@@ -108,7 +107,7 @@ version 4.4.13+ is for \ac{Raspi} version 1 and kernel 4.4.13-v7+ for
 \FloatBarrier
 \vspace{-5mm}
 
-Although these commands might be output some warnings, they should
+Although these commands might output some warnings, they should
 successfully generate working initial \ac{RAM} filesystems. Later, an
 initial \ac{RAM} filesystem will need to be called by the bootloader.
 In Raspbian this is done by adding a command to \texttt{config.txt} file
@@ -266,6 +265,8 @@ Now, unmount again all the partitions and detach the loop devices as follows:
 \FloatBarrier
 \vspace{-5mm}
 
+Again, if the \texttt{----recursive} option is not available, the
+procedure in Section~\ref{sec:umount} of the Appendix could be followed.
 If the steps are successfully executed up to this point, the customized image
 is available in the \texttt{\$\{IMAGE\}.img} file and ready to be deployed
 into the \ac{Raspi}s. In the following section, we indicate how to proceed
@@ -282,13 +283,13 @@ and follow the procedure in this section. A given card will be available as
 \texttt{/dev/mmcblkX} for memory card readers or as \texttt{/dev/sdbX}
 USB-through readers, where \texttt{X} a natural number.
 
-It is \textit{very
-important} to write to the correct device as everything will be overwritten.
-To avoid removing information from the wrong device, a testbed administrator
-can insert / eject a memory card a couple of times and using the
-\texttt{sudo lsblk} and \texttt commands to deduce the correct device.
-For our case, the device was \texttt{/dev/sdb} in an Ubuntu distribution and
-\texttt{/dev/mmcblk0} in an Archlinux distribution. Once identified, to write
+It is \textit{very important} to write to the correct device as
+everything will be overwritten. To avoid removing information from the
+wrong device, a testbed administrator can insert and eject a memory
+card a couple of times and using the \texttt{sudo lsblk} and \texttt{df -h}
+commands to deduce the correct device. For our case, the device was
+\texttt{/dev/sdb} in an Ubuntu distribution and
+\texttt{/dev/mmcblk0} in an Archlinux distribuion. Once identified, to write
 the image to a memory card, the following command is used:
 
 \begin{lstlisting}[]

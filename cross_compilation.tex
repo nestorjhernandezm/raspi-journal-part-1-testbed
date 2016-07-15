@@ -26,8 +26,7 @@ cross-compiled for applications with the \ac{Raspi}.
 To compile in a given architecture that is aimed for a different one,
 the testbed administrator needs to install a toolchain in its \ac{PC}.
 The toolchain is mandatory due to the different processor architectures
-where the source can be compiled from / to.
-
+where the source can be compiled from.
 Given that compiling a toolchaing can be an ardous task, we get the toolchain
 recommended for the \ac{ARM} architecture of the \ac{Raspi}s.
 This toolchain is available from \cite{2016rpitoolchain} and
@@ -75,8 +74,9 @@ $ sed -i '$a PATH=\"\$PATH:${TOOLCHAINDIR}/arm-rpi-4.9.3-linux-gnueabihf/bin\"' 
 
 This helps the \ac{OS} to recognize the location of the compiler
 command everytime a new shell is opened. The \texttt{.profile} should now
-contain the lines we inserted. There might be more other
-code in your file. Leave other parts unmodified.
+contain the lines we inserted. There might be other
+code in the file of other testbed administrators. We recommend to leave
+other parts unmodified.
 % MAC and Hostname file
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$HOME/.profile}@>
