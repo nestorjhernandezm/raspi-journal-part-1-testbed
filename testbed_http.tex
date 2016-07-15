@@ -11,9 +11,9 @@ At the end of Section~\ref{sec:overlay_fs}, the final customized image was
 proposed to be splitted into three partitions. One for the boot files, one
 containing the root file system and one for the home directory. This is made
 considering an overlay filesystem approach. In this section, instead of
-writing the image direclty to the memory cards, we present how the
-partitions can be extracted from the image, and how the boot partition can
-be configured to download the root filesystem and home directory partitions
+working with three partitions and writing the image directly to the memory
+cards, we present how to configure the boot partition to download the root
+filesystem partition and also configure the home directory partitions
 from a \ac{HTTP} server during startup. The advantage of this setup is that
 we completely automate the image fetch which significantly eases its
 maintainance since any changes are required to be made only in the \ac{HTTP}
@@ -221,7 +221,7 @@ which in this case can be consired as the \texttt{main} function.
 As in any other shell scripts, this means that code in the global namespace
 will be executed by the interpretor before the function \texttt{http\_mount\_root}
 is entered.
-%Due to the variable that we specified in \texttt{cmdline.txt}, 
+%Due to the variable that we specified in \texttt{cmdline.txt},
 Hence, line 9 will be the first command executed. This line creates a directory
 in \texttt{initramfs} named
 \texttt{imagedir} that we will use to hold the root image.
