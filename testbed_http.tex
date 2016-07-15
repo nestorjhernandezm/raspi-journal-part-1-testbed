@@ -12,7 +12,7 @@ containing the root file system and one for the home directory. This is made
 considering an overlay filesystem approach. In this section, instead of
 working with three partitions and writing the image directly to the memory
 cards, we present how to configure the boot partition to download the root
-filesystem partition and also configure the home directory partitions
+filesystem partition and configure the home directory partition
 from a \ac{HTTP} server during startup. The advantage of this setup is that
 we completely automate the image fetch which significantly eases its
 maintainance since any changes are required to be made only in the \ac{HTTP}
@@ -30,9 +30,9 @@ We set loopback devices for each of the image partitions and use \texttt{dd} to
 extract them from the image:
 \begin{lstlisting}[]
 # export DEV=$(sudo losetup --show -f -P ${IMAGE}.img); echo $DEV
+/dev/loop0
 # dd if=${DEV}p1 of=${HTTPBOOTIMAGE}.img bs=4M
 # dd if=${DEV}p2 of=${HTTPROOTIMAGE}.img bs=4M
-# dd if=${DEV}p3 of=${HTTPHOMEIMAGE}.img bs=4M
 # losetup -d ${DEV}
 \end{lstlisting}
 \FloatBarrier
@@ -40,12 +40,12 @@ extract them from the image:
 
 Now, we configure each of these partitions. The content of the boot image is
 copied and modified just once into a memory card and the root
-and home images is uploaded to a \ac{HTTP} server. Even though we still
+image is uploaded to a \ac{HTTP} server. We configuing it, we will indicate
+that the home directory is storage-persistent. Even though we still
 have to manually configure and set the memory cards, we only have
 to make this one time, since the \ac{Raspi}s will fetch the root filesystem
-from the \ac{HTTP} server every they are turned on.
-
-Create a mountpoint and mount the http root and boot images:
+from the \ac{HTTP} server every they are turned on. We create a mountpoint
+and mount the \ac{HTTP} root and boot images:
 %Mount the http root image and home directories
 \begin{lstlisting}[]
 $ export HTTPROOTDIR="${WORKDIR}/httproot"
@@ -56,75 +56,75 @@ $ mkdir -p ${HTTPROOTDIR}
 \FloatBarrier
 \vspace{-5mm}
 
-In a previous steps, the boot loader was configured to call an initial \ac{RAM}
-filesystem. Now, we present how to the initial \ac{RAM}
-filesystem can be extended further to download and cache the root filesystem
-from a \ac{HTTP} server before mounting it.
+In Section~\ref{sec:overlay_fs}, the boot loader was configured to call
+the initial \ac{RAM} filesystem. Instead of that, now we present how the
+the initial \ac{RAM} filesystem in the boot partition is configured to
+download and cache the root filesystem from a \ac{HTTP} server before
+mounting it. The initial \ac{RAM} filesystem is initialized by the
+\texttt{\$\{HTTPROOTDIR\}/boot/init.gz} script. This is first called
+when the system is booting up before mounting the root filesystem and
+parses the arguments specified in \texttt{\$\{HTTPROOTDIR\}/boot/cmdline.txt}.
+We modify the arguments in this file to download, cache and mount the
+\ac{HTTP} root image filesystem (i.e. the \texttt{httproot.img} file) with a
+customized script.
 
-The initial \ac{RAM} filesystem contains an \texttt{init} script that
-is first called to initializes
-\texttt{initramfs}, parse arguments specified in \texttt{cmdline.txt}, and
-call a specialized script that prepares the actual root filesystem. By default,
-Raspbian includes scripts to mount the root filesystem from 1) a block devices
-(i.e. the memory card) and 2) from a \ac{NFS} shared folder. We make a third
-script to mount the root filesystem from an image
-(i.e. the root image \texttt{httproot.img}) that is downloaded from a
-\ac{HTTP} server.
-
-The initramfs script to download and mount the image from a \ac{HTTP} server
-will require a few additional arguments. E.g. to specify from which \ac{HTTP}
-server to download the root filesystem image from.
-%This script that we will create will require a few additional arguments such
-%as which \ac{HTTP} server the image should be downloaded from.
-These arguments
-may be specified in \texttt{cmdline.txt}.
-%and later parsed within the \texttt{initramfs} script.
-
-Keep the content in \texttt{cmdline.txt}, but add/modify the variables
-\texttt{boot}, \texttt{ip}, \texttt{image}, \texttt{root}, and \texttt{url}.
-
-%Keep also all other variables as they are in
-%\texttt{cmdline.txt}.
+By default, Raspbian includes scripts to mount the
+root filesystem from block devices (memory cards) or a \ac{NFS} shared folder.
+Thus, our customized \ac{HTTP} initramfs script is an inclusion in the
+\texttt{\$\{HTTPROOTDIR\}/etc/initramfs-tools/scripts} directory to handle
+booting up from a \ac{HTTP} server. This script will require a few
+additional arguments. e.g. to specify \ac{URL} for downloading the root
+filesystem image, among others. These arguments have to be specified in
+\texttt{cmdline.txt} file. Thus, we edit the
+\texttt{\$\{HTTPROOTDIR\}/boot/cmdline.txt} file to: (i) Add / modify
+the variables \texttt{boot}, \texttt{ip}, \texttt{image},
+\texttt{root} and \texttt{url}; and (ii) remove the argument
+\texttt{init=/usr/lib/raspi-config/init\_resize.sh} since we use customized
+partitions. In our case, after these edits, our \texttt{cmdline.txt} file
+is as follows (however it might differ for other testbed administrators):
 
 %Add the below configurations to \$\{HTTPROOTDIR\}/boot/cmdline.txt
-\textcolor{red}{(remove init=/usr/lib/raspi-config/init\_resize.sh earlier in guide)}
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$\{HTTPROOTDIR\}/boot/cmdline.txt}@>
 <@\textcolor{gray}{
----------------------------------------------------------------}
+-------------------------------------------------------------}
 \Reactivatenumber @>
-<@\Suppressnumber @>boot=http ip=dhcp image=/dev/mmcblk0p2:/httproot.img root=/dev/loop0
-    url=http://kom.aau.dk/project/TuneSCode/raspi/<@\Reactivatenumber @>
+<@\Suppressnumber @>dwc_otg.lpm_enable=0 console=serial0,115200 console=tty1 boot=http ip=dhcp
+image=/dev/mmcblk0p2:/httproot.img root=/dev/loop0 url=http://kom.aau.dk/project/TuneSCode/raspi/
+rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait quiet<@\Reactivatenumber @>
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 % ip=dhcp root=/dev/http http-options=hard,intr,ro
 
-Here is how the variables will be used in the \texttt{initramfs}:
+The arguments for the \texttt{initramfs} initialization script are employed
+as follows:
 \begin{itemize}
-    \item boot=http: tells the init script in initramfs to call the \texttt{http} script that will be presented below
-    \item ip=dhcp: use \ac{DHCP} to obtain an \ac{IP} address in the \texttt{initramfs}
-    \item image=<device>:<root image path>: is where the \ac{Raspi} will store the downloaded root image.
-    \item root=/dev/loop0: The \texttt{http} initramfs script will make the root filesystem available on /dev/loop0
-    \item url=<URL to root image>: Is the directory on a \ac{HTTP} server where the root image will be iavailable.
+    \item \texttt{boot=http}: Tells the script to call the \texttt{http}
+    script that will be introduced below.
+    \item \texttt{ip=dhcp}: Uses \ac{DHCP} to get an \ac{IP} address in
+    the \texttt{initramfs} for network connectivity.
+    \item \texttt{image=<IMAGEDEV>:<IMAGEPATH>}: Indicates to which device
+    and path will the image be located.
+    \item \texttt{root=/dev/loop0}: Is to make the root image available in
+    the \texttt{/dev/loop0} loopback device.
+    \item \texttt{url=<URL>}: Is the link where the root image must be
+    available.
 \end{itemize}
 
-
 %The \ac{URL} should be modified to reflect where
-%the \ac{Raspi}s should download the http root image. The \texttt{image} variable informs the
-%\texttt{http} initramfs script to download and cache the http root image in the second partition
-%on its memory card at path \texttt{/httproot.img}.
+%the \ac{Raspi}s should download the http root image.
 
-
-
-
-The specialized script that we made to download and mount the root filesystem image from a \ac{HTTP} server should be created in the root filesystem as presented below:
+For other testbed administrators, the previous arguments have to be adjusted
+to fit their needs. Then, we show the customized script to download and
+mount the root filesystem image from a \ac{HTTP} as follows:
 %Create the following file
-\textcolor{red}{(THE READ-ONLY OPTION IS STILL NOT CONFIGURABLE IN THIS SCRIPT. I'M NOT EVEN SURE IT IS POSSIBLE TO MAKE THE IMAGE READ-WRITABLE)}
+
+% \textcolor{red}{(THE READ-ONLY OPTION IS STILL NOT CONFIGURABLE IN THIS SCRIPT. I'M NOT EVEN SURE IT IS POSSIBLE TO MAKE THE IMAGE READ-WRITABLE)}
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$\{HTTPROOTDIR\}/etc/initramfs-tools/scripts/http}@>
 <@\textcolor{gray}{
----------------------------------------------------------------}
+---------------------------------------------------------------------------------------------}
 \Reactivatenumber @>
 # Fetch, cache, and mount root image using HTTP
 
@@ -150,8 +150,8 @@ for x in $(cat /proc/cmdline); do
 done
 
 # Check if variables are declared
-[ -z "${IMAGE}" ] && echo "Error: Please add 'image' in cmdline.txt" && exit 1
-[ -z "${URL}" ] && echo "Error: Please add 'url' in cmdline.txt" && exit 1
+[ -z "${IMAGE}" ] && echo "Error: Please add 'image' in /boot/cmdline.txt" && exit 1
+[ -z "${URL}" ] && echo "Error: Please add 'url' in /boot/cmdline.txt" && exit 1
 
 # Fetch and cache root image
 http_fetch_image()

@@ -21,8 +21,8 @@ whole procedure with \texttt{mknod}. To do this, the alternative commands are:
 $ export DEV="/dev/loop0"
 # mknod ${DEV}p1 b 7 1
 # mknod ${DEV}p2 b 7 2
-# losetup -o $((8192*512)) --sizelimit $((137215*512)) ${DEV}p1 ${IMAGE}.img
-# losetup -o $((137216*512)) --sizelimit $((4806655*512)) ${DEV}p2 ${IMAGE}.img
+# losetup -o $((8192*512)) --sizelimit $(( (137215-8192+1)*512) )) ${DEV}p1 ${IMAGE}.img
+# losetup -o $((137216*512)) --sizelimit $(( (4806655-137216+1)*512) )) ${DEV}p2 ${IMAGE}.img
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
@@ -61,7 +61,7 @@ the commands are:
 $ export DEV="/dev/loop0"
 # mknod ${DEV}p2 b 7 2
 # mknod ${DEV}p3 b 7 3
-# losetup -o $((137216*512)) --sizelimit $(( (4806655-137216+1)*512)) ${DEV}p2 ${IMAGE}.img
+# losetup -o $((137216*512)) --sizelimit $(( (4806655-137216+1)*512) ) ${DEV}p2 ${IMAGE}.img
 # losetup -o $((4806656*512)) --sizelimit $(( (6903807-4806656+1)*512)) ${DEV}p3 ${IMAGE}.img
 \end{lstlisting}
 \FloatBarrier
