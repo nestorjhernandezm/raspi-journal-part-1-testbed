@@ -56,6 +56,7 @@ $ mkdir -p ${HTTPROOTDIR}
 \FloatBarrier
 \vspace{-5mm}
 
+\subsection{HTTP Image Fetch Script}
 In Section~\ref{sec:overlay_fs}, the boot loader was configured to call
 the initial \ac{RAM} filesystem. Instead of that, now we present how the
 the initial \ac{RAM} filesystem in the boot partition is configured to
@@ -208,47 +209,43 @@ mountroot()
 \FloatBarrier
 \vspace{-5mm}
 
-Make the script executable
+Once the script has been saved, we make the script executable by doing:
 \begin{lstlisting}[]
 # chmod +x ${HTTPROOTDIR}/etc/initramfs-tools/scripts/http
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-The variable (boot=http) that we specified in \texttt{cmdline.txt} tells the
-\texttt{init} script to call the script above rather than the default scripts
-that mounts the root filesystem from a block device or a \ac{NFS} shared
-folder. The \texttt{init} script will call the function \texttt{http\_mount\_root}
-which in this case can be consired as the \texttt{main} function.
+When using \texttt{boot=http} in the \texttt{cmdline.txt} file, this
+indicates the \texttt{initramfs} initialization script to call the script
+above instead of other default scripts that mount the root filesystem.
+Once called, the initialization script will first execute the
+\texttt{mount\_root()} function which can be consired as the \texttt{main}
+function for this script. As in any other shell scripts, this means
+that any code in the global namespace will executed by the interpretor
+before the function \texttt{mount\_root()} is entered when booting. Hence,
+line 9 of the \texttt{http} script will be the first command executed.
+This line creates a directory in the \texttt{initramfs} named
+\texttt{imagedir} that we will use to hold the root image. Next, lines 12
+to 44 will parse the additional arguments that we provided in
+the \texttt{cmdline.txt} file.
 
-As in any other shell scripts, this means that code in the global namespace
-will be executed by the interpretor before the function \texttt{http\_mount\_root}
-is entered.
-%Due to the variable that we specified in \texttt{cmdline.txt},
-Hence, line 9 will be the first command executed. This line creates a directory
-in \texttt{initramfs} named
-\texttt{imagedir} that we will use to hold the root image.
+Since the \ac{Raspi}s do not have enough \ac{RAM} to hold the entire
+root filesystem, we download it to the partition that, as specified
+in \texttt{\$\{HTTPROOTDIR\}/etc/fstab} file later, will be mounted as the
+\texttt{\$HOME} directory when the system starts. This will enable the
+\ac{Raspi}s to cache the root image and use the previously downloaded
+root image again after any reboots. For details, see the function
+\texttt{http\_fetch\_image()} just after the variables verification.
+We edit the mentioned \texttt{fstab} file with root privileges to look
+as the following (exclude the last line if a persistent home storage
+directory is not desired):
 
-Next, line 12 to line 44 will parse the additional arguments that we provided in
-\texttt{cmdline.txt}.
-
-
-The \ac{Raspi}s does not have enough \ac{RAM} to hold entire root
-filesystem, so we instead download it to the partition that, as specified in
-\texttt{fstab} later, will later be mounted as the \texttt{HOME} directory
-when the system starts. This will enable the \ac{Raspi}s to cache the root image
-and use the previously downloaded root image again after reboots (see the
-function \texttt{http\_fetch\_image} starting from line 56)\fxnote{is there a better way to reference to a function within the script? This reference will be invalid if the script is slightly modified}.
-
-
-
-
-Edit fstab to look like this (exclude the last line if a persistent
-home storage directory is not desired):
+% \fxnote{is there a better way to reference to a function within the script? This reference will be invalid if the script is slightly modified}.
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$\{HTTPROOTDIR\}/etc/fstab}@>
 <@\textcolor{gray}{
----------------------------------------------------------------}
+-----------------------------------------------}
 \Reactivatenumber @>
 proc            /proc           proc    defaults          0       0
 /dev/mmcblk0p1  /boot           vfat    defaults          0       2
@@ -258,53 +255,44 @@ proc            /proc           proc    defaults          0       0
 \FloatBarrier
 \vspace{-5mm}
 
+\subsection{Initial RAM Filesystem for HTTP Fetch}
+We enter again in \texttt{chroot} mode into the image to make the new
+\texttt{initramfs} files. We note that for other testbed administrator
+kernels, the files might be different. The commands for these tasks are:
 
-Chroot into the image
-% CHROOT to OS image
+% CHROOT to HTTP image
 \begin{lstlisting}[]
 $ cd $HTTPROOTDIR
 # mount -t proc proc proc/
 # mount --bind /sys sys/
 # mount --bind /dev dev/
 # mount --bind /dev/pts dev/pts
-# proot -q qemu-arm-static -S ${HTTPROOTDIR}
+# chroot ${HTTPROOTDIR} /usr/bin/qemu-arm-static /bin/bash
 # export PS1="(chroot) $PS1"
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-
-Create new initramfs (remember that your kernel might be different)
-\begin{lstlisting}[]
 (chroot) # mkinitramfs -o /boot/init.gz -k 4.4.13+
 (chroot) # mkinitramfs -o /boot/init-v7.gz -k 4.4.13-v7+
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-Exit chroot
+In case the \texttt{chroot} command does not work, it is possible to use
+the alternative \texttt{proot} command as described in
+Section~\ref{sec:chroot}. If successfully executed, the boot partition for
+the SD card is ready to be written. We exit the \texttt{chroot} environment
+and unmount all the partitions as follows:
+
 \begin{lstlisting}[]
 (chroot) # exit
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-Unmount:
-\begin{lstlisting}[]
 $ cd ..
 # umount ${HTTPROOTIMAGE}/{dev/pts,proc,sys,dev}
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
 
-
-\subsection{Prepare sd-card}
+\subsection{Writing SD Cards for HTTP Fetch}
 
 IS SETTING UP THE SD-CARD REALLY THE SAME PROCEDURE AS FOR A LOCAL FILESYSTEM?
 
-% Define variable
-% export IMAGE="2016-05-27-raspbian-jessie-lite"
-% export WORKDIR="${HOME}/Raspbian"
 \begin{lstlisting}[]
 $ export HTTPDEV="/dev/mmcblk0"
 \end{lstlisting}
@@ -350,11 +338,6 @@ Format partitions
 \FloatBarrier
 \vspace{-5mm}
 
-
-
-
-
-
 Mount the boot partition from the memory card. Copy the content from the
 boot image and unmount it again:
 \begin{lstlisting}[]
@@ -382,37 +365,26 @@ root image and unmount it again:
 \FloatBarrier
 \vspace{-5mm}
 
+% IT WILL BE GOOD TO TRY THE COMPRESSED IMAGE BUT MAYBE LATER:
 
-\subsection{Compressing root image (Optional)}
+% \subsection{Compressing root image (Optional)}
+% PROBABLY A BETTER IDEA TO USE BTRFS TRANSPARENT COMPRESSION
+% \begin{lstlisting}[]
+% # apt-get install squashfs-tools
+% # mount -o loop ${HTTPROOTIMAGE}.img ${HTTPROOTDIR}
+% # mksquashfs ${HTTPROOTDIR} compressed_${HTTPROOTIMAGE}.img
+% \end{lstlisting}
+% \FloatBarrier
+% \vspace{-5mm}
 
-PROBABLY A BETTER IDEA TO USE BTRFS TRANSPARENT COMPRESSION
+\subsection{HTTP Images File and Setup Test}
 
-\begin{lstlisting}[]
-# apt-get install squashfs-tools
-# mount -o loop ${HTTPROOTIMAGE}.img ${HTTPROOTDIR}
-# mksquashfs ${HTTPROOTDIR} compressed_${HTTPROOTIMAGE}.img
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
-
-\subsection{Try it out}
-
-Upload the root image (\$\{HTTPROOTIMAGE\}.img) to the HTTP server used in the
-configurations above. Then, unplug the memory card from the computer.
-Insert it into a \ac{Raspi} and
-turn it on. It is recommended that the \ac{Raspi} is turned on with a monitor
-connected the first time the newly created Linux installation is tested to
-assure that Raspbian starts up correctly.
-
-
-PRESENT FILES ON HTTP. E.G. HTTPROOT.IMG AND IMAGES.CSV
-
-
-\begin{itemize}
-    \item Copy http root image (\$\{HTTPROOTIMAGE\}.img) a HTTP server
-    \item Create images.csv
-\end{itemize}
-
+We upload the \texttt{\$\{HTTPROOTIMAGE\}.img} file to the \ac{HTTP}
+server used in the configurations above. Finally, in the \ac{HTTP} server,
+the testbed administrator has to create
+\texttt{http://<SERVERIP>/.../images.csv} file. This file contains the
+information regarding which image should be download for each \ac{Raspi}. A
+sample file is the following:
 
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{http://<SERVERIP>/.../images.csv}@>
@@ -428,24 +400,35 @@ b8:27:eb:7b:c3:91 httproot_2.img
 \FloatBarrier
 \vspace{-5mm}
 
-Notice that the \ac{Raspi}s can be configured to download different root images.
-This is useful both for having various root images for subsets of the \ac{Raspi}s,
-but also as a basic way inform the \ac{Raspi}s that the root image changed such
-that they can download the new root image at next boot.
+Notice that the \ac{Raspi}s can be configured to download different
+root images. This is useful both for having various root images for subsets
+of the \ac{Raspi}s, but also as a basic way inform the \ac{Raspi}s that
+the root image changed such that they can download the new root image at
+next boot.
 
-As of this writing, there is unfortunately a bug in wget that makes wget not showing
-its progress bar while downloading the root image at startup. Instead, it may appear
-to be unable to connect although it is downloading, so keep patient.
+Once this file is set in the \ac{HTTP} server, the testbed
+administrator needs to unplug the memory card from its \ac{PC} and insert
+it into a \ac{Raspi} and turn it on. For this part, it is recommended that the
+\ac{Raspi} is turned on with a monitor connected to assure that Raspbian
+starts up correctly. At the time of writing this manuscript, a bug in
+the \texttt{wget} command does not permit to show the image download progress
+bar at startup. Instead, it may appear to be unable to connect.
+Nevertheless, the image should be downloading. On average this process takes
+XX minutes. If all the procedure has been successfully executed,
+the testbed administrator should observe the \ac{Raspi} properly booting up
+after the downloading the root image file. Finally, the testbed adminstrator
+only needs to copy one time the boot partition to all the cards and
+boot the remaining \ac{Raspi}s. This concludes the procedure.
 
-\begin{lstlisting}[]
-Connecting to <HTTP SERVER IP> (<HTTP SERVER IP>:<PORT>)
-image.csv       100% |*******************************************************| 1287   0:00:00 ETA
-Connecting to <HTTP SERVER IP> (<HTTP SERVER IP>:<PORT>)
-_
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
 
+% \begin{lstlisting}[]
+% Connecting to <HTTP SERVER IP> (<HTTP SERVER IP>:<PORT>)
+% image.csv       100% |*******************************************************| 1287   0:00:00 ETA
+% Connecting to <HTTP SERVER IP> (<HTTP SERVER IP>:<PORT>)
+% \end{lstlisting}
+% \FloatBarrier
+% \vspace{-5mm}
 
-REMEMBER TO COPY-PASTE ALL CONTENT FROM SCRIPT INTO LATEX AGAIN IN CASE SOME
-SCRIPT CHANGED, BUT WAS NOT UPDATED IN LATEX
+% DO WE REALLY NEED TO DO THIS? -->
+% REMEMBER TO COPY-PASTE ALL CONTENT FROM SCRIPT INTO LATEX AGAIN IN CASE SOME
+% SCRIPT CHANGED, BUT WAS NOT UPDATED IN LATEX
