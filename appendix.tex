@@ -111,8 +111,9 @@ order as when they were mounted. These commands are:
 \subsection{Paramiko Package Update}
 \label{sec:paramiko}
 In case Paramiko version 1.15.1 or higher is not installed, we may observe
-a key exchange algorithm error. In this case, it might be
-necessary to update the Paramiko package and verify this by running:
+a key exchange algorithm error when trying to log in through \ac{SSH} to a
+Raspi. In this case, it might be necessary to update the Paramiko package
+that Fabric uses for this purpose and verify this by running:
 
 \begin{lstlisting}[]
 # pip install --upgrade paramiko

@@ -96,6 +96,8 @@ rootfstype=ext4 elevator=deadline fsck.repair=yes rootwait quiet<@\Reactivatenum
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
+
+%http://kom.aau.dk/project/TuneSCode/raspi/
 % ip=dhcp root=/dev/http http-options=hard,intr,ro
 
 The arguments for the \texttt{initramfs} initialization script are employed
@@ -333,7 +335,8 @@ Device         Boot  Start     End Sectors  Size Id Type
 \FloatBarrier
 \vspace{-5mm}
 
-Format partitions
+Format partitions. Before formating the partitions, take out the SD card
+and plug it again!!!
 \begin{lstlisting}[]
 # mkfs.vfat -n BOOT ${HTTPDEV}p1
 # mkfs.ext4 -L HOME ${HTTPDEV}p2
@@ -363,10 +366,12 @@ root image and unmount it again:
 
 
 \begin{lstlisting}[]
-# umount --recursive ${HTTPROOTDIR}
+# umount ${HTTPROOTDIR}/boot
+# umount ${HTTPROOTDIR}
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
+
 
 % IT WILL BE GOOD TO TRY THE COMPRESSED IMAGE BUT MAYBE LATER:
 
