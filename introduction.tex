@@ -7,79 +7,12 @@
 % Review of the State of the Art. Specify why our approach has benefits
 % and which are they. Indicate contributions.
 
-The upcoming 5G technology is targeting the controlling and steering of the Internet of Things (IoT) in real-time on global scale. This will break new ground for new markets such as driverless cars, manufacturing, humanoid robots, smart grids, and many more. With 5G the number of wireless devices will increase by 5$\times$ up to 50 billion devices \cite{cisco2011forecast}. It is generally accepted, that those devices will not be connected in the same cellular manner as the current 10 billion mobile devices are connect due to the expected energy consumption. Therefore the communication architecture in future communication scenario will be dominated by mesh technologies. Mesh technology has been known for sensor and ad hoc networks or mobile cloud scenarios, but the technical requirements on 5G mesh-based communication systems are dramatically increasing. Future mesh networks need to support high data rate, low latency, security, network availability and heterogeneous devices. In state of the art systems those requirements are traded-off with each other, but in the 5G context we cannot do this anymore.
+The upcoming 5G technology is targeting the controlling and steering of the Internet of Things (IoT) in real-time on global scale. This will break new ground for new markets such as driverless cars, manufacturing, humanoid robots, smart grids, and many more. With 5G, the number of wireless devices will increase by 5$\times$ up to 50 billion devices \cite{cisco2011forecast}. It is generally accepted, that those devices will not be connected in the same cellular manner as the current 10 billion mobile devices are connect due to the expected energy consumption. Therefore the communication architecture in future communication scenario will be dominated by mesh technologies. Mesh technology has been known for sensor and ad hoc networks or mobile cloud scenarios, but the technical requirements on 5G mesh-based communication systems are dramatically increasing. Future mesh networks need to support high data rate, low latency, security, network availability and heterogeneous devices. In state of the art systems those requirements are traded-off with each other, but in the 5G context we cannot do this anymore.
 
-Introduced by Ahlswede et al. \cite{ahlswede2000network}, network coding constitutes a paradigm shift in the way how researchers and industry understand and operate networks, by changing the role of intermediate relays in the process of transmission of information. Relays are no longer limited to storing and forwarding data, but also take part in the coding process, through a process called recoding, where the relay generates new linear combinations of incoming coded packets without previously decoding the data. Network coding allows the increase of throughput, reliability, security and delay performance of the networks. In our previous works, we have shown that \ac{RLNC} \cite{koetter2003algebraic,ho2006random} is able to satisfy the aforementioned technical requirements. We have actually shown how to increase the throughput \cite{pahlevani2013playncool}, reduce the delay \cite{szabo2015towards}, or support heterogeneity for coding enabled communication nodes \cite{lucani2014fulcrum}.
+Introduced by Ahlswede et al. \cite{ahlswede2000network}, network coding constitutes a paradigm shift in the way how researchers and industry understand and operate networks, by changing the role of intermediate relays in the process of transmission of information. Relays are no longer limited to storing and forwarding data, but also take part in the coding process, through a process called recoding, where the relay generates new linear combinations of incoming coded packets without previously decoding the data. Network coding allows the increase of throughput, reliability, security and delay performance of the networks. In our previous works, we have shown that \ac{RLNC} \cite{koetter2003algebraic,ho2006random} is able to satisfy the aforementioned technical requirements. We have actually shown how to increase the throughput \cite{pahlevani2013playncool}, reduce the delay \cite{szabo2015towards} or support heterogeneity for coding enabled communication nodes \cite{lucani2014fulcrum}.
 
 In all these prior works, the C++11 Kodo library \cite{kodo2011pedersen} was used as the common building block containing the basic \ac{RLNC} functionalities. However, most of the work was focusing on small mesh networks with a handful of communication nodes, though the expected scenarios are fairly beyond this order of magnitude. Moreover, despite this successful deployment in real systems, many of these protocols and contributions have been implemented in separate testbeds and the experiences are hard to reproduce. Furthermore, deploying a large-scale and configurable testbed for networking and storage can be challenging, not only due to the inherent costs of the hardware, but due to maintenance challenges and ability to replicate results consistently. The latter requires not only the devices to run the same \ac{OS}, but also have exactly the same configurations and software packages. Hence, there is a need in evaluating large scale network deployments of low cost devices in a quick, easy-to-deploy, reproducible and maintenable fashion.
 
-The emergence of powerful and inexpensive single-board computers running full versions of a standard \ac{OS} from many possible opens new possibilities in this area. This not only allows to seamlessly develop implementations that are compatible with higher end devices and allows the reuse stable software from widely-used \ac{OS}. Given this set of specific needs, in this work we present the design, key step-by-step instructions and mechanisms to setup, configurate and maintain of an inexpensive testbed using Raspberry Pi devices for networking (wireless or wired) and storage applications including \ac{RLNC} functionalities into the testbed through Kodo. Nevertheless, the architecture itself is not bounded to the networking area and can be used for other applications that require replicable results with Raspberry Pi. Our work is organized as follows. Section~\ref{sec:testbed} introduces the testbed system, its setup, files configuration and connectivity. Section~\ref{sec:cross_compilation} elaborates on the compilation of the Kodo library for the \ac{Raspi}. Final conclusions and future work are reviewed in Section~\ref{sec:conclusions}.
+The emergence of powerful and inexpensive single-board computers running full versions of a standard \ac{OS} from many possible opens new possibilities in this area. This not only allows to seamlessly develop implementations that are compatible with higher end devices and allows the reuse stable software from widely-used \ac{OS}. Given this set of specific needs, in this work we present the design, key step-by-step instructions and mechanisms to setup, configurate and maintain of an inexpensive testbed using Raspberry Pi devices for networking (wireless or wired) and storage applications including \ac{RLNC} functionalities into the testbed through Kodo. Nevertheless, the architecture itself is not bounded to the networking area and can be used for other applications that require replicable results with Raspberry Pi. Our work for the testbed procedure is organized as follows: Section~\ref{sec:overview} introduces the testbed system. In Section~\ref{sec:image_setup}, we provide details about the testbed setup, scripts, configuration files and connectivity. In Section~\ref{sec:overlay_fs}, we elaborate on the need and setup for an overlay filesystem for our testbed in order to have both persistent and non-persistent data on it as an optional step. Section~\ref{sec:tools} describes a set of automation and monitoring tools that can be included in the testbed t simplify the execution of routinary and repetitive tasks. Section~\ref{sec:cross_compilation} elaborates on the compilation of the Kodo library for the \ac{Raspi}. Conclusions and future work are reviewed in Section~\ref{sec:conclusions}. Finally, a set of alternative commands procedures, in case the ones presented in this work might not be executed, are discussed in the Appendix.
 
-%The emergence of powerful and inexpensive single-board computers
-%running full versions of a standard \ac{OS} from many possible in the last
-%years opens exciting possibilities for researchers. This not only
-%allows to seamlessly develop implementations that are compatible with
-%higher end devices and allows the reuse stable software from the Open
-%Source community. It also enables the deployment and testing of large
-%scale (hundreds of devices or more) distributed systems at a fraction
-%of the cost necessary in previous years. This paper focuses on
-%providing the critical steps and mechanisms followed to deploy, setup,
-%and maintain a large-scale testbed based on Raspberry Pi devices of
-%different models. 
-%
-%% INTRODUCTION TO NETWORK CODING
-%Introduced by Ahlswede et al.~\cite{ahlswede2000network}, network
-%coding constitutes a paradigm shift in the way how researchers and
-%industry understand and operate networks, by changing the role of
-%intermediate relays in the process of transmission of information.
-%Relays are no longer limited to storing and forwarding data, but also
-%take part in the coding process, through a process called recoding,
-%where the relay generates new linear combinations of incoming coded
-%packets without previously decoding the data. Network coding allows
-%the increase of throughput, reliability, security and delay
-%performance of the networks. 
-
-%Compared to other broadly used coding schemes, e.g., Gallager's LDPC
-%codes~\cite{gallager1962low} or Reed-Solomon
-%codes~\cite{reed1960polynomial}, network coding is a technology that
-%has been implemented in real systems since the early years of its
-%conception. In 2006, Katabi et al.~\cite{katabi2006practical} published
-%the results of the performance of their protocol COPE when implemented
-%in a real wireless system, which relied on minimalistic coding to
-%provide interesting gains. In 2008, Pedersen et
-%al.~\cite{pedersen2008implementation} used commercially available
-%Symbian OS enabled mobile phones to implement network coding in a
-%\ac{D2D} cooperation-based application. In 2011, researchers at Aalborg
-%University developed Kodo~\cite{kodo2011pedersen}, a C++11 network
-%coding library with open source code for researchers intended to make
-%network coding implementations easily available for both, the research
-%community and commercial entities.
-%Another case is CATWOMAN~\cite{hundeboll2012catwoman}, a protocol
-%implemented on top of the BATMAN protocol~\cite{johnson2008simple} for
-%IEEE 802.11 multi-hop meshed networks using some of the intuition from
-%COPE, but deploying it in real systems. It is currently available as
-%open source code in the Linux kernel. Many other implementations have
-%been tested on real world systems~
-%\cite{pahlevani2013playncool,katti2008xors,krigslund2013core,paramanathan2013leanandmean}.
-%
-%Despite this successful deployment in real systems, many of these
-%protocols and contributions have been implemented in separate testbeds
-%and the experiences are hard to reproduce.  Given the need for
-%reproducibility of past and future results among researchers and the
-%need of low-cost and easy-to-deploy testbeds, this paper contribution
-%is provide detailed instructions on how to set up a low-cost,
-%heterogeneous and scalable testbed consisting of Raspberry Pis
-%(Raspis), and by providing detailed measurements of goodput and energy
-%consumption of such testbed when performing network coding operations
-%with different codecs (such as full \ac{RLNC} \cite{ho2006random},
-%multicore-enabled \ac{RLNC}, sparse \ac{RLNC} and tunable sparse \ac{RLNC}).
-%The heterogeneity of the testbed comes from the fact that old, single core,
-%Raspberry Pi 1 model B units are integrated seamlessly in the described
-%testbed with newer, multicore versions, like the Raspberry Pi 2 model B.
-%Our testbed allows us to obtain a comprehensive set of measurements
-%to characterize the goodput and energetic footprint of these devices
-%showing that processing speeds of 800 Mbps and energy per bit values
-%of 1 nJ or even one order of magnitude less are possible.
-%
-%
 %%The introduction should briefly place the study in a broad context and highlight why it is important. It should define the purpose of the work and its significance. The current state of the research field should be reviewed carefully and key publications should be cited. Please highlight controversial and diverging hypotheses when necessary. Finally, briefly mention the main aim of the work and highlight the main conclusions. As far as possible, please keep the introduction comprehensible to scientists outside your particular field of research.

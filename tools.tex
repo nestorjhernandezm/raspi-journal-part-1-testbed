@@ -33,7 +33,7 @@ $ cd ${CODEDIR}
 \FloatBarrier
 \vspace{-5mm}
 
-Then, the \texttt{\$CODEDIR/fabfile.py} file below provides a script with
+Then, the \texttt{\$\{CODEDIR\}/fabfile.py} file below provides a script with
 some basic functionalities that can perform the few items above (i-iii).
 In general, other administrators may require different functionalities
 but that goes out of the scope of this work. Nevertheless, the following
@@ -41,9 +41,9 @@ file serves as a starting boilerplate:
 
 % Exit chroot, umount, and write to memory card
 \Suppressnumber\begin{lstlisting}[]
-<@\textcolor{gray}{\$CODEDIR/fabfile.py}@>
+<@\textcolor{gray}{\$\{CODEDIR\}/fabfile.py}@>
 <@\textcolor{gray}{
--------------------------------------}
+-----------------------------------------}
 \Reactivatenumber @>
 from fabric.api import env, task, sudo
 # Python Fabric script to run commands on multiple hosts through ssh
@@ -150,11 +150,11 @@ Disconnecting from <RASP_IP>... done.
 \vspace{-5mm}
 
 To control a large set of devices, we simply need to include them in the
-\texttt{env.hosts} list in the \texttt{\$CODEDIR/fabfile.py} file. Fabric has
-many other functionalities that are useful in controlling a large set of
-\ac{Raspi}s. For example, we may extract files or run automated
-experiments. The included functionalities in the
-\texttt{\$CODEDIR/fabfile.py} file will depend on the requirements of the
+\texttt{env.hosts} list in the \texttt{\$\{CODEDIR\}/fabfile.py} file.
+Fabric has many other functionalities that are useful in controlling a
+large set of \ac{Raspi}s. For example, we may extract files or run
+automated experiments. The included functionalities in the
+\texttt{\$\{CODEDIR\}/fabfile.py} file will depend on the requirements of the
 testbed administrator.
 
 %execute a script function by calling "fab install:feh"

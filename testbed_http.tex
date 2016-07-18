@@ -257,7 +257,7 @@ proc            /proc           proc    defaults          0       0
 \FloatBarrier
 \vspace{-5mm}
 
-\subsection{Initial RAM Filesystem for HTTP Fetch}
+\subsection{Initial RAM Filesystem for HTTP Image Fetch}
 We enter again in \texttt{chroot} mode into the image to make the new
 \texttt{initramfs} files. We note that for other testbed administrator
 kernels, the files might be different. The commands for these tasks are:
@@ -291,9 +291,10 @@ $ cd ..
 \FloatBarrier
 \vspace{-5mm}
 
-\subsection{Writing SD Cards for HTTP Fetch}
+\subsection{Writing SD Cards for HTTP Image Fetch}
 
 %IS SETTING UP THE SD-CARD REALLY THE SAME PROCEDURE AS FOR A LOCAL FILESYSTEM?
+%ANSWER FROM NESTOR: YES! :)
 
 We insert a test memory card and verify its associated device in the
 filesystem to export it as a variable name:

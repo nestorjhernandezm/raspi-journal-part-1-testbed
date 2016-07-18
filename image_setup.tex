@@ -19,42 +19,43 @@ on all the \ac{Raspi} models. We will download and setup the image in
 the testbed administrator \ac{PC} using a Debian-based distribution. We
 use the popular Debian-based Raspbian Linux~\cite{raspbian} given that is
 the recommended and default \ac{OS} for the \ac{Raspi}. Raspbian is made
-available in two bundles: Raspbian and Raspbian lite. The difference
+available in two bundles: Raspbian and Raspbian Lite. The difference
 between the two, is that Raspbian contains a pre-installed desktop environment
-for user interaction and Raspbian lite by default only permits to interact
+for user interaction and Raspbian Lite by default only permits to interact
 through a command shell. Given that the \ac{Raspi}s in our testbed are not
-connected to monitors, we decide to work with Raspbian lite. Still, if later
+connected to monitors, we decide to work with Raspbian Lite. Still, if later
 desired, a desktop environment can be installed using the package manager
 as it will be shown in the configuration section.
 
-% The overall procedure to customize the official Raspbian lite image
+% The overall procedure to customize the official Raspbian Lite image
 % are:
 % \begin{enumerate}
-%     \item Download Raspbian lite
-%     \item Alter Raspbian lite. e.g. browse, modify, add, and delete files
-%         in the official Raspbian lite image
-%     \item Change root, i.e. change root filesystem into the Raspbian lite
+%     \item Download Raspbian Lite
+%     \item Alter Raspbian Lite. e.g. browse, modify, add, and delete files
+%         in the official Raspbian Lite image
+%     \item Change root, i.e. change root filesystem into the Raspbian Lite
 %         image to update and install software packages
 %     \item Write image to memory cards
 % \end{enumerate}
 
-%\subsection{Download Raspbian lite}
-%To download the latest Raspbian lite, we go to the url
-%\url{http://downloads.raspberrypi.org/raspbian_lite/images/}.
+%\subsection{Download Raspbian Lite}
+%To download the latest Raspbian Lite, we go to the url
+%\url{http://downloads.raspberrypi.org/raspbian_Lite/images/}.
 
-The latest Raspbian lite bundle can be downloaded from the Raspbian
+The latest Raspbian Lite bundle can be downloaded from the Raspbian
 official webpage~\cite{raspbian}. At the time of this writing, the latest
 available bundle was \texttt{2016-05-27-raspbian-jessie-lite.zip}.
 To ensure that the content of the bundle does not change, this procedure
-is based on that particular version of Raspbian lite which we have
-made available at~\cite{tunescode_webpage}. All other files used in this paper
-are available there unless specified otherwise. To get started, the testbed
-administrator must open a Linux shell (terminal) in and declare the environment
-variables shown in the command block below. We show the procedure by
-performing the role of the testbed administrator. To copy the commands from
-this procedure to the testbed administrator terminal,
-we strongly recommend to read this document with Adobe Acrobat Reader in Linux.
-Otherwise, copied characters might not render properly.
+is based on that particular version of Raspbian Lite which we have
+made available at~\cite{tunescode_webpage} acting as our \ac{HTTP} server.
+All other files used in this paper are available there unless specified
+otherwise. To get started, the testbed administrator must open a Linux
+shell (terminal) in its \ac{PC} and declare the environment variables shown
+in the command block below. We show the whole procedure by performing the role
+of the testbed administrator. To copy the commands from this procedure to the
+testbed administrator terminal, we recommend to read this document
+with Adobe Acrobat Reader in Linux. Otherwise, copied characters might not
+render properly when pasted.
 
 %After the terminal has been opened, we start by declaring a few variables to reduce
 %repeated typing. The first variables we declare is the Raspbian image name.
@@ -78,14 +79,15 @@ $ export WORKDIR="${HOME}/Raspbian"
 \FloatBarrier
 \vspace{-5mm}
 
-In this code block, the \texttt{URL} and \texttt{IMAGE} variables specify where
-the Linux bundle is located and \texttt{WORKDIR} specifies a working
-directory where the Raspbian bundle will be downloaded and customized.
-Notice that even though we use the \$ and \# signs in the shell, in general
-these signs will be particular to the testbed administrator \ac{OS} shell.
-Next, we create the working directory and go to it with the \texttt{cd}
-command. To download the image, we utilize the \texttt{wget} command before
-unpacking the \texttt{zip} file as follows:
+In this code block, the \texttt{\$\{URL\}} and \texttt{\$\{IMAGE\}}
+variables specify where the Linux bundle is located and
+\texttt{\$\{WORKDIR\}} specifies a working directory where the Raspbian
+Lite bundle will be downloaded and customized. Notice that even though we
+use the \$ and \# signs in the shell, in general these signs will be
+particular to the testbed administrator \ac{OS} shell. Next, we create
+the working directory and go to it with the \texttt{cd} command. To
+download the image, we utilize the \texttt{wget} command before unpacking
+the \texttt{zip} file as follows:
 
 % Running a command as root can on most systems be done by putting
 % \texttt{sudo} in front of the command. This is illustrated in the
@@ -118,13 +120,13 @@ $ unzip ${IMAGE}.zip
 
 \subsection{Image Customization}
 
-After Raspbian lite has been unpacked, there should be an \texttt{.img}
-file in the \texttt{WORKDIR} directory. Here, \texttt{fdisk} can be used to
-display the content of the image. To do this and obtain administrative
-information, we parse the arguments \texttt{-u sectors} to display the
-sizes in sectors and \texttt{-l} to display the partitions within the
-image. The \texttt{fdisk} command should output to the terminal something
-similar to:
+After Raspbian Lite has been unpacked, there should be an \texttt{.img}
+file in the \texttt{\$\{WORKDIR\}} directory. Here, \texttt{fdisk} can
+be used to display the content of the image. To do this and obtain
+administrative information, we parse the arguments \texttt{-u sectors}
+to display the sizes in sectors and \texttt{-l} to display the partitions
+within the image. The \texttt{fdisk} command should output to the terminal
+something similar to:
 
 % Check out the image
 % The dollar hack was to fix vim syntax
@@ -285,7 +287,7 @@ The filesystem on /dev/loop0 is now 583680 blocks long.
 
 \subsection{Block Devices Mounting}
 For browsing and altering the files in the image, we mount the block
-device partitions into a particular path of our \texttt{WORKDIR} in order
+device partitions into a particular path of our \texttt{\$\{WORKDIR\}} in order
 to customize them. We proceed first to mount the block device partition that
 contains the root filesystem and later the boot partition. This is done by
 creating an empty directory that it is used as a mountpoint. We name it
@@ -302,10 +304,10 @@ $ mkdir -p ${ROOTDIR}
 \vspace{-5mm}
 %# mount -o loop,offset=$((137216*512)) ${IMAGE}.img ${ROOTDIR}
 
-The root filesystem mounted in \texttt{ROOTDIR}, has already a boot
+The root filesystem mounted in \texttt{\$\{ROOTDIR\}}, has already a boot
 directory that can be used as the mount point for the boot partition
-in the block device \texttt{loop0p1}. This is convenient because
-the final edited partition from \texttt{ROOTDIR/boot} will be mounted on
+in the block device \texttt{/dev/loop0p1}. This is convenient because
+the final edited partition from \texttt{\$\{ROOTDIR\}/boot} will be mounted on
 this same directory when a \ac{Raspi} starts up with a memory card
 containing the raw final image. Hence, to mount boot partition we do:
 %It is therefore the natural place to mount it for later purposes.
@@ -319,7 +321,7 @@ containing the raw final image. Hence, to mount boot partition we do:
 %We can now change all the files in the disk image as desired.
 
 In this way, it is now possible to change all files within the Raspbian
-image as desired by editing the files in \texttt{ROOTDIR}. We take
+image as desired by editing the files in \texttt{\$\{ROOTDIR\}}. We take
 advantage of this to edit configuration files, append new files and even
 update and install packages.
 
@@ -340,11 +342,12 @@ as we will show.
 \subsubsection{Image Default Configuration Scripts Download}
 \label{sec:configuration_files_download}
 In our case, we have our default configuration scripts stored in a
-\texttt{rasp\_config.zip} file located in the same \ac{URL} where the image
-was retrieved from, i.e. the one in the environment variable \texttt{URL}.
-We first manually download this compressed file with \texttt{wget} and
-extract it locally into our Raspbian lite image. These commands and the
-output of the last one are shown as follows:
+\texttt{rasp\_config.zip} file located in the same \ac{URL} of the
+\ac{HTTP} server where the image was retrieved from, i.e. the one in
+the environment variable \texttt{\$\{URL\}}. We first manually download
+this compressed file with \texttt{wget} and extract it locally into our
+Raspbian Lite image. These commands and the output of the last one are
+shown as follows:
 
 % Get the configuration files that are compressed in a remote server
 \begin{lstlisting}[]
@@ -361,7 +364,7 @@ Archive:  rasp_config.zip
 \vspace{-5mm}
 
 The unzippped files are one configuration file and three configuration
-scripts put in the newly created \texttt{\${ROOTDIR}/home/pi/rasp\_config/}
+scripts put in the newly created \texttt{\$\{ROOTDIR\}/home/pi/rasp\_config/}
 folder in the image. In what follows, we describe which features do we
 require all the \ac{Raspi}s to have and how are they achieved with
 these configuration scripts.
@@ -377,7 +380,7 @@ Prior to this stage, the \ac{MAC} address of a network card can be found
 using the command \texttt{ifconfig} or \texttt{ip addr} on a given
 \ac{Raspi}. We store the \ac{MAC} addresses and hostnames of the
 \ac{Raspi}s in the configuration file
-\texttt{\${ROOTDIR}/home/pi/rasp\_config/nodes.csv}. A sample of our file
+\texttt{\$\{ROOTDIR\}/home/pi/rasp\_config/nodes.csv}. A sample of our file
 is shown as follows:
 
 % MAC and Hostname file
@@ -396,12 +399,12 @@ b8:27:eb:95:bd:11 rasp03
 \vspace{-5mm}
 
 The testbed administrator has to insert the \ac{MAC} addresses and hostnames
-of his/her \ac{Raspi}s obtained previously in the format shown in the
+of his / her \ac{Raspi}s obtained previously in the format shown in the
 configuration file. In the file format, on each line there is a \ac{MAC}
 address and the corresponding hostname for the given \ac{Raspi}. For
 simplicity in the example above, we just include three \ac{Raspi}s.
 This list file will be employed by the
-\texttt{\${ROOTDIR}/home/pi/rasp\_config/set\_hostname}
+\texttt{\$\{ROOTDIR\}/home/pi/rasp\_config/set\_hostname}
 \ac{Bash} script to assign the hostname of each \ac{Raspi}.
 The script content is the following:
 

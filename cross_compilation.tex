@@ -33,14 +33,14 @@ This toolchain is available from \cite{2016rpitoolchain} and
 it already contains the binaries for different compilers based on
 \texttt{gcc 4.9}. In what follows, we extract the binaries adjusting
 them to our coding style and compiling convention. For this, we use the
-\texttt{\$TOOLCHAIN} directory as the working directory. However,
+\texttt{\$\{TOOLCHAIN\}} directory as the working directory. However,
 the testbed administrator may choose some other working directory of
 its preference if desired. First, we create the toolchain directory:
 
 \begin{lstlisting}[]
 $ export TOOLCHAINDIR="${HOME}/toolchains"
-$ mkdir -p $TOOLCHAINDIR
-$ cd $TOOLCHAINDIR
+$ mkdir -p ${TOOLCHAINDIR}
+$ cd ${TOOLCHAINDIR}
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
@@ -61,7 +61,7 @@ $ unzip raspberry-gxx493-arm.zip
 
 Instead of calling the ARM cross compiler using its full path, we make
 the binaries accessible from the command shell systemwide. A way to do
-this is by adding the following commands in the \texttt{\${HOME}/.profile}
+this is by adding the following commands in the \texttt{\$\{HOME\}/.profile}
 as follows:
 
 \begin{lstlisting}[]
@@ -92,9 +92,9 @@ PATH="$PATH:${TOOLCHAINDIR}/arm-rpi-4.9.3-linux-gnueabihf/bin"
 \FloatBarrier
 \vspace{-5mm}
 
-To update the \texttt{PATH} variable and the \texttt{.profile}, we use the
-\texttt{source} command for the changes take effect in the administrator
-system:
+To update the \texttt{\$\{PATH\}} variable and the \texttt{.profile}, we
+use the \texttt{source} command for the changes take effect in the
+administrator system:
 \begin{lstlisting}[]
 $ source ${HOME}/.profile
 \end{lstlisting}
@@ -123,9 +123,9 @@ in the directory where we stored the \texttt{fabfile.py} file
 with the following content using any text editor:
 
 \Suppressnumber\begin{lstlisting}[]
-<@\textcolor{gray}{\${CODEDIR}/hello\_world.cpp}@>
+<@\textcolor{gray}{\$\{CODEDIR\}/hello\_world.cpp}@>
 <@\textcolor{gray}{
------------------------------------------------}
+---------------------------------------------------}
 \Reactivatenumber @>
 #include <iostream>
 

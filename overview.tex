@@ -15,7 +15,7 @@ university network since our testbed is used by students and
 professors to perform measurements and experimentation of controlled and
 reproducible scenarios as part of academic research. Nevertheless, the
 testbed description and procedures for setting it up are not restricted
-to the academic scenario. All \ac{Raspi}s will be configured to run
+to the academic scenario. All \ac{Raspi}s are configured to run
 a \ac{SSH} daemon for easy remote access within the university network.
 We requested the university \ac{IT} department to configure the university
 \ac{DHCP} server to assign each \ac{Raspi} a static \ac{IP}. This
@@ -43,10 +43,14 @@ performed by the testbed administrator in a regular \ac{PC} running a
 Linux distribution. Although in principle the administrator
 Linux distribution is not a restriction, we present our procedure in a
 Debian-based Linux distribution. Our basic design considers to create
-a customized image to later store it in a memory card. Thus, based on a
-regular Raspbian Linux image, we explain how to resize and customize it to
-include desired packages for performing routinary tasks in all the
-\ac{Raspi}s. As another design consideration, when working on a testbed
+a customized image to later store it in a memory card for each \ac{Raspi}.
+Once configured, we store the resulting image file in a \ac{HTTP} server
+as backup and in case the testbed administrator requires to make new
+changes to this file. We also put all the required configuration files
+and scripts for the \ac{Raspi}s setup in the \ac{HTTP} server so there is
+a single place where system setup is stored and could be modified.
+This simplifies the system maintenance at a later stage.
+As another design consideration, when working on a testbed
 with many devices, it may not always be desired to make persistent changes
 on them. One scenario is when different users are interested in
 running experiments on a rebooted testbed. Thus, we later present how
@@ -55,11 +59,18 @@ temporary storage to have this capability. Its purpose is to
 remove non-desired data after a reboot while keeping the original
 customized image structure. This step of the procedure is optional if
 the testbed administrator decides to keep only persistent changes regardless
-of the testbed use. Finally, an advanced step in our design considers to
-fetch the \ac{Raspi}s root filesystem from a \ac{HTTP} server. This enables the
-testbed administrator to put the data files in one location. The
-\ac{Raspi}s will then get these data files after a reboot. We consider
-that this step is particularly useful when there is a large amount
-of devices to be configured and the setup process needs to be automated.
-However, since a more complex scenario that might be required only in special
-cases, we put this step in Section~\ref{sec:http} in the Appendix.
+of the testbed use. Finally, we include a set of automation, monitoring
+and cross-compilation tools over the top of our system in order to simplify
+the execution of repetitive and long tasks, be able to follow the progress
+of long task processes and compile relevant C++ source code for the testbed
+administrator.
+
+
+%an advanced step in our design considers to
+% fetch the \ac{Raspi}s root filesystem from a \ac{HTTP} server. This enables the
+% testbed administrator to put the data files in one location. The
+% \ac{Raspi}s will then get these data files after a reboot. We consider
+% that this step is particularly useful when there is a large amount
+% of devices to be configured and the setup process needs to be automated.
+% However, since a more complex scenario that might be required only in special
+% cases, we put this step in Section~\ref{sec:http} in the Appendix.
