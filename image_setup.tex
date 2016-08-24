@@ -52,10 +52,11 @@ All other files used in this paper are available there unless specified
 otherwise. To get started, the testbed administrator must open a Linux
 shell (terminal) in its \ac{PC} and declare the environment variables shown
 in the command block below. We show the whole procedure by performing the role
-of the testbed administrator. To copy the commands from this procedure to the
-testbed administrator terminal, we recommend to read this document
-with Adobe Acrobat Reader in Linux. Otherwise, copied characters might not
-render properly when pasted.
+of the testbed administrator.
+%To copy the commands from this procedure to the
+%testbed administrator terminal, we recommend to read this document
+%with Adobe Acrobat Reader in Linux. Otherwise, copied characters might not
+%render properly when pasted.
 
 %After the terminal has been opened, we start by declaring a few variables to reduce
 %repeated typing. The first variables we declare is the Raspbian image name.
@@ -85,7 +86,7 @@ variables specify where the Linux bundle is located and
 Lite bundle will be downloaded and customized. Notice that even though we
 use the \$ and \# signs in the shell, in general these signs will be
 particular to the testbed administrator \ac{OS} shell. Next, we create
-the working directory and go to it with the \texttt{cd} command. To
+the working directory and go to it with the change directory (\texttt{cd}) command. To
 download the image, we utilize the \texttt{wget} command before unpacking
 the \texttt{zip} file as follows:
 
@@ -121,7 +122,7 @@ $ unzip ${IMAGE}.zip
 \subsection{Image Customization}
 
 After Raspbian Lite has been unpacked, there should be an \texttt{.img}
-file in the \texttt{\$\{WORKDIR\}} directory. Here, \texttt{fdisk} can
+file in the working directory \texttt{\$\{WORKDIR\}}. Here, \texttt{fdisk} can
 be used to display the content of the image. To do this and obtain
 administrative information, we parse the arguments \texttt{-u sectors}
 to display the sizes in sectors and \texttt{-l} to display the partitions
@@ -149,14 +150,19 @@ The output provides relevant information about the image. The image is in
 total 2709504 sectors (1.3 GiB) in size and contains two partitions. The
 first partition starts at sector 8192 and the other partition starts at
 sector 137216. The first partition type is FAT32 with a size of 63 MB
-and the second partition is a Linux one with a size of 1.2 GB. This
+and the second partition is of type Linux with a size of 1.2 GB. This
 indicates that the first partition is a boot partition and the second
-one is a traditional Linux root filesystem, i.e. \texttt{/}.
+one is a traditional Linux filesystem. In this case, the root filesystem, i.e. \texttt{/}.
 
 \subsection{Image Resizing}
-Given that we want to customize the files stored in the \ac{Raspi}s,
-we need to resize the image file since 1.2 GB might not be enough to store
-the root filesystem due to the total size of the additional packages. Thus,
+Given that we want to customize the root filesystem in the \ac{Raspi}s,
+we need to expand the image file since 1.2 GB might not be enough to store
+existing root filesystem plus additional files and software packages.
+%Given that we want to customize the files stored in the \ac{Raspi}s,
+%we need to resize the image file since 1.2 GB might not be enough to store
+%the root filesystem with the additional packages that will be installed in this procedure.
+%due to the total size of the additional packages.
+Thus,
 we need to increase the partition size. The following procedure illustrates
 how the image and its root filesystem can be expanded by one GB.
 First, to expand the image one GB, we execute:
@@ -189,8 +195,8 @@ Now, in this command block output, we observe that the change has taken
 effect by noticing the total available image size is 2.3 GiB. To expand the
 root filesystem, it is required to first remove the Linux partition
 and then add it again with one GB more. To do this, we make use
-again of \texttt{fdisk} in command mode to alter the partition table.
-For this, we pass the arguments of the command mode of \texttt{fdisk}
+of \texttt{fdisk} again in command mode to alter the partition table.
+We pass the arguments of the command mode of \texttt{fdisk}
 through the \texttt{echo} command in Linux and the \texttt{|} operator
 (pipe) as follows:
 
@@ -290,7 +296,7 @@ For browsing and altering the files in the image, we mount the block
 device partitions into a particular path of our \texttt{\$\{WORKDIR\}} in order
 to customize them. We proceed first to mount the block device partition that
 contains the root filesystem and later the boot partition. This is done by
-creating an empty directory that it is used as a mountpoint. We name it
+creating an empty directory that is used as a mountpoint. We name it
 \texttt{root} and create it in the working directory before mounting the
 root filesystem onto the mountpoint. Thus, we mount the root filesystem
 as follows:
@@ -334,7 +340,7 @@ the steps to setup basic properties of the \ac{Raspi}s and distributing
 configuration scripts to each of them through the image. For this, we first
 indicate how to obtain and put our configuration scripts in the image. Later,
 we describe the tasks performed by these configuration scripts. Finally, we
-indicate how and in which order are the scripts executed to configure all the
+indicate how and in which order the scripts are executed to configure all the
 devices. Nevertheless, any testbed administrator might modify or include other
 tasks besides the presented in this procedure according to his / her needs
 as we will show.
@@ -342,9 +348,9 @@ as we will show.
 \subsubsection{Image Default Configuration Scripts Download}
 \label{sec:configuration_files_download}
 In our case, we have our default configuration scripts stored in a
-\texttt{rasp\_config.zip} file located in the same \ac{URL} of the
+file \texttt{rasp\_config.zip} located in the same \ac{URL} of the
 \ac{HTTP} server where the image was retrieved from, i.e. the one in
-the environment variable \texttt{\$\{URL\}}. We first manually download
+the environment variable \texttt{\$\{URL\}}. We first download
 this compressed file with \texttt{wget} and extract it locally into our
 Raspbian Lite image. These commands and the output of the last one are
 shown as follows:
@@ -373,7 +379,7 @@ these configuration scripts.
 Among the settings that we want to be different in the devices is
 their hostname. The hostname helps the user to physically distinguish the
 devices from each other. Thus, in our case we require the devices in our
-testbed to have different hostnames. Hence, we define the hostnames based
+testbed to have different hostnames. We define the hostnames based
 on the \ac{MAC} addresses of the \ac{Raspi}s wired Ethernet interface.
 
 Prior to this stage, the \ac{MAC} address of a network card can be found
@@ -400,10 +406,10 @@ b8:27:eb:95:bd:11 rasp03
 
 The testbed administrator has to insert the \ac{MAC} addresses and hostnames
 of his / her \ac{Raspi}s obtained previously in the format shown in the
-configuration file. In the file format, on each line there is a \ac{MAC}
+configuration file. In that file format, on each line there is a \ac{MAC}
 address and the corresponding hostname for the given \ac{Raspi}. For
-simplicity in the example above, we just include three \ac{Raspi}s.
-This list file will be employed by the
+simplicity in the example above, we just include four \ac{Raspi}s.
+This file will be employed by the
 \texttt{\$\{ROOTDIR\}/home/pi/rasp\_config/set\_hostname}
 \ac{Bash} script to assign the hostname of each \ac{Raspi}.
 The script content is the following:
@@ -457,7 +463,7 @@ to fetch all our configuration scripts in
 \textit{automatically} downloads all the required configuration files in
 \texttt{rasp\_config.zip} file from a remote location. This is the same that
 we manually did earlier to get our files but this will be made in an
-automated wat after booting up the system. This script contents are:
+automated way after booting up the system. This script content is:
 
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$\{ROOTDIR\}/home/pi/rasp\_config/update\_rasp\_config}@>
@@ -485,7 +491,8 @@ The update script: (3-4) checks for the \ac{URL} and \texttt{.zip} file that
 should be downloaded, (7-10) downloads the configuration files to \texttt{/tmp}
 folder in the corresponding \ac{Raspi}. It also prints a warning in case of
 errors and (13) unzips the files to \texttt{/home/pi/}, the \ac{Raspi} home
-directory, while ignoring existing files and / or directories there.
+directory. Existing files and directories are simply overwritten.
+%while ignoring existing files and / or directories there.
 
 For the above scripts to work in the \ac{Raspi}s, it is required that the
 \ac{Raspi}s \ac{MAC} addresses are found in \texttt{nodes.csv}. Also, it
@@ -509,7 +516,7 @@ Therefore, we first need to run the update script before running
 any other configuration scripts. To do this after boot up, we include
 a call for the update script in the image \texttt{\$\{ROOTDIR\}/etc/rc.local}
 file before \texttt{exit 0} using a file editor. To do this, it is required
-to edit this file as root. The resulting file should look like the following:
+to edit this file with root permissions. The resulting file should look like the following:
 
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$\{ROOTDIR\}/etc/rc.local}@>
@@ -530,7 +537,7 @@ administrator since this needs to be both in the image and the
 downloaded \texttt{rasp\_config.zip}. To avoid this problem, we include
 the \texttt{\$\{ROOTDIR\}/home/pi/rasp\_config/main} script which
 calls all other configuration scripts (besides \texttt{update\_rasp\_config})
-in sequential order. This script content is the following:
+in a sequential order. This script content is:
 
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$\{ROOTDIR\}/home/pi/rasp\_config/main}@>
@@ -545,7 +552,7 @@ bash /home/pi/rasp_config/set_hostname
 \FloatBarrier
 \vspace{-5mm}
 
-In this way, the automation process is simplify since we only need to modify
+In this way, the automation process is simplified since we only need to modify
 the image \texttt{\$\{ROOTDIR\}/etc/rc.local} file once to execute this script:
 
 \Suppressnumber\begin{lstlisting}[]
@@ -583,7 +590,7 @@ our case, we can use the Raspbian Lite image root filesystem within the
 testbed administrator Linux distribution. Then, QEMU allows the execution
 of commands for the \ac{Raspi} image (\ac{ARM} instructions) through the ones
 from the testbed administrator \ac{PC} architecture. Due to the \ac{ARM}
-processor that the \ac{Raspi}s employ, t is required to install the QEMU related software first and verigy that QEMU is \ac{ARM} enabled. To do so,
+processor that the \ac{Raspi}s employ, it is required to install the QEMU related software first and verify that QEMU is \ac{ARM} enabled. To do so,
 run the following commands:
 
 % CHROOT to OS image
@@ -655,7 +662,8 @@ following commands:
 \FloatBarrier
 \vspace{-5mm}
 
-Finally, to change root the following needs to be run:
+%Finally, to change root the following needs to be run:
+Finally, run the following command to change root:
 
 \begin{lstlisting}[]
 # chroot ${ROOTDIR} /usr/bin/qemu-arm-static /bin/bash
@@ -682,7 +690,7 @@ The Raspbian lite image should now be possible to use almost as if it had
 been booted in a \ac{Raspi}. A major difference is that the testbed
 administrator \ac{PC} is likely significantly faster than a \ac{Raspi}.
 Hence, enabling updates, upgrades and installing new software packages
-should be much faster than in a \ac{Raspi}. Still updating and upgrading
+should be faster than in a \ac{Raspi}. Still updating and upgrading
 the packages for the \ac{Raspi} might take some amount of time. To get
 the upgraded system packages, it is necessary to run:
 
