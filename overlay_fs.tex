@@ -5,7 +5,7 @@ this image in the \ac{Raspi}s provides the same initial system for all
 the devices. If we do not make any further modifications during
 the image setup, any files created after the initial boot of a \ac{Raspi}
 will remain in the memory card. This is cumbersome to maintain since
-the size of the memory card is relatively reduced (8 GB) and there
+the size of the memory card is relatively small (8 GB) and there
 might be various users utilizing the testbed. Also, different testbed
 users could be interested in running their experiments in a fresh
 rebooted system with the original customized image. Nevertheless, we
@@ -20,7 +20,7 @@ This type of filesystem enables an \textit{upper} filesystem to overlay
 into a \textit{lower} filesystem. Whenever a file is requested, the upper
 filesystem will forward the request to the lower filesystem in case it
 does not have it itself. If the upper filesystem has the requested file,
-it will simpy return the file. This idea can be used in our setup to mount
+it will simply return the file. This idea can be used in our setup to mount
 the root filesystem (i.e. Raspbian Lite) in the \ac{Raspi}s during startup
 as read-only filesystem. Thus, on the one hand, the image configuration files
 will remain after a reboot but the local data in these directories will be
@@ -43,7 +43,7 @@ implementations overlaying the root filesystem. We use an implementation
 available at the Git repository in \cite{overlayroot}. Since we have
 installed \texttt{git} in a previous step, we clone the repository. The
 command block below stores it in \texttt{/tmp} which is really mounted in
-\ac{RAM}. Then, all the files stored here will disappear a \ac{Raspi} is
+\ac{RAM}. Thus, all the files stored here will disappear when the system is
 rebooted.
 
 % Get files
@@ -55,8 +55,8 @@ rebooted.
 \vspace{-5mm}
 
 Before enabling the overlaying filesystem, it is required to generate
-an initial \ac{RAM} file system or \texttt{initramfs}. This is an
-initial filesystem that gets loaded into \ac{RAM} during the startup
+an initial \ac{RAM} filesystem or \texttt{initramfs}. This is an
+initial filesystem that is loaded into \ac{RAM} during the startup
 process of a Linux machine to prepare the real filesystem. For this purpose,
 we need the BusyBox package by running:
 
@@ -83,7 +83,8 @@ To generate the initial \ac{RAM} filesystem, we have to utilize the
 \texttt{mkinitramfs} command. This searches by default for the available
 kernel modules in the system. Since we are in \texttt{chroot} mode, we need
 to specify the correct kernel modules to search for. The available
-kernel modules are \texttt{/lib/modules}. To see them, we just run:
+kernel modules are located in \texttt{/lib/modules}.
+To see them, we just run:
 
 % See available kernel modules
 \begin{lstlisting}[]
@@ -114,11 +115,13 @@ successfully generate working initial \ac{RAM} filesystems. Later, an
 initial \ac{RAM} filesystem will need to be called by the bootloader.
 In Raspbian this is done by adding a command to \texttt{config.txt} file
 in the boot partition. If the system should be run in a \ac{Raspi} version 1,
-then use \texttt{init.gz}, otherwise use \texttt{init-v7.gz} as follows:
+then use \texttt{init.gz} by executing only the first code line below,
+otherwise use \texttt{init-v7.gz} by executing only the second code line:
+%as follows:
 
 %The bootloader should be made aware of the initramfs that we will generate:
 \begin{lstlisting}[]
-(chroot) # echo "initramfs init.gz" >> /boot/config.txt     # Only for Raspberry Pi version 1
+(chroot) # echo "initramfs init.gz" >> /boot/config.txt     # For Raspberry Pi version 1
 (chroot) # echo "initramfs init-v7.gz" >> /boot/config.txt  # For Raspberry Pi version 2 or 3
 \end{lstlisting}
 \FloatBarrier
@@ -148,8 +151,9 @@ procedure in Section~\ref{sec:umount} of the Appendix.
 Provided the stacked filesystem is configured, now it is possible to have
 directories where files are removed or not upon rebooting the \ac{Raspi}s.
 The following procedure creates an extra partition in the image for
-the \ac{Raspi} user home directory that will be made storage persistent
-using the upper filesystem. We first expand image according to the desired
+the \ac{Raspi} user home directory that will be made storage persistent.
+%using the upper filesystem.
+We first expand image according to the desired
 home directory size, but avoiding to make the image bigger than the target
 memory card size.
 
@@ -201,7 +205,7 @@ Syncing disks.
 \FloatBarrier
 \vspace{-5mm}
 
-We create again a loopback device and format the new partition, as follows:
+We create a loopback device again and format the new partition, as follows:
 \begin{lstlisting}[]
 # export DEV=$(sudo losetup --show -f -P ${IMAGE}.img); echo $DEV
 /dev/loop0
@@ -215,8 +219,10 @@ Again, if for some reason, the \texttt{-P} option is not available for
 Section~\ref{sec:alternative_losetup}. Finally, if the previous filesystem
 formatting was successful, the filesystem is now available for use. Thus,
 we need to inform the Raspbian \ac{OS} to mount the home partition
-that we have just created. We will notify the \ac{OS} while
-booting during the startup of the \ac{Raspi}s. This can be done by adding
+that we have just created.
+%We will notify the \ac{OS} while booting during the startup of the
+%\ac{Raspi}s.
+This can be done by adding
 an entry in \texttt{fstab} as follows:
 
 \begin{lstlisting}[]

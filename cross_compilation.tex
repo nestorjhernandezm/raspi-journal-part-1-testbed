@@ -73,7 +73,7 @@ $ sed -i '$a PATH=\"\$PATH:${TOOLCHAINDIR}/arm-rpi-4.9.3-linux-gnueabihf/bin\"' 
 \vspace{-5mm}
 
 This helps the \ac{OS} to recognize the location of the compiler
-command everytime a new shell is opened. The \texttt{.profile} should now
+command when a new shell is opened. The \texttt{.profile} should now
 contain the lines we inserted. There might be other
 code in the file of other testbed administrators. We recommend to leave
 other parts unmodified.
@@ -147,11 +147,12 @@ $ ${TOOLCHAINBINARY} hello_world.cpp -o hello_world
 \FloatBarrier
 \vspace{-5mm}
 
-This should produce a binary \texttt{hello\_world} that should only be
-useful in the \ac{Raspi}. We copy it to a \ac{Raspi} to test it. We will
-use \ac{SCP} to copy the binary file to one of the \ac{Raspi}s. Still, we
-for example might use Fabric if we are interested in deploying a compiled
-binary for many \ac{Raspi}s.
+This should produce a binary \texttt{hello\_world} that is executable
+in the \ac{Raspi}. We copy it to a \ac{Raspi} to test it. We will
+use \ac{SCP} to copy the binary file to one of the \ac{Raspi}s.
+%Still, we for example might use Fabric if we are interested in deploying
+Still, we might use Fabric instead if we are interested in deploying
+a compiled binary for many \ac{Raspi}s.
 
 \begin{lstlisting}[]
 $ scp hello_world pi@<RASP_IP>:~/

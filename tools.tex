@@ -82,7 +82,7 @@ def push(src,dst):
 \end{lstlisting}
 \FloatBarrier
 
-The previous \texttt{fabfile} shows three function that perform our
+The previous \texttt{fabfile} shows three functions that perform our
 example tasks. These functions utilize variables and subsequent functions
 from the Fabric \ac{API} such as \texttt{env}, \texttt{task} and \texttt{sudo}
 among others. Each of these \ac{API} functions permit to define environment
@@ -170,14 +170,15 @@ applications although the connection is terminated either on purpose or
 unexpectedly. One method is to run programs within a \texttt{screen} session.
 \texttt{screen} enables a user to run applications within a shell
 window, a \texttt{screen} session, which does not terminate even with
-connectivity interruptions. Users can attach and detach from such a session
+connectivity interruptions. Users can attach and detach from a
+\texttt{screen} session
 as desired. The following procedure presents how to use \texttt{screen} with
 \ac{SSH} to: (i) Login to a generic \ac{Raspi}, (ii) open a screen session,
 (iii) execute an example command, (iv) detach from the screen session, (v)
 terminate the \ac{SSH} connection, (vi) login to the \ac{Raspi} again
 and (vii) attach to screen session to see the program still running.
-From the testbed administrator, we start by establishing \ac{SSH} connection
-to a \ac{Raspi} and open a screen session:
+From the testbed administrator \ac{PC}, we start by establishing a \ac{SSH}
+connection to a \ac{Raspi} and open a screen session:
 
 \begin{lstlisting}[]
 $ ssh pi@<RASP_IP>
@@ -242,7 +243,7 @@ There is a screen on:
 \FloatBarrier
 \vspace{-5mm}
 
-From the command output, we see that the session is still running in our
+From the command output, we can see that the session is still running in our
 generic \ac{Raspi} number \texttt{XX} and that no user is currently attached
 to the session. To attach to the session, we execute:
 
@@ -252,12 +253,14 @@ $ screen -r 824.pts-0.raspXX
 \FloatBarrier
 \vspace{-5mm}
 
-After attaching again, we should see the \texttt{top} still running.
+After attaching again, we should see \texttt{top} still running.
 \texttt{screen} has more functionalities that can be used in this
 or other contexts but that is outside the scope of this work.
 To terminate the \texttt{screen} session, first terminate \texttt{top}
-by pressing \texttt{q} in the keyboard. Once out of the \texttt{top}
-output, we need to type \texttt{exit} two times to first exit the
+by pressing \texttt{q} in the keyboard.
+Once \texttt{top} is terminated,
+%Once out of the \texttt{top} output,
+we need to type \texttt{exit} two times to first exit the
 \texttt{screen} session and then terminate the \ac{SSH} connection.
 An output should be as follows:
 
