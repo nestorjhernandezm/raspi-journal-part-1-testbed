@@ -19,7 +19,7 @@ connectivity if the image and \ac{DHCP} server were properly set previously.
 Controlling multiple devices using \ac{SSH} from a single \ac{PC}
 often leads to many repetitive tasks. Among these, we can mention:
 (i) rebooting a set of devices, (ii) installing applications in multiple
-devices and (iii) copying files to and / or from multiple devices, etc. To
+devices and (iii) copying files to and / or from multiple devices and so on. To
 simplify the management and avoid execution issues, Fabric provides
 a Python library to ease the major task of working with multiple devices from
 a single \ac{PC}. First, the testbed administrator creates a directory to
@@ -52,7 +52,7 @@ from fabric.api import env, task, sudo
 # marked as a tesk. The task marked as 'default' will be run if <task> is not
 # specified
 
-env.hosts = ['rasp00.domain.com','rasp01.domain.com','rasp02.domain.com']
+env.hosts = ['10.0.0.100','10.0.0.101','10.0.0.102']
 env.user = 'pi'
 env.password = 'raspberry'
 
@@ -85,7 +85,7 @@ def push(src,dst):
 The previous \texttt{fabfile} shows three functions that perform our
 example tasks. These functions utilize variables and subsequent functions
 from the Fabric \ac{API} such as \texttt{env}, \texttt{task} and \texttt{sudo}
-among others. Each of these \ac{API} functions permit to define environment
+among others. Each of these \ac{API} functions permits to define environment
 variables, create the administrator tasks through decorators or run the
 mentioned task in \texttt{sudo} mode, respectively.
 When a task is called from the terminal, Fabric searches the directory for
@@ -127,7 +127,7 @@ to make a \ac{SSH} connection. For this to work properly, the Paramiko
 version needs to be higher than or equal to 1.15.1. If not available,
 the \ac{SSH} connections from Fabric may fail. Thus in case of any problems,
 some instructions for updating the Paramiko package are available in
-Section~\ref{sec:paramiko} of the Appendix. This is a standard recommendation
+Section~\ref{sec:paramiko} of the Appendices. This is a standard recommendation
 the Fabric troubleshooting guide~\cite{2016fabricsupport}.
 
 After a successful \ac{SSH}
@@ -260,7 +260,7 @@ To terminate the \texttt{screen} session, first terminate \texttt{top}
 by pressing \texttt{q} in the keyboard.
 Once \texttt{top} is terminated,
 %Once out of the \texttt{top} output,
-we need to type \texttt{exit} two times to first exit the
+we need to type \texttt{exit} two times in order to first exit the
 \texttt{screen} session and then terminate the \ac{SSH} connection.
 An output should be as follows:
 

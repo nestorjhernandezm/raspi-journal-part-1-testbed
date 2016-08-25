@@ -13,10 +13,10 @@ or if a command just fails.
 \subsection{Losetup for Loopback Devices}
 \label{sec:alternative_losetup}
 
-In case the \texttt{losetup -P} is not available given that a version
-higher or equal than 2.21 for \texttt{util-linux} is neither not available,
-a possible option is to manually set all the loopback devices used during the
-whole procedure with \texttt{mknod}. To do this, the alternative commands are:
+In case the \texttt{losetup -P} command shows the \texttt{invalid option}
+message, an alternative is to manually set all the loopback devices
+used during the whole procedure with \texttt{mknod}. To do this, the
+alternative commands are:
 
 \begin{lstlisting}[]
 $ export DEV="/dev/loop0"
@@ -94,11 +94,24 @@ should be possible for the testbed administrator to run the following:
 \subsection{Umount after Image Chroot}
 \label{sec:umount}
 
-In case the \texttt{umount --recursive} is not available given that a version
-higher or equal than 2.22 for \texttt{util-linux} is neither not available,
-a possible option is to manually umount all the partitions used during the
-\texttt{chroot} environment. The directories must be unmounted in the reverse
-order as when they were mounted. These commands are:
+%The recursive command (\texttt{----recursive}) is not valid for \texttt{umount}
+%is not valid for \texttt{util-linux} version 2.22
+%or later. An alternative option is to manually unmount all the partitions used
+%during the \texttt{chroot} environment. The directories must be unmounted in
+%the reverse order as when they were mounter. These commands are:
+
+%The --recursive parameter is not part of umount until 
+%\texttt{umount ----recursive} is not part of \texttt{util-linux} version 2.22
+
+In case the \texttt{umount ----recursive} command shows the \texttt{invalid option}
+message, an alternative is to manually unmount all the partitions used
+during the \texttt{chroot} environment. The directories must be unmounted in
+the reverse order as when they were mounter. These commands are:
+%In case the \texttt{umount ----recursive} command fails given that a version
+%higher than 2.22 for \texttt{util-linux} is not available,
+%a possible option is to manually umount all the partitions used during the
+%\texttt{chroot} environment. The directories must be unmounted in the reverse
+%order as when they were mounted. These commands are:
 
 \begin{lstlisting}[]
 # umount ${ROOTDIR}/dev/pts

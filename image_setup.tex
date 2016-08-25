@@ -1,5 +1,5 @@
 \label{sec:image_setup}
-In this Section, we review the steps to create a common \ac{OS} image for
+In this section, we review the steps to create a common \ac{OS} image for
 all the \ac{Raspi}s. The image setup is composed of three major steps:
 Select and download the \ac{OS} image file, alter the image structure and
 configure the \ac{OS} files. We proceed to detail all these steps providing
@@ -86,7 +86,7 @@ variables specify where the Linux bundle is located and
 Lite bundle will be downloaded and customized. Notice that even though we
 use the \$ and \# signs in the shell, in general these signs will be
 particular to the testbed administrator \ac{OS} shell. Next, we create
-the working directory and go to it with the change directory (\texttt{cd}) command. To
+the working directory and change to it with the \texttt{cd} command. To
 download the image, we utilize the \texttt{wget} command before unpacking
 the \texttt{zip} file as follows:
 
@@ -123,8 +123,7 @@ $ unzip ${IMAGE}.zip
 
 After Raspbian Lite has been unpacked, there should be an \texttt{.img}
 file in the working directory \texttt{\$\{WORKDIR\}}. Here, \texttt{fdisk} can
-be used to display the content of the image. To do this and obtain
-administrative information, we parse the arguments \texttt{-u sectors}
+be used to display the content of the image. We parse the arguments \texttt{-u sectors}
 to display the sizes in sectors and \texttt{-l} to display the partitions
 within the image. The \texttt{fdisk} command should output to the terminal
 something similar to:
@@ -219,7 +218,6 @@ number. In our case, if the partitions commands were correct, the output
 should be following:
 
 \begin{lstlisting}[]
-
 Command (m for help): Partition number (1-4):
 Command (m for help): Partition type:
    p   primary (1 primary, 0 extended, 3 free)
@@ -245,7 +243,7 @@ command to work, the tested administrator distribution must have the
 \texttt{-P} argument of \texttt{losetup} will appear as invalid. If the
 version of \texttt{losetup} can not be updated for some reason, an
 alternative option for this part is presented in
-Section~\ref{sec:alternative_losetup} of the Appendix.
+Section~\ref{sec:alternative_losetup} of the Appendices.
 
 \begin{lstlisting}[]
 # export DEV=$(sudo losetup --show -f -P ${IMAGE}.img); echo $DEV
@@ -272,8 +270,8 @@ loop0       7:0    0  2.3G  0 loop
 
 The image block device appears as \texttt{/dev/loop0}. This block device has
 two partitions associated to it, e.g. \texttt{loop0p1} and \texttt{loop0p2}.
-Finally, we check the block device status with \texttt{e2fsck} and
-\texttt{resize2fs}, respectively in the command block:
+Finally, we check the filesystem of the block device with \texttt{e2fsck} and
+resize it with the \texttt{resize2fs} command:%, respectively in the command block:
 
 \begin{lstlisting}[]
 # e2fsck -f ${DEV}p2
@@ -674,7 +672,7 @@ Finally, run the following command to change root:
 If successfully executed, our terminal should have changed the prompt
 indicating that we are the root user in the Raspbian lite root filesystem as
 the apparent root. In case the \texttt{chroot} command is not successful,
-we provide an alternative command in Section~\ref{sec:chroot} of the Appendix.
+we provide an alternative command in Section~\ref{sec:chroot} of the Appendices.
 To be aware of the mode that we are working now, we change
 the prompt title to indicate that it is a \texttt{chroot} environment as
 follows:

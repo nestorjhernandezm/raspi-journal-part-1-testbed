@@ -4,15 +4,15 @@ A sketch of the testbed is depicted in Fig.~\ref{fig:testbed_setup}.
 The testbed consists of up to 100 \ac{Raspi}s of different models.
 More specifically, in our design we consider: Raspberry Pi 1 model B rev.~2,
 Raspberry Pi 2 model B V1.1 and Raspberry Pi 3 model B V1.2.
-All \ac{Raspi}s are each equipped with a 8 GB memory card, a wired and wireless
+All \ac{Raspi}s are each equipped with a 8 GB \ac{SD} memory card, a wired and wireless
 network interface and a power supply. All the \ac{Raspi} are connected to
 a common \ac{LAN} that provides internal and external connectivity. Without
 loss of generality, in our case they are connected to a university network
 using their wired Ethernet interface that is named \texttt{eth0} according
 to the legacy naming convention of Ethernet interfaces in
 Linux~\cite{PredictableNetworkInterfaceNames}. We consider the
-university network since our testbed is used by students and
-employees to perform measurements and experimentation of controlled and
+university network since our testbed is used by students and academic staff
+to perform measurements and experimentation of controlled and
 reproducible scenarios as part of academic research. Nevertheless, the
 testbed description and procedures for setting it up are not restricted
 to the academic scenario. All \ac{Raspi}s are configured to run
@@ -35,15 +35,15 @@ files locally in each of the \ac{Raspi}s.
 %This significantly eases the management of the \ac{Raspi}s
 %as \ac{SSH} eliminates the need for monitors and keyboards for the \ac{Raspi}s.
 
-In Fig.~\ref{fig:testbed_setup} and what follows, we will refer as the
-testbed administrator to the person(s) in charge of setting up and
+We will refer to the
+testbed administrator as the person(s) in charge of setting up and
 configuring the testbed with administrator privileges from the \ac{OS}
-point of view. The setting and configuration procedure commands are
+point of view. The setting and configuration procedures are
 performed by the testbed administrator in a regular \ac{PC} running a
-Linux distribution. Although in principle the administrator
+Linux distribution as shown in Fig.~\ref{fig:testbed_setup}. Although in principle the administrator
 Linux distribution is not a restriction, we present our procedure in a
 Debian-based Linux distribution. Our basic design considers to create
-a customized image to later store it in a memory card for each \ac{Raspi}.
+a customized image to store it later in a memory card for each \ac{Raspi}.
 Once configured, we store the resulting image file in a \ac{HTTP} server
 as backup and in case the testbed administrator requires to make new
 changes to this file. We also put all the required configuration files

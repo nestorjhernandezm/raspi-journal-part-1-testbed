@@ -36,7 +36,7 @@ filesystem that are not part of the original image will be removed.
 
 \subsection{Filesystem Installation}
 
-Assuming that we are still in the \texttt{chroot} environment into the
+Assuming that we are still in the \texttt{chroot} environment of the
 Raspbian Lite root filesystem for installing packages, we can setup the
 overlay filesystem at this point of the procedure. There already exists
 implementations overlaying the root filesystem. We use an implementation
@@ -144,7 +144,7 @@ partitions and detaches the loopback devices:
 For the \texttt{----recursive} option to work properly, it is necessary that
 the package \texttt{util-linux} version is greater than or equal to 2.22.
 Otherwise, an alternative is to either update the package or follow the
-procedure in Section~\ref{sec:umount} of the Appendix.
+procedure in Section~\ref{sec:umount} of the Appendices.
 
 \subsection{Persistent and Non-Persistent Image Directories}
 \label{sec:non_persistent_directories}
@@ -233,11 +233,12 @@ an entry in \texttt{fstab} as follows:
 \vspace{-5mm}
 
 If the last command was executed correctly, the
-\texttt{\${ROOTDIR}/etc/fstab} file should have the new line. However,
-the line will not be properly indented. To verify the correct line
-insertion and fix the indentation, edit the file with
-\texttt{sudo vim \$\{ROOTDIR\}/etc/fstab}. The resulting file should like
-the following:
+\texttt{\$\{ROOTDIR\}/etc/fstab} file should have the new line.
+%However,
+%the line will not be properly indented. To verify the correct line
+%insertion and fix the indentation, edit the file with
+%\texttt{sudo vim \$\{ROOTDIR\}/etc/fstab}.
+The resulting file should look like the following:
 
 \begin{lstlisting}[]
 <@\textcolor{gray}{\$\{ROOTDIR\}/etc/fstab}@>
@@ -272,7 +273,7 @@ Now, unmount again all the partitions and detach the loop devices as follows:
 \vspace{-5mm}
 
 Again, if the \texttt{----recursive} option is not available, the
-procedure in Section~\ref{sec:umount} of the Appendix could be followed.
+procedure in Section~\ref{sec:umount} of the Appendices could be followed.
 If the steps are successfully executed up to this point, the customized image
 is available in the \texttt{\$\{IMAGE\}.img} file and ready to be deployed
 into the \ac{Raspi}s. In the following section, we indicate how to proceed
@@ -284,16 +285,15 @@ to all the memory cards before they can be used in the \ac{Raspi}s. For
 our current considered system, we do this manually for each card.
 The testbed administrator needs to insert each memory card in its \ac{PC}
 and follow the procedure in this section. A given card will be available as
-\texttt{/dev/mmcblkX} for memory card readers or as \texttt{/dev/sdbX}
-USB-through readers, where \texttt{X} a natural number.
+\texttt{/dev/mmcblkX} or \texttt{/dev/sdYX} where \texttt{X} is a natural number
+and \texttt{Y} is a letter.
 
 It is \textit{very important} to write to the correct device as
 everything will be overwritten. To avoid removing information from the
-wrong device, a testbed administrator can insert and eject a memory
-card a couple of times and using the \texttt{sudo lsblk} or \texttt{df -h}
-commands to deduce the correct device. For our case, the device was
-\texttt{/dev/sdb} in an Ubuntu distribution and
-\texttt{/dev/mmcblk0} in an Archlinux distribution. Once identified, to write
+wrong device, a testbed administrator can use the commands \texttt{lsblk}
+and/or \texttt{df -h} before and after inserting the memory card to deduce
+its correct device name.
+For our case, the device was \texttt{/dev/mmcblk0}. Once identified, to write
 the image to a memory card, the following command is used:
 
 \begin{lstlisting}[]
@@ -303,9 +303,15 @@ the image to a memory card, the following command is used:
 \vspace{-5mm}
 
 The previous \texttt{dd} and \texttt{sync} commands for copying the image to
-the SD memory card and flushing the remainder in memory to the filesystem
-will take around 15 minutes to be finished. This is an average on a two-core
-1.5 GHz laptop. However, other times might occur depending on the total image
-size, the writing block size and the core capabilities of the testbed
-administrator \ac{PC}. After this is made, it is only required
+the memory card and flushing the remainder in memory to the filesystem
+will take tens of minutes depending on the memory card speed and the size of
+the image. After this is made, it is only required
 to eject the memory card and now plug it in a \ac{Raspi} so it can boot up.
+
+%The previous \texttt{dd} and \texttt{sync} commands for copying the image to
+%the memory card and flushing the remainder in memory to the filesystem
+%will take around 15 minutes to be finished. This is an average on a two-core
+%1.5 GHz laptop. However, other times might occur depending on the total image
+%size, the writing block size and the core capabilities of the testbed
+%administrator \ac{PC}. After this is made, it is only required
+%to eject the memory card and now plug it in a \ac{Raspi} so it can boot up.
