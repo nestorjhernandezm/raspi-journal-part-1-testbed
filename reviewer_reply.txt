@@ -1,0 +1,43 @@
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Reviewer 1:
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Dear reviewer,
+Thank you very much for you valuable feedback and detailed comments.
+They were very useful. We have entirely rewritten a few of the sentences
+indicated, but in most cases made the corrections as suggested.
+
+We like the suggested citations. The first two citations are now used
+to improve our introduction, but we do not see how to fit in the last
+citation "Data Exfiltration from Internet of Things Devices: iOS
+Devices as Case Studies" which we think is related to IoT, but not so
+much Raspberry Pi, testbeds, or network coding.
+
+To address the applications for a Raspberry Pi testbed, we have added a few
+other citations of practical usecases of the Raspberry Pi. Furthermore,
+we will ask the editors to have a citation to another MDPI journal paper of
+ours if it is being accepted. This paper evaluates the speed and energy
+consumption of three network coding schemes in Raspberry Pi devices from our
+testbed.
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Reviewer 2:
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Dear reviewer,
+Thank you for you valuable feedback
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+Reviewer 3:
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+Dear reviewer,
+Thank you very much for your valuable feedback and suggested citations.
+The additional citations has significantly helped to better address the
+usecases for a Raspberry Pi testbed. We think that the
+papers are great, but the core idea behind the setups in the first four
+seem quite similar. We suggest to add suggested paper 2, 3, 5, and a few
+papers indicated by another reviewer.
+
