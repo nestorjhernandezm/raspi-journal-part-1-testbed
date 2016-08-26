@@ -105,8 +105,8 @@ should be possible for the testbed administrator to run the following:
 
 In case the \texttt{umount ----recursive} command shows the \texttt{invalid option}
 message, an alternative is to manually unmount all the partitions used
-during the \texttt{chroot} environment. The directories must be unmounted in
-the reverse order as when they were mounter. These commands are:
+during the \texttt{chroot} environment in the reverse order which they were mounted.
+These commands are:
 %In case the \texttt{umount ----recursive} command fails given that a version
 %higher than 2.22 for \texttt{util-linux} is not available,
 %a possible option is to manually umount all the partitions used during the
@@ -126,8 +126,8 @@ the reverse order as when they were mounter. These commands are:
 \label{sec:paramiko}
 In case Paramiko version 1.15.1 or higher is not installed, we may observe
 a key exchange algorithm error when trying to log in through \ac{SSH} to a
-Raspi. In this case, it might be necessary to update the Paramiko package
-that Fabric uses for this purpose and verify this by running:
+Raspi with Open SSH. In this case, it might be necessary to update the Paramiko
+package that Fabric uses to remove this error by running:
 
 \begin{lstlisting}[]
 # pip install --upgrade paramiko
@@ -141,6 +141,3 @@ Version: 2.0.1
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
-
-This should allow to make \ac{SSH} connections with Fabric by using the proper
-key exchange algorithms through Open SSH.

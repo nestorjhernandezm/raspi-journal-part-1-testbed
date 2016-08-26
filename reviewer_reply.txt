@@ -4,40 +4,77 @@ Reviewer 1:
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 Dear reviewer,
+
 Thank you very much for you valuable feedback and detailed comments.
-They were very useful. We have entirely rewritten a few of the sentences
-indicated, but in most cases made the corrections as suggested.
+They have been very useful. To address your comments, we list
+the ones that require our modification below and provide our answer.
 
-We like the suggested citations. The first two citations are now used
-to improve our introduction, but we do not see how to fit in the last
-citation "Data Exfiltration from Internet of Things Devices: iOS
-Devices as Case Studies" which we think is related to IoT, but not so
-much Raspberry Pi, testbeds, or network coding.
+- "To improve the article and considering that already others authors have faced problems similar even if different, the reviewer suggests to enrich the bibliography with others articles. For instance, in the introduction could be possible to cite these:
 
-To address the applications for a Raspberry Pi testbed, we have added a few
-other citations of practical usecases of the Raspberry Pi. Furthermore,
-we will ask the editors to have a citation to another MDPI journal paper of
-ours if it is being accepted. This paper evaluates the speed and energy
-consumption of three network coding schemes in Raspberry Pi devices from our
-testbed.
+1) ...'An Intelligent and High Efficiency Street Lighting System Isle Based on...' ...
+2) ...'A Fully Controlled Street Lighting System Isle Based on...' ...
+3)  ...'A New Acquisition and Imaging System for Environmental...' ...
+4) ...'A New Remote and Automated Control System for the Vineyard...'
+5) ...'FingerScanner: Embedding a Fingerprint Scanner in a Raspberry Pi' "
 
+We consider relevant the suggested references. Still, we include different use
+cases and journal versions of articles with similar core ideas behind. Thus, after
+reading them, references 2-3) and 5) are now used as references 11-13)
+in the new revised manuscript to improve our introduction. Besides these, in the
+revised manuscript, references 9-10) have been included to enhance
+the quality of it.
+
+- "As minor revision please check and correct the following rows: 62, 171, 546, 705."
+
+We have corrected all the typos by proof-reading the manuscript.
+Also, we have entirely rewritten a few of the sentences
+indicated as misunderstanding, but in most cases made the corrections as suggested.
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 Reviewer 2:
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 Dear reviewer,
-Thank you for you valuable feedback
+
+Thank you for your time with the revision.
 
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 Reviewer 3:
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 Dear reviewer,
-Thank you very much for your valuable feedback and suggested citations.
-The additional citations has significantly helped to better address the
-usecases for a Raspberry Pi testbed. We think that the
-papers are great, but the core idea behind the setups in the first four
-seem quite similar. We suggest to add suggested paper 2, 3, 5, and a few
-papers indicated by another reviewer.
 
+Thank you very much for your valuable feedback and suggested citations.
+To address your comments, we list the ones that require our modification
+below and provide our answer. For simplicity, we list them by type
+of comment
+
+- Comments of the form: "The suggestions by :
+
+...
+Page XX,
+Line YY
+Line ZZ
+...
+"
+
+We have corrected all the typos by proof-reading the manuscript.
+Also, we have entirely rewritten a few of the sentences
+indicated as misunderstanding, but in most cases made the corrections as suggested.
+
+- Comment of the form: "Suggest to add:
+
+1) Cox, S. ...'Iridis-pi: a low-cost, compact demonstration cluster'...
+2) Raspberry Pi Foundation ...'The Making of Pi,'...
+3) D'Orazio C ...'Data Exfiltration from Internet of Things Devices: iOS Devices as Case Studies'...
+
+"
+
+These citations have helped to better address the
+prior work for a Raspberry Pi testbed. We think 1) and 2) are relevant
+references and are used in the new revised manuscript as references 9-10).
+Nevertheless, but we do not see how to fit the reference
+"Data Exfiltration from Internet of Things Devices: iOS
+Devices as Case Studies" which we think is related to IoT, but not very much
+to Raspberry Pi, testbeds or network coding. Besides these, references 11-13)
+in the new revised manuscript, have been included to enhance the quality of it.
