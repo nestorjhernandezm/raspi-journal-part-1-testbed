@@ -2,7 +2,7 @@
 An important case of a computational expensive task is to compile software
 packages and large libraries. Given the computing capabilities of the
 \ac{Raspi}, such tasks can be challenging if not prohibitive in terms of
-\ac{CPU}, memory or space usage and / or compilation time. Thus, in
+\ac{CPU}, memory or space usage and / or compilation time. In
 this section we present a procedure of how to cross-compile C++
 source code from the testbed administrator \ac{PC} for the \ac{ARM}
 architecture of the \ac{Raspi}s. By doing this, we take advantage
@@ -33,8 +33,8 @@ This toolchain is available from \cite{2016rpitoolchain} and
 it already contains the binaries for different compilers based on
 \texttt{gcc 4.9}. In what follows, we extract the binaries adjusting
 them to our coding style and compiling convention. For this, we use the
-\texttt{\$\{TOOLCHAIN\}} directory as the working directory. However,
-the testbed administrator may choose some other working directory of
+\texttt{\$\{TOOLCHAIN\}} directory as the working directory.
+The testbed administrator may choose some other working directory of
 its preference if desired. First, we create the toolchain directory:
 
 \begin{lstlisting}[]
@@ -45,8 +45,8 @@ $ cd ${TOOLCHAINDIR}
 \FloatBarrier
 \vspace{-5mm}
 
-Later, we download the \ac{Raspi} toolchain for 64-bit Linux. However,
-instead of working with the binaries from \cite{2016rpitoolchain},
+Later, we download the \ac{Raspi} toolchain for 64-bit Linux.
+Instead of working with the binaries from \cite{2016rpitoolchain},
 we use a zipped version with the original binaries and renamed symbolic
 links to the original files available in
 \cite{2016steinwurfrpitoolchain}. Finally, we unzip the downloaded file.
@@ -223,11 +223,11 @@ implementation. More details about Kodo are provided in the code
 documentation~\cite{kodocppdoc}.
 
 To use Kodo for research, it is required to obtain a research free license.
-To do this, only a request form needs to be filled
+To do this, a request form needs to be filled
 in~\cite{steinwurflicenselink} and wait for it to be processed by the Kodo
 developers. Once
 the access for Kodo has been granted, the source code can be pulled from
-its Git repositories to be compiled. Thus, assuming that the testbed
+its Git repositories to be compiled. Assuming that the testbed
 administrator already has access, we clone the \texttt{kodo-cpp}
 repository locally in \texttt{\${CODEDIR}} and change directory into
 the repository by doing:
@@ -283,9 +283,7 @@ tests and one of the binaries by running:
 $ ssh pi@<RASP_IP>
 $ ./kodocpp_tests
 ...
-[----------] Global test environment tear-down
-[==========] 17 tests from 15 test cases ran. (XXXX ms total)
-[  PASSED  ] 17 tests.
+[  PASSED  ] X tests.
 $ ./encode_decode_simple
 Data decoded correctly
 \end{lstlisting}

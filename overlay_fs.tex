@@ -8,7 +8,7 @@ will remain in the memory card. This is cumbersome to maintain since
 the size of the memory card is relatively small (8 GB) and there
 might be various users utilizing the testbed. Also, different testbed
 users could be interested in running their experiments in a fresh
-rebooted system with the original customized image. Nevertheless, we
+rebooted system with the original customized image. We
 emphasize that this step is not necessary if the tesbed administrator
 wants to consider only persistent storage for its devices. A use case
 for this scenario could be a single user for the testbed or when a testbed
@@ -22,12 +22,12 @@ filesystem will forward the request to the lower filesystem in case it
 does not have it itself. If the upper filesystem has the requested file,
 it will simply return the file. This idea can be used in our setup to mount
 the root filesystem (i.e. Raspbian Lite) in the \ac{Raspi}s during startup
-as read-only filesystem. Thus, on the one hand, the image configuration files
+as read-only filesystem. On the one hand, the image configuration files
 will remain after a reboot but the local data in these directories will be
-erased after a hypothetic reboot. On the other hand, to enable the
+erased after a reboot. To enable the
 possibility of persistent changes, we overlay the upper filesystem that is
-mounted in the \ac{Raspi} \ac{RAM}, i.e. \texttt{/tmp} as read / writable
-on top of the lower root filesystem. Thus, reading a file may return a
+mounted in the \ac{Raspi} \ac{RAM}, i.e. \texttt{/tmp} as rewritable
+on top of the lower root filesystem. Reading a file may return a
 file from the lower filesytem, but if it is stored, it will be saved in
 the upper filesystem. Accessing this file again will return
 the stored file from the upper layer. After a reboot, all the stored files
@@ -43,7 +43,7 @@ implementations overlaying the root filesystem. We use an implementation
 available at the Git repository in \cite{overlayroot}. Since we have
 installed \texttt{git} in a previous step, we clone the repository. The
 command block below stores it in \texttt{/tmp} which is really mounted in
-\ac{RAM}. Thus, all the files stored here will disappear when the system is
+\ac{RAM}. All the files stored here will disappear when the system is
 rebooted.
 
 % Get files
@@ -214,11 +214,11 @@ We create a loopback device again and format the new partition, as follows:
 \FloatBarrier
 \vspace{-5mm}
 
-Again, if for some reason, the \texttt{-P} option is not available for
+If the \texttt{-P} option is not available for
 \texttt{losetup}, we provide an alternative command line in
 Section~\ref{sec:alternative_losetup}. Finally, if the previous filesystem
-formatting was successful, the filesystem is now available for use. Thus,
-we need to inform the Raspbian \ac{OS} to mount the home partition
+formatting was successful, the filesystem is now available for use.
+We need to inform the Raspbian \ac{OS} to mount the home partition
 that we have just created.
 %We will notify the \ac{OS} while booting during the startup of the
 %\ac{Raspi}s.
@@ -272,8 +272,8 @@ Now, unmount again all the partitions and detach the loop devices as follows:
 \FloatBarrier
 \vspace{-5mm}
 
-Again, if the \texttt{----recursive} option is not available, the
-procedure in Section~\ref{sec:umount} of the Appendices could be followed.
+If the \texttt{----recursive} option is not available, then follow the
+procedure in Section~\ref{sec:umount} of the Appendices.
 If the steps are successfully executed up to this point, the customized image
 is available in the \texttt{\$\{IMAGE\}.img} file and ready to be deployed
 into the \ac{Raspi}s. In the following section, we indicate how to proceed

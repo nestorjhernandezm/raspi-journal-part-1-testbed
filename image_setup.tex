@@ -23,8 +23,8 @@ available in two bundles: Raspbian and Raspbian Lite. The difference
 between the two, is that Raspbian contains a pre-installed desktop environment
 for user interaction and Raspbian Lite by default only permits to interact
 through a command shell. Given that the \ac{Raspi}s in our testbed are not
-connected to monitors, we decide to work with Raspbian Lite. Still, if later
-desired, a desktop environment can be installed using the package manager
+connected to monitors, we decide to work with Raspbian Lite.
+A desktop environment can be installed using the package manager
 as it will be shown in the configuration section.
 
 % The overall procedure to customize the official Raspbian Lite image
@@ -122,7 +122,7 @@ $ unzip ${IMAGE}.zip
 \subsection{Image Customization}
 
 After Raspbian Lite has been unpacked, there should be an \texttt{.img}
-file in the working directory \texttt{\$\{WORKDIR\}}. Here, \texttt{fdisk} can
+file in the working directory \texttt{\$\{WORKDIR\}}. \texttt{fdisk} can
 be used to display the content of the image. We parse the arguments \texttt{-u sectors}
 to display the sizes in sectors and \texttt{-l} to display the partitions
 within the image. The \texttt{fdisk} command should output to the terminal
@@ -292,11 +292,11 @@ The filesystem on /dev/loop0 is now 583680 blocks long.
 \subsection{Block Devices Mounting}
 For browsing and altering the files in the image, we mount the block
 device partitions into a particular path of our \texttt{\$\{WORKDIR\}} in order
-to customize them. We proceed first to mount the block device partition that
+to customize them. We mount the block device partition that
 contains the root filesystem and later the boot partition. This is done by
 creating an empty directory that is used as a mountpoint. We name it
 \texttt{root} and create it in the working directory before mounting the
-root filesystem onto the mountpoint. Thus, we mount the root filesystem
+root filesystem onto the mountpoint. We mount the root filesystem
 as follows:
 
 \begin{lstlisting}[]
@@ -339,7 +339,7 @@ configuration scripts to each of them through the image. For this, we first
 indicate how to obtain and put our configuration scripts in the image. Later,
 we describe the tasks performed by these configuration scripts. Finally, we
 indicate how and in which order the scripts are executed to configure all the
-devices. Nevertheless, any testbed administrator might modify or include other
+devices. Any testbed administrator might modify or include other
 tasks besides the presented in this procedure according to his / her needs
 as we will show.
 
@@ -398,6 +398,7 @@ b8:27:eb:5b:da:20 rasp00
 b8:27:eb:7b:c3:91 rasp01
 b8:27:eb:54:9c:64 rasp02
 b8:27:eb:95:bd:11 rasp03
+...
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
@@ -447,7 +448,7 @@ will be executed.
 Besides the single script with its configuration file introduced up
 to this point of our procedure, it is possible that the testbed
 administrator may require to add other scripts to configure
-his / her \ac{Raspi}s. Hence, we want
+his / her \ac{Raspi}s. We want
 to ensure that all the \ac{Raspi} configuration scripts of any testbed
 administrators are obtained in a simple way. We automate this task by
 including the \texttt{\$\{ROOTDIR\}/home/pi/rasp\_config/update\_rasp\_config}
@@ -457,7 +458,7 @@ during a testbed start up.
 
 In our case as the testbed administrator for presenting the procedure, we want
 to fetch all our configuration scripts in
-\texttt{\$\{URL\%/*\}/raspi\_config.zip}. Thus, the update script
+\texttt{\$\{URL\%/*\}/raspi\_config.zip}. The update script
 \textit{automatically} downloads all the required configuration files in
 \texttt{rasp\_config.zip} file from a remote location. This is the same that
 we manually did earlier to get our files but this will be made in an
@@ -485,10 +486,10 @@ unzip -q -o /tmp/${config_file} -d /home/pi/
 \FloatBarrier
 \vspace{-5mm}
 
-The update script: (3-4) checks for the \ac{URL} and \texttt{.zip} file that
-should be downloaded, (7-10) downloads the configuration files to \texttt{/tmp}
+The update script lines (3-4) checks for the \ac{URL} and \texttt{.zip} file that
+should be downloaded. Lines (7-10) downloads the configuration files to \texttt{/tmp}
 folder in the corresponding \ac{Raspi}. It also prints a warning in case of
-errors and (13) unzips the files to \texttt{/home/pi/}, the \ac{Raspi} home
+errors and line (13) unzips the files to \texttt{/home/pi/}, the \ac{Raspi} home
 directory. Existing files and directories are simply overwritten.
 %while ignoring existing files and / or directories there.
 
@@ -496,7 +497,7 @@ For the above scripts to work in the \ac{Raspi}s, it is required that the
 \ac{Raspi}s \ac{MAC} addresses are found in \texttt{nodes.csv}. Also, it
 should be noted that for other testbed administrators besides ourselves,
 the \ac{URL} for file fetching and the configuration
-scripts themselves can be modified to fit their requirements. Thus, if
+scripts themselves can be modified to fit their requirements. If
 required for a testbed administrator, the \texttt{rasp\_config.zip}
 will need to be edited to include all the required configuration files
 and scripts. Also, it might be needed to edit the \ac{URL} in the script
@@ -510,7 +511,7 @@ configurations, we have to make each \ac{Raspi} call the above scripts when
 it starts up. After finishing the setup process, all the unzipped files
 presented in Section~\ref{sec:configuration_files_download} should be
 locally available at each \ac{Raspi} after getting the root filesystem.
-Therefore, we first need to run the update script before running
+We first need to run the update script before running
 any other configuration scripts. To do this after boot up, we include
 a call for the update script in the image \texttt{\$\{ROOTDIR\}/etc/rc.local}
 file before \texttt{exit 0} using a file editor. To do this, it is required
@@ -620,7 +621,7 @@ case, then it should be possible to enable it by running:
 \vspace{-5mm}
 
 Provided that qemu-arm is enabled, we should now be able to \texttt{chroot}
-into our Raspbian lite image. However, there are a few commands to be
+into our Raspbian lite image. There are a few commands to be
 performed before actually changing root into the root partion of the image.
 First, to get internet access from within the Raspbian lite image it is needed
 to copy the testbed administrator Linux distribution \texttt{resolv.conf} file
@@ -710,7 +711,7 @@ We further install some packages that we consider useful:
 \vspace{-5mm}
 
 \texttt{vim} is the improved \texttt{vi} editor for Linux, \texttt{git}
-for managing Git repositories and \texttt{screen} for better handling of
+for managing Git repositories and \texttt{screen}~\cite{gnu_screen} for better handling of
 long-runnning processes. When writing the image to a memory card, all the
 changes that have been made to the image so far, will exist in all
 \ac{Raspi}s after fetching it.

@@ -13,7 +13,7 @@ to the legacy naming convention of Ethernet interfaces in
 Linux~\cite{PredictableNetworkInterfaceNames}. We consider the
 university network since our testbed is used by students and academic staff
 to perform measurements and experimentation of controlled and
-reproducible scenarios as part of academic research. Nevertheless, the
+reproducible scenarios as part of academic research. The
 testbed description and procedures for setting it up are not restricted
 to the academic scenario. All \ac{Raspi}s are configured to run
 a \ac{SSH} daemon for easy remote access within the university network.
@@ -49,11 +49,12 @@ as backup and in case the testbed administrator requires to make new
 changes to this file. We also put all the required configuration files
 and scripts for the \ac{Raspi}s setup in the \ac{HTTP} server so there is
 a single place where system setup is stored and could be modified.
-This simplifies the system maintenance at a later stage.
-As another design consideration, when working on a testbed
-with many devices, it may not always be desired to make persistent changes
-on them. One scenario is when different users are interested in
-running experiments on a rebooted testbed. Thus, we later present how
+This simplifies the system maintenance.
+As
+%another design consideration, when working on a testbed with many devices,
+it may not always be desirable to make persistent changes
+on the \ac{Raspi}s. For example when different users are interested in
+running experiments on a rebooted testbed. We later present how
 to utilize stacked filesystems to enable both persistent and
 temporary storage to have this capability. Its purpose is to
 remove non-desired data after a reboot while keeping the original

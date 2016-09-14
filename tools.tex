@@ -9,7 +9,7 @@ automate and monitor routinary tasks execution in the \ac{Raspi}s and show
 relevant example commands with them. To be able to run all the following
 commands, it is required to have \ac{SSH} connectivity with the \ac{Raspi}s,
 otherwise the commands need to be run locally in a \ac{Raspi} making
-necessary to use a keyboard and a monitor. To do so, the testbed
+necessary to use a keyboard and a monitor. The testbed
 administrator needs to put the memory cards in the \ac{Raspi}s and turn them
 on, for them to be able to boot. The devices should boot properly and have
 connectivity if the image and \ac{DHCP} server were properly set previously.
@@ -20,7 +20,7 @@ Controlling multiple devices using \ac{SSH} from a single \ac{PC}
 often leads to many repetitive tasks. Among these, we can mention:
 (i) rebooting a set of devices, (ii) installing applications in multiple
 devices and (iii) copying files to and / or from multiple devices and so on. To
-simplify the management and avoid execution issues, Fabric provides
+simplify the management and avoid execution issues, Fabric~\cite{python_fabric} provides
 a Python library to ease the major task of working with multiple devices from
 a single \ac{PC}. First, the testbed administrator creates a directory to
 hold the \texttt{Fabric} source code:
@@ -36,7 +36,7 @@ $ cd ${CODEDIR}
 Then, the \texttt{\$\{CODEDIR\}/fabfile.py} file below provides a script with
 some basic functionalities that can perform the few items above (i-iii).
 In general, other administrators may require different functionalities
-but that goes out of the scope of this work. Nevertheless, the following
+but that goes out of the scope of this work. The following
 file serves as a starting boilerplate:
 
 % Exit chroot, umount, and write to memory card
@@ -122,10 +122,10 @@ Disconnecting from <RASP_IP>... done.
 
 The first function above reboots the \ac{Raspi}s in the lists of hosts and
 the second function installs a program given by an argument. For the
-connection to the devices, Fabric calls the Paramiko module from Python
+connection to the devices, Fabric calls the Paramiko~\cite{python_paramiko} module from Python
 to make a \ac{SSH} connection. For this to work properly, the Paramiko
 version needs to be higher than or equal to 1.15.1. If not available,
-the \ac{SSH} connections from Fabric may fail. Thus in case of any problems,
+the \ac{SSH} connections from Fabric may fail. In case of any problems,
 some instructions for updating the Paramiko package are available in
 Section~\ref{sec:paramiko} of the Appendices. This is a standard recommendation
 the Fabric troubleshooting guide~\cite{2016fabricsupport}.
@@ -215,7 +215,7 @@ $ top
 \vspace{-5mm}
 
 The \texttt{top} command simply shows continuously the table of processes
-executed in the \ac{Raspi} like in any Linux distribution. When \texttt{top}
+executed on the \ac{Raspi} like in any Linux distribution. When \texttt{top}
 is running, we first press \texttt{Ctrl+a} and later \texttt{Crtl+d}
 in the keyboard to detach from the \texttt{screen} session. We now
 terminate the \ac{SSH} connection and login again to verify that the
