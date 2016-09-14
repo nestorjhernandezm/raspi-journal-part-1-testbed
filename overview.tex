@@ -15,7 +15,7 @@ university network since our testbed is used by students and academic staff
 to perform measurements and experimentation of controlled and
 reproducible scenarios as part of academic research. The
 testbed description and procedures for setting it up are not restricted
-to the academic scenario. All \ac{Raspi}s are configured to run
+to this academic scenario. All \ac{Raspi}s are configured to run
 a \ac{SSH} daemon for easy remote access within the university network.
 We requested the university \ac{IT} department to configure the university
 \ac{DHCP} server to assign each \ac{Raspi} a static \ac{IP} address. This
@@ -39,14 +39,14 @@ We will refer to the
 testbed administrator as the person(s) in charge of setting up and
 configuring the testbed with administrator privileges from the \ac{OS}
 point of view. The setting and configuration procedures are
-performed by the testbed administrator in a regular \ac{PC} running a
+performed by the testbed administrator in a \ac{PC} running a
 Linux distribution as shown in Fig.~\ref{fig:testbed_setup}. Although in principle the administrator
 Linux distribution is not a restriction, we present our procedure in a
 Debian-based Linux distribution. Our basic design considers to create
-a customized image to store it later in a memory card for each \ac{Raspi}.
+a customized image to store it later on a memory card for each \ac{Raspi}.
 Once configured, we store the resulting image file in a \ac{HTTP} server
 as backup and in case the testbed administrator requires to make new
-changes to this file. We also put all the required configuration files
+changes to this file. For our case, we use the university \ac{HTTP} server but any other servers can be used. We also put all the required configuration files
 and scripts for the \ac{Raspi}s setup in the \ac{HTTP} server so there is
 a single place where system setup is stored and could be modified.
 This simplifies the system maintenance.
