@@ -186,7 +186,7 @@ Device                               Boot  Start     End Sectors  Size Id Type
 
 We notice that one GB is now available to be used in the partitions. Also, we
 observe the new partition should start at sector 4806656. To create it, we
-show the introduced command and its output:
+show the introduced command:% and its output:
 
 \begin{lstlisting}[]
 $ (echo n; echo p; echo 3; echo 4806656; echo ; echo w) | fdisk ${IMAGE}.img
@@ -202,8 +202,20 @@ Command (m for help): The partition table has been altered!
 
 Syncing disks.
 \end{lstlisting}
+%\begin{lstlisting}[]
+%$ fdisk ${IMAGE}.img <<EOF
+%n
+%p
+%3
+%4806656
+%
+%w
+%EOF
+%\end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
+
+%\textcolor{red}{SHOW NEW PARTITION TABLE HERE}
 
 We create a loopback device again and format the new partition, as follows:
 \begin{lstlisting}[]
