@@ -8,22 +8,21 @@ made. Therefore, in this section we introduce a set of tools that help to
 automate and monitor routinary tasks execution in the \ac{Raspi}s and show
 relevant example commands with them. To be able to run all the following
 commands, it is required to have \ac{SSH} connectivity with the \ac{Raspi}s,
-otherwise the commands need to be run locally in a \ac{Raspi} making
+otherwise the commands need to be run locally on a \ac{Raspi} making
 necessary to use a keyboard and a monitor. The testbed
 administrator needs to put the memory cards in the \ac{Raspi}s and turn them
-on, for them to be able to boot. The devices should boot properly and have
-connectivity if the image and \ac{DHCP} server were properly set previously.
+on, for them to be able to boot. The devices should now be bootable.
 
 
 \subsection{Fabric}
 Controlling multiple devices using \ac{SSH} from a single \ac{PC}
 often leads to many repetitive tasks. Among these, we can mention:
 (i) rebooting a set of devices, (ii) installing applications in multiple
-devices and (iii) copying files to and / or from multiple devices and so on. To
-simplify the management and avoid execution issues, Fabric~\cite{python_fabric} provides
-a Python library to ease the major task of working with multiple devices from
-a single \ac{PC}. First, the testbed administrator creates a directory to
-hold the \texttt{Fabric} source code:
+devices and (iii) copying files to / from multiple devices.
+Fabric~\cite{python_fabric} provides a Python library that simplifies the
+management of working with many devices from a single \ac{PC}. First, the
+testbed administrator creates a directory to hold the \texttt{Fabric} source
+code:
 
 \begin{lstlisting}[]
 $ export CODEDIR="${HOME}/code"

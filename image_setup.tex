@@ -43,10 +43,9 @@ official webpage~\cite{raspbian}. At the time of this writing, the latest
 available bundle was \texttt{2016-05-27-raspbian-jessie-lite.zip}.
 To ensure that the content of the bundle does not change, this procedure
 is based on that particular version of Raspbian Lite which we have
-made available at~\cite{soerensen_chres_wiant_2016_154143} acting as our
-\ac{HTTP} server.
-All other files used in this paper are available there unless specified
-otherwise. To get started, the testbed administrator must open a Linux
+made available at~\cite{soerensen_chres_wiant_2016_154143}. All other files used in this paper are available there. The testbed
+administrator has to move these files to his / her \ac{HTTP} server.
+To get started, the testbed administrator must open a Linux
 shell (terminal) in its \ac{PC} and declare the environment variables shown
 in the command block below. We show the whole procedure by performing the role
 of the testbed administrator.
@@ -187,20 +186,21 @@ Device                               Boot  Start     End Sectors  Size Id Type
 \FloatBarrier
 \vspace{-5mm}
 
-Now, in this command block output, we observe that the change has taken
+Now, in the above command block output, we observe that the change has taken
 effect by noticing the total available image size is 2.3 GiB. To expand the
-root filesystem, it is required to first remove the Linux partition
-and then add it again with one GB more. To do this, we make use
-of \texttt{fdisk} again in command mode to alter the partition table.
-We pass the arguments of the command mode of \texttt{fdisk}
-through the \texttt{echo} command in Linux and the \texttt{|} operator
-(pipe) as follows:
+root filesystem, we replace the Linux partition with a new partition one GB
+larger. The starting point of this new partition should be the same as the old
+one. We make use of \texttt{fdisk} to alter the partition table
+in the commands below. They (i) delete partition number 2, (ii) create a new
+primary partition and (iii) set the new partition starting point. The new
+partition starting point value is 137216 in our case. Finally, we (iv) write
+the new partition table to the image file. This is made as follows:
 
 %\begin{lstlisting}[]
 %$ (echo d; echo 2; echo n; echo ; echo ; echo 137216; echo ; echo w) | fdisk ${IMAGE}.img
 %\end{lstlisting}
 \begin{lstlisting}[]
-$ fdisk ${IMAGE}.img <<EOF
+$ fdisk ${IMAGE}.img << EOF
 d
 2
 n
@@ -214,35 +214,26 @@ EOF
 \FloatBarrier
 \vspace{-5mm}
 
-The \texttt{echo} commands within the parenthesis are interpreted as
-key-presses in the \texttt{fdisk} commmand mode. They (i) delete partition
-number 2, (ii) create a new primary type partition by default, (iii) set the
-new partition starting point (137216) and (iv) write new partition table to
-the image file. The previously shown command options of \texttt{fdisk}
-should work for both old and new versions of the commands. However, if this
-is not the case, the testbed administrator can do these commands manually.
-In this case, it is only required to delete the old root
-filesystem partition and create the new one starting from the same sector
-number. In our case, if the partitions commands were correct, the output
-should be following:
+If the partitions commands were correct, the partition table should now
+look like the following: \todot{PRINT PARTITION TABLE}
 
-\begin{lstlisting}[]
-Command (m for help): Partition number (1-4):
-Command (m for help): Partition type:
-   p   primary (1 primary, 0 extended, 3 free)
-   e   extended
-Select (default p): Using default response p
-Partition number (1-4, default 2): Using default value 2
-First sector (2048-4806655, default 2048): Last sector, +sectors or
-+size{K,M,G} (137216-4806655, default 4806655): Using default value 4806655
+% \begin{lstlisting}[]
+% Command (m for help): Partition number (1-4):
+% Command (m for help): Partition type:
+%    p   primary (1 primary, 0 extended, 3 free)
+%    e   extended
+% Select (default p): Using default response p
+% Partition number (1-4, default 2): Using default value 2
+% First sector (2048-4806655, default 2048): Last sector, +sectors or
+% +size{K,M,G} (137216-4806655, default 4806655): Using default value 4806655
 
-Command (m for help): The partition table has been altered!
+% Command (m for help): The partition table has been altered!
 
-Syncing disks.
+% Syncing disks.
 
-\end{lstlisting}
-\FloatBarrier
-\vspace{-5mm}
+% \end{lstlisting}
+% \FloatBarrier
+% \vspace{-5mm}
 
 \subsection{Loopback Device Setup}
 After successfully resizing the image file, we use a loopback device to make
@@ -349,8 +340,7 @@ indicate how to obtain and put our configuration scripts in the image. Later,
 we describe the tasks performed by these configuration scripts. Finally, we
 indicate how and in which order the scripts are executed to configure all the
 devices. Any testbed administrator might modify or include other
-tasks besides the presented in this procedure according to his / her needs
-as we will show.
+tasks according to his / her needs as we will show.
 
 \subsubsection{Image Default Configuration Scripts Download}
 \label{sec:configuration_files_download}
@@ -377,15 +367,14 @@ Archive:  rasp_config.zip
 \vspace{-5mm}
 
 The unzippped files are one configuration file and three configuration
-scripts put in the newly created \texttt{\$\{ROOTDIR\}/home/pi/rasp\_config/}
+scripts in the newly created \texttt{\$\{ROOTDIR\}/home/pi/rasp\_config/}
 folder in the image. In what follows, we describe which features do we
 require all the \ac{Raspi}s to have and how are they achieved with
 these configuration scripts.
 
 \subsubsection{Device Hostnames}
-Among the settings that we want to be different in the devices is
-their hostname. The hostname helps the user to physically distinguish the
-devices from each other. Thus, in our case we require the devices in our
+The hostname helps the user to physically distinguish the
+devices from each other. In our case we require the devices in our
 testbed to have different hostnames. We define the hostnames based
 on the \ac{MAC} addresses of the \ac{Raspi}s wired Ethernet interface.
 
@@ -414,13 +403,10 @@ b8:27:eb:95:bd:11 rasp03
 
 The testbed administrator has to insert the \ac{MAC} addresses and hostnames
 of his / her \ac{Raspi}s obtained previously in the format shown in the
-configuration file. In that file format, on each line there is a \ac{MAC}
-address and the corresponding hostname for the given \ac{Raspi}. For
-simplicity in the example above, we just include four \ac{Raspi}s.
-This file will be employed by the
-\texttt{\$\{ROOTDIR\}/home/pi/rasp\_config/set\_hostname}
-\ac{Bash} script to assign the hostname of each \ac{Raspi}.
-The script content is the following:
+configuration file. For each given \ac{Raspi}, there is a \ac{MAC} address and
+the corresponding hostname. This file will be employed by the
+\texttt{\$\{ROOTDIR\}/home/pi/rasp\_config/set\_hostname} \ac{Bash} script to
+assign the hostname of each \ac{Raspi}. The script content is the following:
 
 % Set hostname
 \Suppressnumber\begin{lstlisting}[]
