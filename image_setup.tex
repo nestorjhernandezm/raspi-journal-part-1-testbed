@@ -196,8 +196,20 @@ We pass the arguments of the command mode of \texttt{fdisk}
 through the \texttt{echo} command in Linux and the \texttt{|} operator
 (pipe) as follows:
 
+%\begin{lstlisting}[]
+%$ (echo d; echo 2; echo n; echo ; echo ; echo 137216; echo ; echo w) | fdisk ${IMAGE}.img
+%\end{lstlisting}
 \begin{lstlisting}[]
-$ (echo d; echo 2; echo n; echo ; echo ; echo 137216; echo ; echo w) | fdisk ${IMAGE}.img
+$ fdisk ${IMAGE}.img <<EOF
+d
+2
+n
+p
+2
+137216
+
+w
+EOF
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
