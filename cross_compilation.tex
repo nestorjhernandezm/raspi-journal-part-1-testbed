@@ -29,7 +29,7 @@ The toolchain is mandatory due to the different processor architectures
 where the source can be compiled from.
 Given that compiling a toolchaing can be an arduous task, we get the toolchain
 recommended for the \ac{ARM} architecture of the \ac{Raspi}s.
-This toolchain is available from \cite{2016rpitoolchain} and
+This toolchain is available from \cite{2016steinwurfrpitoolchain} and
 it already contains the binaries for different compilers based on
 \texttt{gcc 4.9}. In what follows, we extract the binaries adjusting
 them to our coding style and compiling convention. For this, we use the
@@ -45,12 +45,9 @@ $ cd ${TOOLCHAINDIR}
 \FloatBarrier
 \vspace{-5mm}
 
-Later, we download the \ac{Raspi} toolchain for 64-bit Linux.
-Instead of working with the binaries from \cite{2016rpitoolchain},
-we use a zipped version with the original binaries and renamed symbolic
-links to the original files available in
-\cite{2016steinwurfrpitoolchain}. Finally, we unzip the downloaded file.
-This is made as follows:
+Later, we download a \ac{Raspi} toolchain with the binaries for a 64-bit Linux
+distribution available in \cite{2016steinwurfrpitoolchain}. Finally, we unzip the
+downloaded file. This is made as follows:
 
 \begin{lstlisting}[]
 $ wget http://files.steinwurf.com/toolchains/linux/raspberry-gcc-4.9.3/raspberry-gxx493-arm.zip
@@ -148,11 +145,9 @@ $ ${TOOLCHAINBINARY} hello_world.cpp -o hello_world
 \vspace{-5mm}
 
 This should produce a binary \texttt{hello\_world} that is executable
-in the \ac{Raspi}. We copy it to a \ac{Raspi} to test it. We will
-use \ac{SCP} to copy the binary file to one of the \ac{Raspi}s.
-%Still, we for example might use Fabric if we are interested in deploying
-Still, we might use Fabric instead if we are interested in deploying
-a compiled binary for many \ac{Raspi}s.
+on the \ac{Raspi}. We copy it to a \ac{Raspi} using \ac{SCP} and using
+Fabric instead if we are interested in deploying a compiled binary for
+many \ac{Raspi}s.
 
 \begin{lstlisting}[]
 $ scp hello_world pi@<RASP_IP>:~/
