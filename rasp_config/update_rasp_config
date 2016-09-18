@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-url="http://kom.aau.dk/project/TuneSCode/raspi/"
+url="https://zenodo.org/record/154328/files/"
 config_file="rasp_config.zip"
 
 # Attempt to fetch new configuration files
