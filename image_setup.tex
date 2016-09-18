@@ -71,7 +71,7 @@ of the testbed administrator.
 
 % Define variable]
 \begin{lstlisting}[]
-$ export URL="http://kom.aau.dk/project/TuneSCode/raspi/"
+$ export URL="https://zenodo.org/record/154328/files/"
 $ export IMAGE="2016-05-27-raspbian-jessie-lite"
 $ export WORKDIR="${HOME}/Raspbian"
 \end{lstlisting}
@@ -109,7 +109,7 @@ the \texttt{zip} file as follows:
 \begin{lstlisting}[]
 $ mkdir -p ${WORKDIR}
 $ cd ${WORKDIR}
-$ wget ${URL%/*}/${IMAGE}.zip
+$ wget ${URL%/}/${IMAGE}.zip
 $ unzip ${IMAGE}.zip
 \end{lstlisting}
 \FloatBarrier
@@ -372,7 +372,7 @@ shown as follows:
 
 % Get the configuration files that are compressed in a remote server
 \begin{lstlisting}[]
-$ wget ${URL%/*}/rasp_config.zip
+$ wget ${URL%/}/rasp_config.zip
 $ unzip rasp_config.zip -d ${ROOTDIR}/home/pi/
 Archive:  rasp_config.zip
    creating: ${ROOTDIR}/home/pi/rasp_config/
@@ -471,7 +471,7 @@ during a testbed start up.
 
 In our case as the testbed administrator for presenting the procedure, we want
 to fetch all our configuration scripts in
-\texttt{\$\{URL\%/*\}/raspi\_config.zip}. The update script
+\texttt{\$\{URL\%/\}/raspi\_config.zip}. The update script
 \textit{automatically} downloads all the required configuration files in
 \texttt{rasp\_config.zip} file from a remote location. This is the same that
 we manually did earlier to get our files but this will be made in an
