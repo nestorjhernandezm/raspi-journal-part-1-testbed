@@ -13,11 +13,13 @@ to obtain the desired setting. In all the command blocks in the paper, we indica
 To get started, we first need to install an \ac{OS} that works properly
 on all the \ac{Raspi} models. We will download and setup the image in
 the testbed administrator \ac{PC} using a Debian-based distribution.
-\todot{We could present the two methods here (Yocto vs our method).}
-We
-use the popular Debian-based Raspbian Linux~\cite{raspbian} given that is
-the recommended and default \ac{OS} for the \ac{Raspi}. Raspbian is made
-available in two bundles: Raspbian and Raspbian Lite. The difference
+An alternative to this method, is to create a tailoared Linux distribution
+for the \ac{Raspi} platform using the Yocto Project \cite{yocto}. However, this
+process would require to assemble and compile all the software for the
+\ac{Raspi} platform from scratch which goes beyond of the scope of our
+work. We use the popular Debian-based Raspbian Linux~\cite{raspbian} given
+that is the recommended and default \ac{OS} for the \ac{Raspi}. Raspbian is
+made available in two bundles: Raspbian and Raspbian Lite. The difference
 between the two, is that Raspbian contains a pre-installed desktop environment
 for user interaction and Raspbian Lite by default only permits to interact
 through a command shell. Given that the \ac{Raspi}s in our testbed are not
@@ -77,12 +79,13 @@ $ export WORKDIR="${HOME}/Raspbian"
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
-\todot{change to zenodo link above}
 
 In this code block, the \texttt{\$\{URL\}} and \texttt{\$\{IMAGE\}}
 variables specify where the Linux bundle is located and
 \texttt{\$\{WORKDIR\}} specifies a working directory where the Raspbian
-Lite bundle will be downloaded and customized. Notice that even though we
+Lite bundle will be downloaded and customized. If the testbed administrator
+allocates his / her files into another location, then it will be required to
+change the \texttt{\$\{URL\}} environment variable. Notice that even though we
 use the \$ and \# signs in the shell, in general these signs will be
 particular to the testbed administrator \ac{OS} shell. Next, we create
 the working directory and change to it with the \texttt{cd} command. To
@@ -484,7 +487,7 @@ automated way after booting up the system. This script content is:
 \Reactivatenumber @>
 #!/usr/bin/env bash
 
-url="http://kom.aau.dk/project/TuneSCode/raspi/"
+url="https://zenodo.org/record/154328/files/"
 config_file="rasp_config.zip"
 
 # Attempt to fetch new configuration files
