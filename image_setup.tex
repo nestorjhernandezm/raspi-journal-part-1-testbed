@@ -575,10 +575,22 @@ bash /home/pi/rasp_config/set_hostname
 \FloatBarrier
 \vspace{-5mm}
 
-In this way, the automation process is simplified since we only need to modify
-the image \texttt{\$\{ROOTDIR\}/etc/rc.local} file once to execute this script:
+In this way, the automation process is simplified since we do not need to
+modity \texttt{\$\{ROOTDIR\}/etc/rc.local} again after the image has been
+written to the memory cards.
+%In this way, the automation process is simplified since we only need to modify
+%the image \texttt{\$\{ROOTDIR\}/etc/rc.local} file once to execute this script.
+Now, insert a call to the \texttt{main} script in \texttt{\$\{ROOTDIR\}/etc/rc.local}:
 
-\todot{insert sed command below instead}
+%\todot{insert sed command below instead}
+\Suppressnumber\begin{lstlisting}[]
+# sed -i '/^exit 0/i bash /home/pi/rasp_config/main' ${ROOTDIR}/etc/rc.local
+\end{lstlisting}
+\FloatBarrier
+\vspace{-5mm}
+
+Finally, \texttt{\$\{ROOTDIR\}/etc/rc.local} should look like the following:
+
 \Suppressnumber\begin{lstlisting}[]
 <@\textcolor{gray}{\$\{ROOTDIR\}/etc/rc.local}@>
 <@\textcolor{gray}{
@@ -587,7 +599,6 @@ the image \texttt{\$\{ROOTDIR\}/etc/rc.local} file once to execute this script:
 ...
 bash /home/pi/rasp_config/update_rasp_config
 bash /home/pi/rasp_config/main
-...
 exit 0
 \end{lstlisting}
 \FloatBarrier
