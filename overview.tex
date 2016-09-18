@@ -46,12 +46,13 @@ Debian-based Linux distribution. Our basic design considers to create
 a customized image to store it later on a memory card for each \ac{Raspi}.
 Once configured, we store the resulting image file in a \ac{HTTP} server
 as backup and in case the testbed administrator requires to make new
-changes to this file. In our case, we use the university \ac{HTTP} server but
-any others can be used. We also put all the required
+changes to this file.
+%In our case, we use the university \ac{HTTP} server but any others can be used.
+In our case, we store all files at Zenodo~\cite{soerensen_chres_wiant_2016_154143}, but the testbed administrator should copy the our files to his / her own \ac{HTTP} server to get read/write permissions.
+We also put all the required
 configuration files and scripts for the \ac{Raspi}s setup in the \ac{HTTP}
 server so there is a single place where system setup is stored and could be
-modified. This simplifies the system maintenance.
-As it may not always be desirable to make persistent changes
+modified. This simplifies the system maintenance, as it may not always be desirable to make persistent changes
 on the \ac{Raspi}s. For example when different users are interested in
 running experiments on a rebooted testbed. We later present how
 to utilize stacked filesystems to enable both persistent and
