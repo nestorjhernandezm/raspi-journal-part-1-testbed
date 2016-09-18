@@ -726,13 +726,13 @@ been booted in a \ac{Raspi}. A major difference is that the testbed
 administrator \ac{PC} is likely significantly faster than a \ac{Raspi}.
 Hence, enabling updates, upgrades and installing new software packages
 should be faster than in a \ac{Raspi}. Still updating and upgrading
-the packages for the \ac{Raspi} might take some amount of time. To get
-the upgraded system packages, it is necessary to run:
+the packages for the \ac{Raspi} might take some amount of time.
+%To get the upgraded system packages, it is necessary to run:
+To update the system package list, run the following command:
 
 % Update system
 \begin{lstlisting}[]
 (chroot) # apt-get update
-(chroot) # apt-get upgrade
 \end{lstlisting}
 \FloatBarrier
 \vspace{-5mm}
