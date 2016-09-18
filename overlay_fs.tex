@@ -169,7 +169,7 @@ To do this, we again use \texttt{fdisk} to find the next available sector
 in the image. To verify the new available space for the full image and observe
 the next available sector, we run:
 \begin{lstlisting}[]
-$ fdisk -u sectors -l ${IMAGE}.img
+$ fdisk -u=sectors -l ${IMAGE}.img
 Disk 2016-05-27-raspbian-jessie-lite.img: 3.3 GiB, 3534749696 bytes, 6903808 sectors
 Units: sectors of 1 * 512 = 512 bytes
 Sector size (logical/physical): 512 bytes / 512 bytes
@@ -215,7 +215,7 @@ EOF
 \FloatBarrier
 \vspace{-5mm}
 
-%\textcolor{red}{SHOW NEW PARTITION TABLE HERE}
+\textcolor{red}{SHOW NEW PARTITION TABLE HERE}
 
 We create a loopback device again and format the new partition, as follows:
 \begin{lstlisting}[]
@@ -295,7 +295,7 @@ with the writing of the image into various memory cards.
 For a basic system setup, the final step is to write the customized image
 to all the memory cards before they can be used in the \ac{Raspi}s. For
 our current considered system, we do this manually for each card.
-The testbed administrator needs to insert each memory card in its \ac{PC}
+The testbed administrator needs to insert each memory card in his / her \ac{PC}
 and follow the procedure in this section. A given card will be available as
 \texttt{/dev/mmcblkX} or \texttt{/dev/sdYX} where \texttt{X} is a natural number
 and \texttt{Y} is a letter.

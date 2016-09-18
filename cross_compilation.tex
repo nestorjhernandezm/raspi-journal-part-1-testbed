@@ -24,12 +24,12 @@ cross-compiled for applications with the \ac{Raspi}.
 
 \subsection{Toolchain Setup}
 To compile in a given architecture that is aimed for a different one,
-the testbed administrator needs to install a toolchain in its \ac{PC}.
+the testbed administrator needs to install a toolchain on his / her \ac{PC}.
 The toolchain is mandatory due to the different processor architectures
 where the source can be compiled from.
-Given that compiling a toolchaing can be an arduous task, we get the toolchain
+Given that compiling a toolchain can be an arduous task, we get the toolchain
 recommended for the \ac{ARM} architecture of the \ac{Raspi}s.
-This toolchain is available from \cite{2016steinwurfrpitoolchain} and
+This toolchain is available from \cite{soerensen_chres_wiant_2016_154143} and
 it already contains the binaries for different compilers based on
 \texttt{gcc 4.9}. In what follows, we extract the binaries adjusting
 them to our coding style and compiling convention. For this, we use the
@@ -46,11 +46,11 @@ $ cd ${TOOLCHAINDIR}
 \vspace{-5mm}
 
 Later, we download a \ac{Raspi} toolchain with the binaries for a 64-bit Linux
-distribution available in \cite{2016steinwurfrpitoolchain}. Finally, we unzip the
+distribution available in \cite{soerensen_chres_wiant_2016_154143}. Finally, we unzip the
 downloaded file. This is made as follows:
 
 \begin{lstlisting}[]
-$ wget http://files.steinwurf.com/toolchains/linux/raspberry-gcc-4.9.3/raspberry-gxx493-arm.zip
+$ wget https://zenodo.org/record/154328/files/raspberry-gxx493-arm.zip
 $ unzip raspberry-gxx493-arm.zip
 \end{lstlisting}
 \FloatBarrier
