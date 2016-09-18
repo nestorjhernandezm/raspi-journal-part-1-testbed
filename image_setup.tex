@@ -576,11 +576,11 @@ bash /home/pi/rasp_config/set_hostname
 \vspace{-5mm}
 
 In this way, the automation process is simplified since we do not need to
-modity \texttt{\$\{ROOTDIR\}/etc/rc.local} again after the image has been
+modify \texttt{\$\{ROOTDIR\}/etc/rc.local} again after the image has been
 written to the memory cards.
 %In this way, the automation process is simplified since we only need to modify
 %the image \texttt{\$\{ROOTDIR\}/etc/rc.local} file once to execute this script.
-Now, insert a call to the \texttt{main} script in \texttt{\$\{ROOTDIR\}/etc/rc.local}:
+Now, we insert a call to the \texttt{main} script in \texttt{\$\{ROOTDIR\}/etc/rc.local} as follows:
 
 %\todot{insert sed command below instead}
 \Suppressnumber\begin{lstlisting}[]
