@@ -535,7 +535,7 @@ a call for the update script in \texttt{\$\{ROOTDIR\}/etc/rc.local} before
 %before \texttt{exit 0} using a file editor. To do this, it is required
 %to edit this file with root permissions. The resulting file should look like the following:
 
-\Suppressnumber\begin{lstlisting}[]
+\begin{lstlisting}[]
 # sed -i '/^exit 0/i bash /home/pi/rasp_config/update_rasp_config' ${ROOTDIR}/etc/rc.local
 \end{lstlisting}
 \FloatBarrier
@@ -583,7 +583,7 @@ written to the memory cards.
 Now, we insert a call to the \texttt{main} script in \texttt{\$\{ROOTDIR\}/etc/rc.local} as follows:
 
 %\todot{insert sed command below instead}
-\Suppressnumber\begin{lstlisting}[]
+\begin{lstlisting}[]
 # sed -i '/^exit 0/i bash /home/pi/rasp_config/main' ${ROOTDIR}/etc/rc.local
 \end{lstlisting}
 \FloatBarrier
